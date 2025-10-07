@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Selectly : Outils de texte IA personnalisables et open source",
+    "description": "Le nom de l'extension"
+  },
+  "extensionDescription": {
+    "message": "Surlignez du texte pour traduire, perfectionner, expliquer, chatter, sauvegarder, partager instantanément – ou exécuter des workflows personnalisés. Une extension de navigateur tout-en-un, personnalisable et alimentée par l'IA pour les particuliers.",
+    "description": "La description de l'extension"
+  }
+}

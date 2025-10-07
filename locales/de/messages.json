@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Selectly: Anpassbare Open-Source-KI-Textwerkzeuge",
+    "description": "Der Name der Erweiterung"
+  },
+  "extensionDescription": {
+    "message": "Markieren Sie Text, um sofort zu übersetzen, zu optimieren, zu erklären, zu chatten, zu speichern, zu teilen – oder benutzerdefinierte Workflows auszuführen. Alles in einem, anpassbare, KI-gestützte Browsererweiterung für Privatpersonen.",
+    "description": "Die Beschreibung der Erweiterung"
+  }
+}

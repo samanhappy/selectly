@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Selectly: Ferramentas de texto de IA personalizáveis e de código aberto",
+    "description": "O nome da extensão"
+  },
+  "extensionDescription": {
+    "message": "Realce texto para traduzir, aprimorar, explicar, conversar, salvar, compartilhar instantaneamente — ou executar fluxos de trabalho personalizados. Uma extensão de navegador all-in-one, personalizável e com IA para usuários individuais.",
+    "description": "A descrição da extensão"
+  }
+}

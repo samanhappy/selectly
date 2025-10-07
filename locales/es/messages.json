@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Selectly: Herramientas de texto de IA personalizables y de código abierto",
+    "description": "El nombre de la extensión"
+  },
+  "extensionDescription": {
+    "message": "Resalta texto para traducir, pulir, explicar, chatear, guardar, compartir al instante, o ejecutar flujos de trabajo personalizados. Una extensión de navegador todo en uno, personalizable y con tecnología de IA para usuarios individuales.",
+    "description": "La descripción de la extensión"
+  }
+}

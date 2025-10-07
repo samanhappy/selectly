@@ -31,3 +31,8 @@ dist/
 
 # typescript
 .tsbuildinfo
+
+# Chrome Extension Private Key
+key.pem
+
+keys.json

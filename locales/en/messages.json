@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Selectly: Open-source Customizable AI Text Tools",
+    "description": "The name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Highlight text to instantly translate, polish, explain, chat, save, share — or run custom workflows. All-in-one, customizable, AI-powered browser extension for individuals.",
+    "tip": "No copy-paste. No context switching.",
+    "description": "The description of the extension"
+  }
+}

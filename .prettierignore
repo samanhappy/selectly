@@ -1,0 +1,36 @@
+# Prettier ignore file - files and folders to exclude from formatting
+
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+build/
+dist/
+out/
+.plasmo/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Environment
+.env
+.env.*
+
+# Generated files
+keys.json
+*.pem
+
+# Assets and static files
+*.min.js
+*.min.css
+
+# Documentation that shouldn't be reformatted
+CHANGELOG.md
+LICENSE
+
+# Config files with specific formatting
+pnpm-workspace.yaml

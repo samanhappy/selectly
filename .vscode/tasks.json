@@ -1,0 +1,48 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Selectly",
+      "type": "shell",
+      "command": "pnpm build",
+      "isBackground": false,
+      "problemMatcher": ["$tsc"],
+      "group": "build"
+    },
+    {
+      "label": "Build Selectly",
+      "type": "shell",
+      "command": "pnpm build",
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Build Selectly",
+      "type": "shell",
+      "command": "pnpm build",
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Build Selectly",
+      "type": "shell",
+      "command": "pnpm build",
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Build Selectly",
+      "type": "shell",
+      "command": "pnpm build",
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Build Selectly",
+      "type": "shell",
+      "command": "pnpm build",
+      "isBackground": false,
+      "group": "build"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Selectly: オープンソースのカスタマイズ可能なAIテキストツール",
+    "description": "拡張機能の名前"
+  },
+  "extensionDescription": {
+    "message": "テキストをハイライトするだけで、瞬時に翻訳、推敲、説明、チャット、保存、共有が可能。カスタムワークフローの実行も。すべてが一つに。個人向けのカスタマイズ可能なAI搭載ブラウザ拡張機能。",
+    "description": "拡張機能の説明"
+  }
+}

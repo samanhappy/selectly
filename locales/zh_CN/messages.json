@@ -1,0 +1,10 @@
+{
+  "extensionName": {
+    "message": "Selectly: 开源可定制的 AI 划词工具",
+    "description": "扩展名称"
+  },
+  "extensionDescription": {
+    "message": "划词即刻翻译、润色、解释、与 AI 对话、保存、分享或执行自定义工作流。面向个人的一站式、可定制的 AI 划词浏览器扩展。",
+    "description": "扩展描述"
+  }
+}
