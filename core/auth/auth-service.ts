@@ -181,7 +181,7 @@ export class AuthService {
    */
   async getAccessToken(): Promise<string> {
     if (!this.tokenData) {
-      throw new Error('No authentication token available');
+      return Promise.resolve('');
     }
 
     // Check if token is expired (with 5 minute buffer)
@@ -191,7 +191,11 @@ export class AuthService {
     if (this.tokenData.expiresAt <= now + bufferTime) {
       // Token is expired or will expire soon, try to refresh
       if (this.tokenData.refreshToken) {
-        await this.refreshAccessToken();
+        try {
+          await this.refreshAccessToken();
+        } catch (error) {
+          console.error('Failed to refresh access token:', error);
+        }
       } else {
         throw new Error('Access token expired and no refresh token available');
       }

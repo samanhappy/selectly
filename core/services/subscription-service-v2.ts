@@ -2,7 +2,9 @@
  * Updated Subscription management service with enhanced authentication
  */
 
+import { modelService } from '../../core/services/model-service';
 import { authService } from '../auth/auth-service';
+import { CLOUD_PROVIDER } from '../config/llm-config';
 import type { SubscriptionStatus as ApiSubscriptionStatus } from '../premium-api-v2';
 import { checkSubscription, initiateAuthentication, isAuthenticated } from '../premium-api-v2';
 import { secureStorage } from '../storage/secure-storage';
@@ -193,6 +195,8 @@ class SubscriptionServiceV2 {
                 this.maybeEnsureAutoRefresh();
               }
             }
+
+            modelService.clearCache(CLOUD_PROVIDER);
           }
         });
 
@@ -419,6 +423,8 @@ class SubscriptionServiceV2 {
 
     this.emit();
     this.maybeEnsureAutoRefresh();
+
+    modelService.clearCache(CLOUD_PROVIDER);
   }
 
   // Feature access methods
