@@ -1,8 +1,10 @@
 import OpenAI from 'openai';
 
+import { authService } from '~core/auth/auth-service';
+
 import type { LLMConfig, LLMProvider } from '../config/llm-config';
-import { ConfigManager } from '../config/llm-config';
-import { i18n } from '../i18n';
+import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
+import { i18n, t } from '../i18n';
 
 export class LLMService {
   private static instance: LLMService;
@@ -23,7 +25,8 @@ export class LLMService {
   /**
    * Configure the service with the latest config
    */
-  configure(config: LLMConfig): void {
+  async configure(config: LLMConfig): Promise<void> {
+    console.log('Configuring LLMService with config:', config);
     // Clear existing clients
     this.clients.clear();
 
@@ -41,11 +44,14 @@ export class LLMService {
       }
     });
 
+    await authService.initialize();
+    const token = await authService.getAccessToken();
+    console.log('Configuring LLMService with token:', token ? '***' : 'no token');
     this.clients.set(
-      'default',
+      'cloud',
       new OpenAI({
-        apiKey: '',
-        baseURL: `${process.env.PLASMO_PUBLIC_API_URI}/api`,
+        apiKey: token || '',
+        baseURL: CLOUD_PROVIDER.baseURL,
         dangerouslyAllowBrowser: true,
       })
     );
@@ -80,6 +86,7 @@ export class LLMService {
   async chat(prompt: string, model?: string): Promise<string> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
     const { client, modelName } = this.parseModelAndGetClient(modelToUse);
+    console.log('Using model:', modelName);
 
     try {
       const response = await client.chat.completions.create({
@@ -132,6 +139,7 @@ export class LLMService {
   ): Promise<void> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
     const { client, modelName } = this.parseModelAndGetClient(modelToUse);
+    console.log('Using model:', modelName);
 
     try {
       const messages =
@@ -171,9 +179,7 @@ export class LLMService {
         if (client === this.clients.get('default')) {
           throw new Error(`${i18n.t('errors.llmDefaultServiceError')}`);
         }
-        throw new Error(
-          `${i18n.t('errors.llmStreamingServiceError')}: ${error.message || i18n.t('errors.unknownError')}`
-        );
+        throw new Error(`${i18n.t('errors.llmStreamingServiceError')}`);
       }
     }
   }
@@ -235,7 +241,7 @@ export const processText = (
 export const testConnection = async (config: LLMConfig): Promise<boolean> => {
   try {
     const testService = new LLMService();
-    testService.configure(config);
+    await testService.configure(config);
     await testService.chat(
       'Hello, please respond with "OK" if you can see this message.',
       config.defaultModel

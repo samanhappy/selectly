@@ -63,7 +63,7 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload }) => {
   };
 
   return (
-    <div style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}>
+    <div style={{ padding: '12px', minHeight: '100%' }}>
       <div className="sl-card" style={{ marginTop: 12 }}>
         <div
           style={{
@@ -78,15 +78,15 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload }) => {
           </h3>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              background: PALETTE.surfaceMuted,
-              border: `1px solid ${PALETTE.border}`,
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="sl-fn-card">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flex: '1 1 0%',
+              }}
+            >
               <div>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
                   {t.options?.general?.exportConfig || 'Export Configuration'}
@@ -106,15 +106,15 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload }) => {
               </button>
             </div>
           </div>
-          <div
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              background: PALETTE.surfaceMuted,
-              border: `1px solid ${PALETTE.border}`,
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="sl-fn-card">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flex: '1 1 0%',
+              }}
+            >
               <div>
                 <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
                   {t.options?.general?.importConfig || 'Import Configuration'}

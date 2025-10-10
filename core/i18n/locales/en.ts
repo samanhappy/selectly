@@ -320,8 +320,9 @@ export const en: I18nConfig = {
     networkError: 'Network connection error, please check network settings',
     llmServiceError: 'LLM Service Error',
     llmDefaultServiceError:
-      'Default model service is temporarily unavailable, please add another provider or try again later',
-    llmStreamingServiceError: 'LLM Streaming Service Error',
+      'Default model is temporarily unavailable, please add another model or try again later',
+    llmStreamingServiceError:
+      'Current model is temporarily unavailable, please switch to another model or try again later',
     premiumRequired: 'Premium Feature',
     pleaseSubscribe: 'Subscription to premium is required to use this feature',
     dailyLimitExceeded: 'Daily Limit Exceeded',

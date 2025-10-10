@@ -59,7 +59,6 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
               <p
                 style={{
                   margin: '0',
-                  marginBottom: '8px',
                 }}
                 {...props}
               >
@@ -390,6 +389,13 @@ export const StreamingResult = ({
       error: boolean = false,
       isNewMessage: boolean = false
     ) => {
+      console.log('[StreamingResult] updateStreamingResult', {
+        chunk,
+        model,
+        complete,
+        error,
+        isNewMessage,
+      });
       // Initialize call timing on first non-error chunk
       setStartedAt((prev) => (prev == null && !error ? Date.now() : prev));
       if (!error && !complete && elapsedMs === 0 && startedAt == null) {
@@ -963,7 +969,7 @@ export const StreamingResult = ({
         }}
       >
         {/* Status text */}
-        {isComplete && !isError && (
+        {modelName && (
           <div
             style={{
               display: 'flex',

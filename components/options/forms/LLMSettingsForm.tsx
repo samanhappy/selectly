@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react';
 import React, { useMemo } from 'react';
 
-import type { LLMConfig, LLMProvider } from '../../../core/config/llm-config';
+import { ConfigManager, type LLMConfig, type LLMProvider } from '../../../core/config/llm-config';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { ProviderManager } from './ProviderManager';
 
@@ -20,10 +20,8 @@ export const LLMSettingsForm: React.FC<LLMSettingsFormProps> = ({
   onChange,
   onOpenDrawer,
 }) => {
-  const enabledProviders = useMemo(() => {
-    return Object.values(llm.providers).filter((p) => p.enabled);
-  }, [llm.providers]);
-
+  const configManager = ConfigManager.getInstance();
+  const enabledProviders = configManager.getEnabledProviders();
   const handleProviderUpdate = (provider: LLMProvider) => {
     if (!provider.enabled && llm.defaultModel.startsWith(provider.id)) {
       onChange({

@@ -44,6 +44,7 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
   const loadModels = async () => {
     if (enabledProviders.length === 0) {
       setProviderModels([]);
+      selectedModel === 'default' && onChange('');
       return;
     }
 
@@ -51,6 +52,19 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
     try {
       const results = await modelService.getAllAvailableModels(enabledProviders);
       setProviderModels(results);
+
+      // If the currently selected model is no longer available, reset to default
+      const allAvailableModelStrings = results.flatMap(({ provider, models }) =>
+        models.map((m) => `${provider.id}/${m.id}`)
+      );
+      if (
+        selectedModel !== 'default' &&
+        selectedModel &&
+        !allAvailableModelStrings.includes(selectedModel)
+      ) {
+        selectedModel = 'default';
+        onChange(selectedModel);
+      }
     } catch (error) {
       console.error('Failed to load models:', error);
     } finally {
@@ -95,9 +109,9 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
     if (parts.length !== 2) return modelString;
 
     const [providerId, modelName] = parts;
-    const provider = enabledProviders.find((p) => p.id === providerId);
-    const providerData = providerModels.find((pm) => pm.provider.id === providerId);
-    const model = providerData?.models.find((m) => m.id === modelName);
+    const provider = enabledProviders?.find((p) => p.id === providerId);
+    const providerData = providerModels?.find((pm) => pm.provider.id === providerId);
+    const model = providerData?.models?.find((m) => m.id === modelName);
 
     return `${provider?.name || providerId} / ${model?.name || modelName}`;
   };

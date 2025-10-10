@@ -28,7 +28,6 @@ export class Selectly {
   private streamingContainer: HTMLDivElement | null = null;
   private streamingRoot: any = null;
   private streamingCleanup: ((force?: boolean) => boolean) | null = null;
-  //
   private buttonsHost: HTMLDivElement | null = null;
   private streamingHost: HTMLDivElement | null = null;
   private sharePreviewHost: HTMLDivElement | null = null;
@@ -39,8 +38,7 @@ export class Selectly {
   private configManager = ConfigManager.getInstance();
   private llmService = LLMService.getInstance();
   private subscriptionService = SubscriptionServiceV2.getInstance();
-  private styleContent = ''; //
-  //
+  private styleContent = '';
   private currentSelection: Selection | null = null;
   private currentTarget: HTMLElement | null = null;
   private inputSelectionStart: number | null = null;
@@ -447,16 +445,12 @@ export class Selectly {
   }
 
   private async init() {
-    //
     await i18n.initialize();
 
-    //
     await this.loadConfig();
 
-    //
-    this.llmService.configure(this.userConfig.llm);
+    await this.llmService.configure(this.userConfig.llm);
 
-    //
     this.addStyles();
 
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
@@ -487,9 +481,9 @@ export class Selectly {
   private listenForConfigUpdates() {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       secureStorage.onChanged(async (changes) => {
-        if (changes.userConfig) {
+        if (changes.userConfig || changes.userInfo) {
           await this.loadConfig();
-          this.llmService.configure(this.userConfig.llm);
+          await this.llmService.configure(this.userConfig.llm);
         }
       });
     }
@@ -497,7 +491,6 @@ export class Selectly {
 
   private addStyles() {
     if (this.styleContent) return;
-    //
     this.styleContent = contentStyles;
   }
 
@@ -627,9 +620,7 @@ export class Selectly {
           this.contentEditableRange = sel.getRangeAt(0).cloneRange();
         }
       }
-    } catch (e) {
-      //
-    }
+    } catch (e) {}
   }
 
   public restoreFocusSelection() {
@@ -651,9 +642,7 @@ export class Selectly {
         }
         (this.currentTarget as HTMLElement).focus({ preventScroll: true });
       }
-    } catch (e) {
-      //
-    }
+    } catch (e) {}
   }
 
   public updateCachedSelection() {
@@ -1159,9 +1148,7 @@ export class Selectly {
 
     const conversationContext: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> =
       [];
-    //
     if (config?.prompt) {
-      //
       const variables: Record<string, string> = {};
       conversationContext.push({
         role: 'system',
@@ -1169,7 +1156,6 @@ export class Selectly {
       });
     }
 
-    //
     root.render(
       <StreamingResult
         title={title}

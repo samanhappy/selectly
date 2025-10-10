@@ -1,5 +1,7 @@
 import OpenAI from 'openai';
 
+import { authService } from '~core/auth/auth-service';
+
 import type { LLMProvider } from '../config/llm-config';
 
 export interface ModelInfo {
@@ -35,9 +37,14 @@ export class ModelService {
       return this.modelCache.get(cacheKey)!;
     }
 
+    let apiKey = provider.apiKey;
+    if (provider.id === 'cloud') {
+      apiKey = await authService.getAccessToken();
+    }
+
     try {
       const client = new OpenAI({
-        apiKey: provider.apiKey,
+        apiKey: apiKey,
         baseURL: provider.baseURL,
         dangerouslyAllowBrowser: true,
       });
@@ -55,6 +62,7 @@ export class ModelService {
       return models;
     } catch (error) {
       console.error(`Failed to load models from ${provider.name}:`, error);
+      return [];
     }
   }
 
