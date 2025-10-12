@@ -186,6 +186,7 @@ export const zh: I18nConfig = {
       premiumActiveMonthly: '月度会员已激活',
       premiumActiveLifetime: '终身会员已激活',
       premiumExpires: '到期时间',
+      credits: '积分',
       features: '高级功能包括：',
       featuresUnlimited: '无限制的 AI 操作',
       featuresAdvanced: '高级文本处理功能',

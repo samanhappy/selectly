@@ -387,7 +387,11 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
                   size={18}
                   inactiveColor={palette.textSecondary}
                 />
-                {t ? t('popup.subscription.title') : 'Premium Subscription'}
+                {t ? t('popup.subscription.title') : 'Premium Subscription'}&nbsp;(
+                {(t ? t('popup.subscription.credits') : 'Credits') +
+                  ': $' +
+                  (subscriptionStatus.credits?.limit_remaining ?? 0)}
+                )
               </h3>
               <p
                 style={{

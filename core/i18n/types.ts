@@ -190,6 +190,7 @@ export interface I18nConfig {
       premiumActiveMonthly: string;
       premiumActiveLifetime: string;
       premiumExpires: string;
+      credits: string;
       features: string;
       featuresUnlimited: string;
       featuresAdvanced: string;

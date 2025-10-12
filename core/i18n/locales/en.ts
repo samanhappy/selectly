@@ -191,6 +191,7 @@ export const en: I18nConfig = {
       premiumActiveMonthly: 'Monthly membership activated',
       premiumActiveLifetime: 'Lifetime membership activated',
       premiumExpires: 'Expires',
+      credits: 'Credits',
       features: 'Premium features include:',
       featuresUnlimited: 'Unlimited AI operations',
       featuresAdvanced: 'Advanced text processing features',

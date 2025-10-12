@@ -375,6 +375,7 @@ class SubscriptionServiceV2 {
           active: !!next.active,
           interval: next.interval || (next.active ? 'month' : 'none'),
           period_end: next.period_end,
+          credits: next.credits,
         };
         this.lastChecked = Date.now();
 

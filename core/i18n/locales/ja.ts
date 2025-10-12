@@ -193,6 +193,7 @@ export const ja: I18nConfig = {
       premiumActiveMonthly: '月額メンバーシップが有効',
       premiumActiveLifetime: '生涯メンバーシップが有効',
       premiumExpires: '有効期限',
+      credits: 'クレジット',
       features: 'プレミアム機能には以下が含まれます:',
       featuresUnlimited: '無制限のAI操作',
       featuresAdvanced: '高度なテキスト処理機能',
