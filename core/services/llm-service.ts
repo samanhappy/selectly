@@ -44,7 +44,7 @@ export class LLMService {
       }
     });
 
-    await authService.initialize();
+    // await authService.initialize();
     const token = await authService.getAccessToken();
     console.log('Configuring LLMService with token:', token ? '***' : 'no token');
     this.clients.set(

@@ -550,8 +550,8 @@ export class ConfigManager {
    * Format: "providerId/modelName"
    */
   parseModel(modelString: string): { providerId: string; modelName: string } {
-    if (!modelString) {
-      return { providerId: 'default', modelName: 'default' };
+    if (!modelString || modelString === 'default') {
+      return { providerId: 'cloud', modelName: 'default' };
     }
 
     const parts = modelString.split('/');
