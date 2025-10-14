@@ -152,11 +152,6 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
   };
 
   const handleSubscribe = async (plan: 'monthly' | 'lifetime') => {
-    if (!authState.isAuthenticated || !authState.user) {
-      await handleSignIn();
-      return;
-    }
-
     try {
       const pricingLink = process.env.PLASMO_PUBLIC_PRICING_LINK;
       if (pricingLink) {
@@ -166,23 +161,6 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
           window.open(pricingLink, '_blank', 'noopener,noreferrer');
         }
         return;
-      }
-
-      const stripeUrl =
-        plan === 'monthly'
-          ? process.env.PLASMO_PUBLIC_STRIPE_MONTHLY_LINK
-          : process.env.PLASMO_PUBLIC_STRIPE_LIFETIME_LINK;
-
-      if (stripeUrl && authState.user) {
-        const finalUrl = `${stripeUrl}?client_reference_id=${authState.user.id}&prefilled_email=${encodeURIComponent(authState.user.email || '')}`;
-
-        if (typeof chrome !== 'undefined' && chrome.tabs?.create) {
-          chrome.tabs.create({ url: finalUrl });
-        } else {
-          window.open(finalUrl, '_blank', 'noopener,noreferrer');
-        }
-      } else {
-        setError('Payment service temporarily unavailable');
       }
     } catch (err) {
       console.error('Subscription error:', err);
@@ -357,11 +335,10 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
           border: `1px solid ${palette.border}`,
           borderRadius: '8px',
           backgroundColor: palette.surface,
-          marginBottom: '16px',
         }}
       >
         {/* Header */}
-        <div style={{ marginBottom: '16px' }}>
+        <div>
           <div
             style={{
               display: 'flex',
@@ -390,17 +367,18 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
                 {t ? t('popup.subscription.title') : 'Premium Subscription'}&nbsp;(
                 {(t ? t('popup.subscription.credits') : 'Credits') +
                   ': $' +
-                  (subscriptionStatus.credits?.limit_remaining ?? 0)}
+                  (subscriptionStatus?.credits?.limit_remaining ?? 0)}
                 )
               </h3>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '14px',
-                  color: palette.textSecondary,
-                }}
-              >
-                {isActive && (
+              {isActive && (
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '14px',
+                    marginTop: '12px',
+                    color: palette.textSecondary,
+                  }}
+                >
                   <span style={{ color: palette.success || '#059669' }}>
                     {isLifetime
                       ? t
@@ -410,8 +388,9 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
                         ? t('popup.subscription.premiumActiveMonthly')
                         : 'Premium Active (Monthly)'}
                   </span>
-                )}
-              </p>
+                </p>
+              )}
+
               {/* Expiry date */}
               {!!subscriptionStatus?.period_end &&
                 subscriptionStatus.period_end !== 0 &&
@@ -478,209 +457,97 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
 
         {
           <>
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                color: palette.text,
-                marginBottom: '12px',
-              }}
-            >
-              {t ? t('popup.subscription.choosePlan') : 'Choose Your Plan'}
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: '12px',
-                marginBottom: '16px',
-                flexDirection: 'column',
-              }}
-            >
-              {/* Monthly Plan */}
-              {/* <div style={{
-                border: `1px solid ${palette.border}`,
-                borderRadius: '8px',
-                padding: '12px',
-                backgroundColor: palette.bg || '#ffffff'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '8px'
-                }}>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: '500', color: palette.text }}>
-                      {t ? t('popup.subscription.monthlyPlan') : 'Monthly Plan'}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ fontSize: '16px', fontWeight: '600', color: palette.primary }}>
-                        {t ? t('popup.subscription.monthlyPrice') : '$4.99/month'}
-                      </div>
-                      <div style={{ fontSize: '12px', color: palette.textSecondary, textDecoration: 'line-through' }}>
-                        {t ? t('popup.subscription.monthlyPriceOriginal') : '$9.99'}
-                      </div>
-                      <div style={{
-                        fontSize: '10px',
-                        fontWeight: '500',
-                        backgroundColor: '#fef2f2',
-                        padding: '2px 4px',
-                        borderRadius: '4px',
-                        border: '1px solid #cbcbcb'
-                      }}>
-                        {t ? t('popup.subscription.monthlyPriceSale') : '50% OFF'}
-                      </div>
-                    </div>
-                  </div>
-                  <CreditCard size={20} color={palette.primary} />
-                </div>
-                <button
-                  onClick={() => handleSubscribe('monthly')}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    backgroundColor: palette.primary,
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {t ? t('popup.subscription.subscribeMonthly') : 'Subscribe Monthly'}
-                </button>
-              </div> */}
-
-              {/* Lifetime Plan */}
+            {(!authState.isAuthenticated || !isActive) && (
               <div
                 style={{
-                  border: `2px solid ${palette.primary}`,
-                  borderRadius: '8px',
-                  padding: '12px',
-                  backgroundColor: palette.surfaceAlt || '#eff6ff',
-                  position: 'relative',
+                  display: 'flex',
+                  gap: '12px',
+                  marginTop: '12px',
+                  flexDirection: 'column',
                 }}
               >
                 <div
                   style={{
-                    position: 'absolute',
-                    top: '-8px',
-                    right: '12px',
-                    backgroundColor: palette.primary,
-                    color: 'white',
-                    fontSize: '10px',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    fontWeight: '500',
+                    border: `1px solid ${palette.border}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    backgroundColor: palette.bg || '#ffffff',
                   }}
                 >
-                  BEST VALUE
+                  {/* Features section */}
+                  <ul
+                    style={{
+                      margin: '0',
+                      paddingLeft: '0',
+                      paddingBottom: '6px',
+                      listStyle: 'none',
+                      fontSize: '13px',
+                      color: palette.text,
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr 1fr',
+                      columnGap: '12px',
+                    }}
+                  >
+                    <li
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      <Check size={12} color={palette.primary} />
+                      {t
+                        ? t('popup.subscription.featuresModels')
+                        : 'Advanced Models Access (pay-as-you-go)'}
+                    </li>
+                    <li
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      <Check size={12} color={palette.primary} />
+                      {t
+                        ? t('popup.subscription.featuresSync')
+                        : 'Unlimited cloud sync across devices'}
+                    </li>
+                    <li
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      <Check size={12} color={palette.primary} />
+                      {t ? t('popup.subscription.featuresSupport') : 'Priority customer support'}
+                    </li>
+                  </ul>
+
+                  <button
+                    onClick={() => handleSubscribe('monthly')}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      backgroundColor: palette.primary,
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t ? t('popup.subscription.subscribeMonthly') : 'Subscribe Monthly'}
+                  </button>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '4px',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: '500', color: palette.text }}>
-                      {t ? t('popup.subscription.lifetimePlan') : 'Lifetime Plan'}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ fontSize: '16px', fontWeight: '600', color: palette.primary }}>
-                        {t ? t('popup.subscription.lifetimePrice') : '$49.99'}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: palette.textSecondary,
-                          textDecoration: 'line-through',
-                        }}
-                      >
-                        {t ? t('popup.subscription.lifetimePriceOriginal') : '$99.99'}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: '500',
-                          backgroundColor: '#fef2f2',
-                          padding: '2px 4px',
-                          borderRadius: '4px',
-                          border: '1px solid #cbcbcb',
-                        }}
-                      >
-                        {t ? t('popup.subscription.lifetimePriceSale') : '50% OFF'}
-                      </div>
-                    </div>
-                  </div>
-                  <Infinity size={20} color={palette.primary} />
-                </div>
-                <div
-                  style={{ fontSize: '12px', color: palette.textSecondary, marginBottom: '8px' }}
-                >
-                  {t
-                    ? t('popup.subscription.lifetimeOneTime')
-                    : 'One-time payment, lifetime access'}
-                </div>
-                <button
-                  onClick={() => handleSubscribe('lifetime')}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    backgroundColor: palette.primary,
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {t ? t('popup.subscription.subscribeLifetime') : 'Get Lifetime Access'}
-                </button>
               </div>
-            </div>
+            )}
           </>
         }
-
-        {/* Features section - only show if not authenticated or not active */}
-        {/* {(!authState.isAuthenticated || !isActive) && (
-          <div style={{
-            fontSize: '13px',
-            color: palette.textSecondary,
-            marginBottom: '8px'
-          }}>
-            {t ? t('popup.subscription.planComparison') : 'What you get with Premium:'}
-          </div>
-        )} */}
-        {(!authState.isAuthenticated || !isActive) && (
-          <ul
-            style={{
-              margin: '0',
-              paddingLeft: '0',
-              listStyle: 'none',
-              fontSize: '13px',
-              color: palette.text,
-            }}
-          >
-            <li style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <Check size={12} color={palette.primary} />
-              {t ? t('popup.subscription.featuresUnlimited') : 'Unlimited AI operations'}
-            </li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <Check size={12} color={palette.primary} />
-              {t ? t('popup.subscription.featuresAdvanced') : 'Advanced AI models and features'}
-            </li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <Check size={12} color={palette.primary} />
-              {t ? t('popup.subscription.featuresSupport') : 'Priority customer support'}
-            </li>
-          </ul>
-        )}
       </div>
 
       {/* Redeem Drawer */}

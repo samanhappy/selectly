@@ -192,8 +192,8 @@ export interface I18nConfig {
       premiumExpires: string;
       credits: string;
       features: string;
-      featuresUnlimited: string;
-      featuresAdvanced: string;
+      featuresModels: string;
+      featuresSync: string;
       featuresSupport: string;
       subscribe: string;
       monthlyPlan: string;
