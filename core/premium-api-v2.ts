@@ -121,6 +121,14 @@ export interface SubscriptionStatus {
   active: boolean;
   interval: 'none' | 'month' | 'one-time';
   period_end?: number; // Unix timestamp
+  credits?: {
+    limit: number;
+    limit_remaining: number;
+    usage: number;
+    usage_daily: number;
+    usage_weekly: number;
+    usage_monthly: number;
+  };
 }
 
 /**
@@ -153,6 +161,7 @@ export const checkSubscription = async (): Promise<SubscriptionStatus> => {
             (result.interval as SubscriptionStatus['interval']) ||
             (result.active ? 'month' : 'none'),
           period_end: result.period_end,
+          credits: result.credits,
         } as SubscriptionStatus,
         lastChecked: Date.now(),
         userId: user?.id,

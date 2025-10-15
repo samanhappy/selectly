@@ -270,21 +270,4 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Handle context menu (optional feature)
-// chrome.contextMenus.onClicked.addListener((info, tab) => {
-//   if (info.menuItemId === 'selectly-translate' && info.selectionText) {
-//     const url = `https://translate.google.com/?sl=auto&tl=zh-CN&text=${encodeURIComponent(info.selectionText)}&op=translate`;
-//     chrome.tabs.create({ url });
-//   }
-// });
-
-// Create context menu item
-// chrome.runtime.onStartup.addListener(() => {
-//   chrome.contextMenus.create({
-//     id: 'selectly-translate',
-//     title: i18n.t('contextMenu.translateText'),
-//     contexts: ['selection'],
-//   });
-// });
-
 export {};

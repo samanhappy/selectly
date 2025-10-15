@@ -50,6 +50,16 @@ export interface UserConfig {
   functionOrder?: string[];
 }
 
+export const CLOUD_PROVIDER: LLMProvider = {
+  id: 'cloud',
+  name: 'Cloud',
+  baseURL: `${process.env.PLASMO_PUBLIC_API_URI}/api`,
+  apiKey: '',
+  isBuiltIn: true,
+  enabled: true,
+  websiteURL: 'https://www.selectly.app',
+};
+
 // Built-in LLM Providers
 export const BUILT_IN_PROVIDERS: Record<
   string,
@@ -540,8 +550,8 @@ export class ConfigManager {
    * Format: "providerId/modelName"
    */
   parseModel(modelString: string): { providerId: string; modelName: string } {
-    if (!modelString) {
-      return { providerId: 'default', modelName: 'default' };
+    if (!modelString || modelString === 'default') {
+      return { providerId: 'cloud', modelName: 'default' };
     }
 
     const parts = modelString.split('/');
@@ -567,7 +577,8 @@ export class ConfigManager {
    * Get all enabled providers
    */
   getEnabledProviders(): LLMProvider[] {
-    return Object.values(this.config.llm.providers).filter((p) => p.enabled);
+    // add cloud provider into the list header
+    return [CLOUD_PROVIDER, ...Object.values(this.config.llm.providers).filter((p) => p.enabled)];
   }
 
   /**
