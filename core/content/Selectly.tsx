@@ -751,7 +751,7 @@ export class Selectly {
     return checkElement(target);
   }
 
-  private calculateButtonPosition(): { x: number; y: number } | null {
+  private calculateRect(): DOMRect | null {
     let rect: DOMRect | null = null;
 
     // Try to use current selection
@@ -778,6 +778,12 @@ export class Selectly {
       }
     }
 
+    return rect;
+  }
+
+  private calculateButtonPosition(): { x: number; y: number } | null {
+    const rect = this.calculateRect();
+    console.debug('[Selectly] Calculating button position, selection rect:', rect);
     // If selection rect is invalid, use last mouse position
     if (!rect && this.lastMousePosition) {
       const mouseX = this.lastMousePosition.x;
@@ -869,6 +875,51 @@ export class Selectly {
     return { x, y };
   }
 
+  private calculateResultPosition(): {
+    x: number;
+    y: number;
+    minWidth: number;
+    maxWidth: number;
+  } | null {
+    const rect = this.calculateRect();
+    console.debug('[Selectly] Calculating result position, selection rect:', rect);
+    if (rect) {
+      let x = rect.left;
+      let y = rect.bottom + 10;
+      let minWidth = rect.width;
+      let maxWidth = rect.width;
+
+      console.log(
+        'window.innerWidth:',
+        window.innerWidth,
+        'window.innerHeight:',
+        window.innerHeight
+      );
+      // Prevent going beyond screen
+      if (x + 300 > window.innerWidth) {
+        x = window.innerWidth - 320;
+        console.log('Adjusted x to prevent overflow:', x);
+      }
+      if (y + 100 > window.innerHeight) {
+        y = rect.top - 130;
+        console.log('Adjusted y to prevent overflow:', y);
+      }
+      return { x, y, minWidth, maxWidth };
+    }
+
+    // If selection rect is invalid, use last mouse position
+    if (this.lastMousePosition) {
+      return {
+        x: this.lastMousePosition.x,
+        y: this.lastMousePosition.y + 15,
+        minWidth: 0,
+        maxWidth: 0,
+      };
+    }
+
+    return null;
+  }
+
   private handleSelectionUpdate = (newSelectedText: string) => {
     // Update current selection and target element
     const selection = window.getSelection();
@@ -878,6 +929,7 @@ export class Selectly {
 
     // Use unified position calculation method
     const position = this.calculateButtonPosition();
+    console.debug('[Selectly] Updating button position after selection update:', position);
     if (!position) {
       return;
     }
@@ -919,6 +971,7 @@ export class Selectly {
 
     // Use unified position calculation method based on window.getSelection()
     const position = this.calculateButtonPosition();
+    console.debug('[Selectly] Showing buttons at position:', position);
     if (!position) {
       return;
     }
@@ -962,7 +1015,14 @@ export class Selectly {
         setTimeout(() => {
           try {
             const actionService = ActionService.getInstance();
-            actionService.executeAction(actionKey, selectedText, functionConfig);
+            const resultPosition = this.calculateResultPosition();
+            console.debug(
+              '[Selectly] Auto-executing action:',
+              actionKey,
+              'at position:',
+              resultPosition
+            );
+            actionService.executeAction(resultPosition, actionKey, selectedText, functionConfig);
           } catch (e) {
             // noop
           }

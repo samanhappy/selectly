@@ -39,6 +39,7 @@ export class ActionService {
   }
 
   async executeAction(
+    position: { x: number; y: number; minWidth: number; maxWidth: number } | null,
     actionKey: string,
     selectedText: string,
     config: FunctionConfig
@@ -77,44 +78,27 @@ export class ActionService {
       return; // Cannot display any result, return directly
     }
 
-    // Calculate result window position (near selected text)
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
-    const rect = range?.getBoundingClientRect();
-
-    let x = 100,
-      y = 100,
-      minWidth = 0,
-      maxWidth = 0;
-    if (rect) {
-      x = rect.left;
-      y = rect.bottom + 10;
-      minWidth = rect.width;
-      maxWidth = rect.width;
-
-      // Prevent going beyond screen
-      if (x + 300 > window.innerWidth) {
-        x = window.innerWidth - 320;
-      }
-      if (y + 200 > window.innerHeight) {
-        y = rect.top - 210;
-      }
-    }
-
     // Handle LLM functions
     if (!config.prompt) {
       selectlyInstance.showErrorResult(
         i18n.t('errors.configError'),
         `${i18n.t('errors.missingPromptConfig')}: ${actionKey}`,
-        x,
-        y,
+        position.x,
+        position.y,
         actionKey
       );
       return;
     }
 
     // Show streaming result window
-    selectlyInstance.showStreamingResult(config.title, x, y, minWidth, maxWidth, actionKey);
+    selectlyInstance.showStreamingResult(
+      config.title,
+      position.x,
+      position.y,
+      position.minWidth,
+      position.maxWidth,
+      actionKey
+    );
 
     try {
       // Prepare translation variables for smart language detection

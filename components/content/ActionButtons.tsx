@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { UserConfig } from '../../core/config/llm-config';
 import { i18n } from '../../core/i18n';
 import { actionService } from '../../core/services/action-service';
-import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
 import { getActionIcon, isValidIconKey } from '../../utils/icon-utils';
 import { isValidUrl } from '../../utils/url-utils';
 
@@ -28,23 +27,10 @@ export const ActionButtons = ({
   onSelectionUpdate,
   userConfig,
 }: ActionButtonsProps) => {
-  const [isVisible, setIsVisible] = useState(true);
   const [i18nConfig, setI18nConfig] = useState(i18n.getConfig());
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-  const [dailyUsage, setDailyUsage] = useState<{
-    usedCount: number;
-    remainingCount: number;
-    dailyLimit: number;
-  }>({
-    usedCount: 0,
-    remainingCount: 10,
-    dailyLimit: 10,
-  });
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [collectStatus, setCollectStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
-
-  const subscriptionService = SubscriptionServiceV2.getInstance();
 
   // Track click timers to distinguish single vs double clicks
   const clickTimersRef = useRef<Map<string, number>>(new Map());
@@ -56,7 +42,6 @@ export const ActionButtons = ({
       setI18nConfig(i18n.getConfig());
     };
     initI18n();
-    checkSubscriptionStatus();
 
     const selectlyInstance = (window as any).selectlyInstance;
     if (selectlyInstance) {
@@ -126,16 +111,6 @@ export const ActionButtons = ({
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [selectedText, onClose, onSelectionUpdate]);
 
-  const checkSubscriptionStatus = async () => {
-    try {
-      const isActive = await subscriptionService.isSubscriptionActive();
-      setIsSubscribed(isActive);
-    } catch (error) {
-      console.error('Failed to check subscription status:', error);
-      setIsSubscribed(false);
-    }
-  };
-
   const handleSingleClick = (buttonKey: string, event: React.MouseEvent) => {
     // Clear any existing timer for this button
     const existingTimer = clickTimersRef.current.get(buttonKey);
@@ -191,12 +166,9 @@ export const ActionButtons = ({
     }
 
     try {
-      await actionService.executeAction(actionKey, currentSelectedText, config);
-
-      // Update daily usage count after successful action
-      // if (config.isPremium && !isSubscribed) {
-      //   await updateDailyUsage()
-      // }
+      const resultPosition = selectlyInstance.calculateResultPosition();
+      console.debug(`[ActionButtons] Executing action ${actionKey} at position:`, resultPosition);
+      await actionService.executeAction(resultPosition, actionKey, currentSelectedText, config);
     } catch (error) {
       console.error(`Error performing ${actionKey}:`, error);
     }
@@ -206,8 +178,6 @@ export const ActionButtons = ({
       onClose();
     }
   };
-
-  if (!isVisible) return null;
 
   // Determine ordered keys
   const orderedKeys =
@@ -220,12 +190,6 @@ export const ActionButtons = ({
   orderedKeys.forEach((key) => {
     const config = userConfig.functions[key];
     if (!config?.enabled) return;
-
-    // Handle premium features logic
-    // if (config.isPremium && !isSubscribed) {
-    //   // For non-subscribed users, check if they have remaining daily usage
-    //   if (dailyUsage.remainingCount <= 0) return
-    // }
 
     if (key === 'open' && !isValidUrl(selectedText)) return;
     // Domain filtering: if displayDomains provided, ensure current hostname matches
@@ -252,13 +216,7 @@ export const ActionButtons = ({
       return;
     }
 
-    // Modify title for premium functions when user is not subscribed
-    let buttonTitle = config.title;
-    // if (config.isPremium && !isSubscribed) {
-    //   buttonTitle = `${config.title} (${dailyUsage.remainingCount}/${dailyUsage.dailyLimit})`
-    // }
-
-    const btn = { key, icon: <IconComponent size={18} />, title: buttonTitle };
+    const btn = { key, icon: <IconComponent size={18} />, title: config.title };
     if (config.collapsed) {
       collapsedButtons.push(btn);
     } else {

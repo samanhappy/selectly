@@ -983,6 +983,7 @@ export const StreamingResult = ({
               whiteSpace: 'nowrap',
               textOverflow: 'ellipsis',
               flex: 1,
+              height: '28px',
             }}
           >
             <span>{modelName || ''}</span>
