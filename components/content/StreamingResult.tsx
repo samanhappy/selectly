@@ -775,6 +775,7 @@ export const StreamingResult = ({
                   padding: '12px',
                   marginBottom: '8px',
                   cursor: 'text',
+                  userSelect: 'text',
                 }}
               >
                 <div
@@ -814,6 +815,7 @@ export const StreamingResult = ({
                     border: '1px solid rgba(0, 0, 0, 0.1)',
                     boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
                     cursor: 'text',
+                    userSelect: 'text',
                   }}
                 >
                   <MarkdownRenderer content={message.content} />
@@ -837,6 +839,7 @@ export const StreamingResult = ({
                     border: '1px solid rgba(0, 0, 0, 0.1)',
                     boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
                     cursor: 'text',
+                    userSelect: 'text',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}>
