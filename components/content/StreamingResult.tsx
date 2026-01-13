@@ -566,6 +566,10 @@ export const StreamingResult = ({
     }
   };
 
+  const hasFooterContent = Boolean(modelName) || (!isError && isComplete);
+  // Reserve footer space always (no layout jump); only reveal content on hover.
+  const isFooterVisible = hasFooterContent;
+
   return (
     <div
       ref={containerRef}
@@ -614,7 +618,7 @@ export const StreamingResult = ({
         style={{
           display: 'flex',
           alignItems: 'center',
-          padding: '4px 12px',
+          padding: '1px 12px',
           borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9))',
           borderRadius: '16px 16px 0 0',
@@ -628,8 +632,8 @@ export const StreamingResult = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '28px',
-            height: '28px',
+            width: '25px',
+            height: '25px',
             color: '#94a3b8',
             opacity: 0.4,
             transition: 'opacity 0.2s ease'
@@ -641,7 +645,7 @@ export const StreamingResult = ({
             (e.target as HTMLElement).style.opacity = '0.4'
           }}
         >
-          <GripVertical size={14} />
+          <GripVertical size={12} />
         </div> */}
         {/* Pin toggle moved to top-left */}
         {
@@ -654,8 +658,8 @@ export const StreamingResult = ({
               backdropFilter: 'blur(8px)',
               border: 'none',
               borderRadius: '8px',
-              width: '28px',
-              height: '28px',
+              width: '25px',
+              height: '25px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -665,7 +669,7 @@ export const StreamingResult = ({
               marginRight: '8px',
             }}
           >
-            <Pin size={14} style={{ transform: pinned ? 'scale(1.05)' : 'none' }} />
+            <Pin size={12} style={{ transform: pinned ? 'scale(1.05)' : 'none' }} />
           </button>
         }
 
@@ -687,12 +691,12 @@ export const StreamingResult = ({
                   console.warn(
                     `[StreamingResult] IconComponent is undefined for actionKey: ${actionKey}`
                   );
-                  return <Info size={18} />;
+                  return <Info size={14} />;
                 }
-                return <IconComponent size={18} />;
+                return <IconComponent size={14} />;
               })()
             ) : (
-              <Info size={18} />
+              <Info size={14} />
             )
           ) : (
             <div
@@ -730,8 +734,8 @@ export const StreamingResult = ({
             backdropFilter: 'blur(8px)',
             border: 'none',
             borderRadius: '8px',
-            width: '28px',
-            height: '28px',
+            width: '25px',
+            height: '25px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -740,7 +744,7 @@ export const StreamingResult = ({
             color: '#64748b',
           }}
         >
-          <X size={14} />
+          <X size={12} />
         </button>
       </div>
 
@@ -748,7 +752,7 @@ export const StreamingResult = ({
       <div
         ref={contentRef}
         style={{
-          padding: isDialogue ? '12px' : '12px',
+          padding: isDialogue ? '12px' : '8px 12px',
           fontSize: '14px',
           color: '#374151',
           lineHeight: '1.6',
@@ -949,7 +953,7 @@ export const StreamingResult = ({
                 opacity: inputValue.trim() && isComplete ? 1 : 0.6,
               }}
             >
-              <Send size={14} />
+              <Send size={12} />
             </button>
           </div>
         </div>
@@ -962,39 +966,51 @@ export const StreamingResult = ({
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '8px',
-          padding: '4px 12px',
+          padding: '1px 12px',
           borderTop: '1px solid rgba(0, 0, 0, 0.06)',
           background: 'rgba(255, 255, 255, 0.8)',
           borderRadius: isDialogue ? '0 0 16px 16px' : '0 0 16px 16px',
         }}
       >
-        {/* Status text */}
-        {modelName && (
+        {/* Status text (revealed on hover) */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '10px',
+            color: 'rgb(149 155 164)',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            flex: 1,
+            minWidth: 0,
+            opacity: isFooterVisible ? 1 : 0,
+            transform: isFooterVisible ? 'translateY(0)' : 'translateY(2px)',
+            transition: 'opacity 160ms ease, transform 160ms ease',
+            pointerEvents: 'none',
+          }}
+        >
+          {modelName && <span>{modelName || ''}</span>}
+          {/* ({startedAt ? `${(elapsedMs / 1000).toFixed(isComplete ? 1 : 0)}s` : ''}) */}
+          {/* <span style={{ opacity: 0.5 }}>•</span>
+          <span style={{ opacity: 0.5 }}>•</span> */}
+          {/* <span>
+            {'Cost'}: {typeof costUsd === 'number' ? `$${costUsd.toFixed(costUsd < 0.01 ? 4 : 3)}` : '--'}
+          </span> */}
+        </div>
+
+        {/* Footer actions (revealed on hover) */}
+        {!isError && isComplete && (
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '10px',
-              fontSize: '12px',
-              color: 'rgb(149 155 164)',
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
-              flex: 1,
+              opacity: isFooterVisible ? 1 : 0,
+              transform: isFooterVisible ? 'translateY(0)' : 'translateY(2px)',
+              transition: 'opacity 160ms ease, transform 160ms ease',
+              pointerEvents: isFooterVisible ? 'auto' : 'none',
             }}
           >
-            <span>{modelName || ''}</span>
-            {/* ({startedAt ? `${(elapsedMs / 1000).toFixed(isComplete ? 1 : 0)}s` : ''}) */}
-            {/* <span style={{ opacity: 0.5 }}>•</span>
-          <span style={{ opacity: 0.5 }}>•</span> */}
-            {/* <span>
-            {'Cost'}: {typeof costUsd === 'number' ? `$${costUsd.toFixed(costUsd < 0.01 ? 4 : 3)}` : '--'}
-          </span> */}
-          </div>
-        )}
-
-        {/* Footer actions */}
-        {!isError && isComplete && (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
             {actionKey === 'translate' && (
               <button
                 onClick={handleAddToDictionary}
@@ -1005,8 +1021,8 @@ export const StreamingResult = ({
                   backdropFilter: 'blur(8px)',
                   border: 'none',
                   borderRadius: '8px',
-                  width: '28px',
-                  height: '28px',
+                  width: '25px',
+                  height: '25px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1015,7 +1031,7 @@ export const StreamingResult = ({
                   color: dicStatus === 'success' ? '#22c55e' : '#64748b',
                 }}
               >
-                <BookmarkPlus size={14} />
+                <BookmarkPlus size={12} />
               </button>
             )}
             <button
@@ -1026,8 +1042,8 @@ export const StreamingResult = ({
                 backdropFilter: 'blur(8px)',
                 border: 'none',
                 borderRadius: '8px',
-                width: '28px',
-                height: '28px',
+                width: '25px',
+                height: '25px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1036,7 +1052,7 @@ export const StreamingResult = ({
                 color: copyStatus === 'success' ? '#22c55e' : '#64748b',
               }}
             >
-              <Copy size={14} />
+              <Copy size={12} />
             </button>
             {canPaste && onPaste && (
               <button
@@ -1047,8 +1063,8 @@ export const StreamingResult = ({
                   backdropFilter: 'blur(8px)',
                   border: 'none',
                   borderRadius: '8px',
-                  width: '28px',
-                  height: '28px',
+                  width: '25px',
+                  height: '25px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1057,7 +1073,7 @@ export const StreamingResult = ({
                   color: pasteStatus === 'success' ? '#22c55e' : '#64748b',
                 }}
               >
-                <ClipboardPaste size={14} />
+                <ClipboardPaste size={12} />
               </button>
             )}
           </div>
