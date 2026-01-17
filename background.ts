@@ -3,6 +3,7 @@ import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
 import { collectSyncService } from './core/services/collect-sync-service';
+import { highlightService } from './core/services/highlight-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
@@ -197,6 +198,64 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       })();
       return true; // Keep message channel open for async response
+    }
+    case 'addHighlight': {
+      const payload = request.payload as {
+        text: string;
+        url: string;
+        title: string;
+        hostname: string;
+        color: string;
+        anchor: {
+          startXPath: string;
+          startOffset: number;
+          endXPath: string;
+          endOffset: number;
+          text: string;
+          prefix?: string;
+          suffix?: string;
+        };
+        createdAt?: number;
+      };
+      (async () => {
+        try {
+          if (!payload || !payload.text?.trim()) {
+            sendResponse({ success: false, error: 'Empty payload' });
+            return;
+          }
+          const id = await highlightService.addItem({
+            text: payload.text.trim(),
+            url: payload.url,
+            title: payload.title,
+            hostname: payload.hostname,
+            color: payload.color,
+            anchor: payload.anchor,
+            created_at: payload.createdAt || Date.now(),
+          } as any);
+          sendResponse({ success: true, id });
+        } catch (err: any) {
+          console.error('Failed to save highlight:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'getHighlightsForUrl': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          if (!url) {
+            sendResponse({ success: false, error: 'Missing url' });
+            return;
+          }
+          const items = await highlightService.getItemsByUrl(url);
+          sendResponse({ success: true, items });
+        } catch (err: any) {
+          console.error('Failed to load highlights:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error', items: [] });
+        }
+      })();
+      return true;
     }
     case 'addDictionaryEntry': {
       const payload = request.payload as {

@@ -156,6 +156,8 @@ export const zh: I18nConfig = {
         isPremiumHelp: '启用后此功能需要激活高级订阅',
         searchEngine: '搜索引擎',
         searchEngineHelp: '选择用于搜索的搜索引擎',
+        highlightColor: '高亮颜色',
+        highlightColorHelp: '为高亮选择颜色',
       },
       editTitle: '编辑功能',
       searchEngines: {
@@ -250,6 +252,7 @@ export const zh: I18nConfig = {
     sidebar: {
       collections: '收藏',
       dictionary: '词典',
+      highlights: '高亮',
     },
     collections: {
       title: '收藏',
@@ -274,6 +277,19 @@ export const zh: I18nConfig = {
       csvHeaderTitle: '标题',
       csvHeaderHostname: '主机名',
       csvHeaderCreatedAt: '创建时间',
+    },
+    highlights: {
+      title: '高亮',
+      groups: '高亮分组',
+      search: '搜索',
+      searchPlaceholder: '搜索',
+      clearAll: '清空全部',
+      clearAllConfirm: '清空所有高亮？',
+      loading: '加载中...',
+      noHighlights: '还没有高亮。在任何页面选择文本并点击高亮按钮即可保存。',
+      copy: '复制',
+      delete: '删除',
+      visitPage: '访问页面',
     },
     general: {
       dataManagement: '数据管理',
@@ -388,6 +404,11 @@ export const zh: I18nConfig = {
     share: {
       title: '分享',
       description: '生成分享图片',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: '高亮',
+      description: '高亮选中文本',
       prompt: '{text}',
     },
   },

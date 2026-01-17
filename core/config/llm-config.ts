@@ -36,6 +36,7 @@ export interface FunctionConfig {
   requiresAI?: boolean;
   targetLanguage?: string;
   searchEngine?: 'google' | 'bing' | 'baidu';
+  highlightColor?: string;
 }
 
 export interface GeneralConfig {
@@ -289,6 +290,23 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         isBuiltIn: true,
         requiresAI: false,
       },
+      highlight: {
+        title: config.defaultFunctions.highlight.title,
+        description: config.defaultFunctions.highlight.description,
+        icon: 'highlighter',
+        model: 'default',
+        prompt: config.defaultFunctions.highlight.prompt,
+        autoExecute: false,
+        autoExecuteDomains: [],
+        autoCloseButtons: true,
+        autoCloseResult: true,
+        collapsed: false,
+        enabled: true,
+        displayDomains: [],
+        isBuiltIn: true,
+        requiresAI: false,
+        highlightColor: '#fff59d',
+      },
     },
     functionOrder: [
       'translate',
@@ -297,6 +315,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       'correct',
       'chat',
       'copy',
+      'highlight',
       'collect',
       'search',
       'open',
@@ -508,8 +527,9 @@ export class ConfigManager {
       'open',
       'chat',
       'share',
+      'highlight',
     ];
-    const nonAIKeys = ['copy', 'search', 'open', 'share'];
+    const nonAIKeys = ['copy', 'search', 'open', 'share', 'highlight'];
     // Ensure collect is treated as non-AI by default
     if (!nonAIKeys.includes('collect')) nonAIKeys.push('collect');
 

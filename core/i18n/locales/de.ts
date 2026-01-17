@@ -166,6 +166,8 @@ export const de: I18nConfig = {
         isPremiumHelp: 'Wenn aktiviert, erfordert diese Funktion ein aktives Premium-Abonnement',
         searchEngine: 'Suchmaschine',
         searchEngineHelp: 'Wählen Sie die Suchmaschine für Suchanfragen',
+        highlightColor: 'Hervorhebungsfarbe',
+        highlightColorHelp: 'Wählen Sie die Hervorhebungsfarbe für diese Aktion',
       },
       editTitle: 'Funktion bearbeiten',
       searchEngines: {
@@ -264,6 +266,7 @@ export const de: I18nConfig = {
     sidebar: {
       collections: 'Sammlungen',
       dictionary: 'Wörterbuch',
+      highlights: 'Highlights',
     },
     collections: {
       title: 'Sammlungen',
@@ -290,6 +293,19 @@ export const de: I18nConfig = {
       csvHeaderTitle: 'Titel',
       csvHeaderHostname: 'Hostname',
       csvHeaderCreatedAt: 'Erstellt am',
+    },
+    highlights: {
+      title: 'Highlights',
+      groups: 'Highlight-Gruppen',
+      search: 'Suchen',
+      searchPlaceholder: 'Suchen',
+      clearAll: 'Alle löschen',
+      clearAllConfirm: 'Alle Highlights löschen?',
+      loading: 'Wird geladen...',
+      noHighlights: 'Noch keine Highlights. Text auswählen und Highlight klicken.',
+      copy: 'Kopieren',
+      delete: 'Löschen',
+      visitPage: 'Seite besuchen',
     },
   },
 
@@ -390,6 +406,11 @@ export const de: I18nConfig = {
     share: {
       title: 'Teilen',
       description: 'Share-Bild generieren',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: 'Highlight',
+      description: 'Ausgewählten Text hervorheben',
       prompt: '{text}',
     },
   },

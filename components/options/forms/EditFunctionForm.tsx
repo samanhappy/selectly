@@ -76,6 +76,23 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
             />
           </div>
 
+          {functionKey === 'highlight' && (
+            <div className="sl-field">
+              <label className="sl-label">
+                {i18n.popup.functions.labels.highlightColor || 'Highlight Color'}
+              </label>
+              <input
+                className="sl-input"
+                type="color"
+                value={config.highlightColor || '#fff59d'}
+                onChange={(e) => onChange('highlightColor', e.target.value)}
+              />
+              {i18n.popup.functions.labels.highlightColorHelp && (
+                <div className="sl-helper">{i18n.popup.functions.labels.highlightColorHelp}</div>
+              )}
+            </div>
+          )}
+
           {config.isBuiltIn && (
             <div className="sl-field">
               <label className="sl-label">

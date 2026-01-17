@@ -30,6 +30,7 @@ export const PALETTE = {
 export type SidebarKey =
   | 'collected'
   | 'dictionary'
+  | 'highlights'
   | 'functions'
   | 'general'
   | 'llm'

@@ -66,6 +66,10 @@ export class ActionService {
       return this.handleShare(selectedText);
     }
 
+    if (actionKey === 'highlight') {
+      return this.handleHighlight(selectedText, config);
+    }
+
     // Handle chat function (dialogue mode)
     if (actionKey === 'chat') {
       return this.handleChat(selectedText, config);
@@ -467,6 +471,18 @@ export class ActionService {
       if (selectlyInstance && selectlyInstance.notifyShareError) {
         selectlyInstance.notifyShareError();
       }
+    }
+  }
+
+  private async handleHighlight(selectedText: string, config: FunctionConfig): Promise<void> {
+    try {
+      const selectlyInstance = (window as any).selectlyInstance;
+      if (!selectlyInstance || typeof selectlyInstance.applyHighlight !== 'function') {
+        return;
+      }
+      await selectlyInstance.applyHighlight(selectedText, config);
+    } catch (error) {
+      console.error('Highlight failed:', error);
     }
   }
 }

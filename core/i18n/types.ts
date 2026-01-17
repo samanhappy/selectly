@@ -159,6 +159,8 @@ export interface I18nConfig {
         isPremiumHelp?: string;
         searchEngine?: string;
         searchEngineHelp?: string;
+        highlightColor?: string;
+        highlightColorHelp?: string;
       };
       editTitle: string;
       searchEngines?: {
@@ -257,6 +259,7 @@ export interface I18nConfig {
     sidebar: {
       collections: string;
       dictionary: string;
+      highlights?: string;
     };
     collections: {
       title: string;
@@ -281,6 +284,19 @@ export interface I18nConfig {
       csvHeaderTitle: string;
       csvHeaderHostname: string;
       csvHeaderCreatedAt: string;
+    };
+    highlights?: {
+      title: string;
+      groups: string;
+      search: string;
+      searchPlaceholder: string;
+      clearAll: string;
+      clearAllConfirm: string;
+      loading: string;
+      noHighlights: string;
+      copy: string;
+      delete: string;
+      visitPage: string;
     };
     general?: {
       dataManagement: string;
@@ -384,6 +400,11 @@ export interface I18nConfig {
       prompt: string;
     };
     share: {
+      title: string;
+      description: string;
+      prompt: string;
+    };
+    highlight: {
       title: string;
       description: string;
       prompt: string;

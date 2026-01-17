@@ -163,6 +163,8 @@ export const ja: I18nConfig = {
           '有効にすると、この機能を使用するにはアクティブなプレミアムサブスクリプションが必要です',
         searchEngine: '検索エンジン',
         searchEngineHelp: '検索クエリに使用する検索エンジンを選択',
+        highlightColor: 'ハイライト色',
+        highlightColorHelp: 'このアクションのハイライト色を選択',
       },
       editTitle: '機能を編集',
       searchEngines: {
@@ -259,6 +261,7 @@ export const ja: I18nConfig = {
     sidebar: {
       collections: 'コレクション',
       dictionary: '辞書',
+      highlights: 'ハイライト',
     },
     collections: {
       title: 'コレクション',
@@ -285,6 +288,20 @@ export const ja: I18nConfig = {
       csvHeaderTitle: 'タイトル',
       csvHeaderHostname: 'ホスト名',
       csvHeaderCreatedAt: '作成日',
+    },
+    highlights: {
+      title: 'ハイライト',
+      groups: 'ハイライトグループ',
+      search: '検索',
+      searchPlaceholder: '検索',
+      clearAll: 'すべてクリア',
+      clearAllConfirm: 'すべてのハイライトを削除しますか？',
+      loading: '読み込み中...',
+      noHighlights:
+        'まだハイライトがありません。テキストを選択してハイライトをクリックしてください。',
+      copy: 'コピー',
+      delete: '削除',
+      visitPage: 'ページを訪問',
     },
   },
 
@@ -384,6 +401,11 @@ export const ja: I18nConfig = {
     share: {
       title: '共有',
       description: '共有画像を生成',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: 'ハイライト',
+      description: '選択したテキストをハイライト',
       prompt: '{text}',
     },
   },

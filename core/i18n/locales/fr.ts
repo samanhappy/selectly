@@ -167,6 +167,8 @@ export const fr: I18nConfig = {
           "Lorsqu'elle est activée, cette fonctionnalité nécessite un abonnement premium actif",
         searchEngine: 'Moteur de Recherche',
         searchEngineHelp: 'Choisissez le moteur de recherche à utiliser',
+        highlightColor: 'Couleur de Surlignage',
+        highlightColorHelp: 'Choisissez la couleur de surlignage pour cette action',
       },
       editTitle: 'Modifier la Fonction',
       searchEngines: {
@@ -264,6 +266,7 @@ export const fr: I18nConfig = {
     sidebar: {
       collections: 'Collection',
       dictionary: 'Dictionnaire',
+      highlights: 'Surlignages',
     },
     collections: {
       title: 'Collection',
@@ -290,6 +293,19 @@ export const fr: I18nConfig = {
       csvHeaderTitle: 'Titre',
       csvHeaderHostname: "Nom d'Hôte",
       csvHeaderCreatedAt: 'Créé le',
+    },
+    highlights: {
+      title: 'Surlignages',
+      groups: 'Groupes de Surlignages',
+      search: 'Rechercher',
+      searchPlaceholder: 'Rechercher',
+      clearAll: 'Tout Effacer',
+      clearAllConfirm: 'Effacer tous les surlignages ?',
+      loading: 'Chargement...',
+      noHighlights: 'Pas encore de surlignages. Sélectionnez du texte et cliquez sur surligner.',
+      copy: 'Copier',
+      delete: 'Supprimer',
+      visitPage: 'Visiter la page',
     },
   },
 
@@ -390,6 +406,11 @@ export const fr: I18nConfig = {
     share: {
       title: 'Partager',
       description: 'Générer une image de partage',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: 'Surligner',
+      description: 'Surligner le texte sélectionné',
       prompt: '{text}',
     },
   },

@@ -164,6 +164,8 @@ export const pt: I18nConfig = {
         isPremiumHelp: 'Quando habilitado, esta função requer uma assinatura premium ativa',
         searchEngine: 'Motor de Busca',
         searchEngineHelp: 'Escolha qual motor de busca usar para pesquisas',
+        highlightColor: 'Cor do Realce',
+        highlightColorHelp: 'Escolha a cor de realce para esta ação',
       },
       editTitle: 'Editar Função',
       searchEngines: {
@@ -261,6 +263,7 @@ export const pt: I18nConfig = {
     sidebar: {
       collections: 'Coleções',
       dictionary: 'Dicionário',
+      highlights: 'Destaques',
     },
     collections: {
       title: 'Coleções',
@@ -287,6 +290,19 @@ export const pt: I18nConfig = {
       csvHeaderTitle: 'Título',
       csvHeaderHostname: 'Hostname',
       csvHeaderCreatedAt: 'Criado Em',
+    },
+    highlights: {
+      title: 'Destaques',
+      groups: 'Grupos de Destaques',
+      search: 'Pesquisar',
+      searchPlaceholder: 'Pesquisar',
+      clearAll: 'Limpar Tudo',
+      clearAllConfirm: 'Limpar todos os destaques?',
+      loading: 'Carregando...',
+      noHighlights: 'Ainda não há destaques. Selecione texto e clique em destacar.',
+      copy: 'Copiar',
+      delete: 'Excluir',
+      visitPage: 'Visitar página',
     },
   },
 
@@ -387,6 +403,11 @@ export const pt: I18nConfig = {
     share: {
       title: 'Compartilhar',
       description: 'Gerar imagem de compartilhamento',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: 'Destacar',
+      description: 'Destacar texto selecionado',
       prompt: '{text}',
     },
   },
