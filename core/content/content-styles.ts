@@ -183,6 +183,11 @@ export const contentStyles = `
   .selectly-buttons .action-btn.btn-error {
     color: #ef4444;
   }
+
+  /* Remove highlight state styles */
+  .selectly-buttons .action-btn.btn-remove {
+    color: #f97316;
+  }
   
   /* Glass button common styles */
   .glass-button {
@@ -293,5 +298,6 @@ export const contentStyles = `
     /* Keep semantic states vivid on dark */
     .selectly-buttons .action-btn.btn-success { color: #22c55e; }
     .selectly-buttons .action-btn.btn-error { color: #ef4444; }
+    .selectly-buttons .action-btn.btn-remove { color: #f97316; }
   }
 `;

@@ -257,6 +257,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })();
       return true;
     }
+    case 'deleteHighlight': {
+      (async () => {
+        try {
+          const id = request.id as string;
+          if (!id) {
+            sendResponse({ success: false, error: 'Missing id' });
+            return;
+          }
+          await highlightService.deleteItem(id);
+          sendResponse({ success: true });
+        } catch (err: any) {
+          console.error('Failed to delete highlight:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
     case 'addDictionaryEntry': {
       const payload = request.payload as {
         source: string;

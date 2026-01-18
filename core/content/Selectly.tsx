@@ -217,6 +217,87 @@ export class Selectly {
     }
   }
 
+  private getClosestHighlightElement(node: Node | null): HTMLElement | null {
+    if (!node) return null;
+    const el = node instanceof HTMLElement ? node : node.parentElement;
+    if (!el || !el.closest) return null;
+    const highlightEl = el.closest('.selectly-highlight') as HTMLElement | null;
+    return highlightEl || null;
+  }
+
+  private getHighlightIdsInRange(range: Range): Set<string> {
+    const ids = new Set<string>();
+
+    const startHighlight = this.getClosestHighlightElement(range.startContainer);
+    if (startHighlight?.dataset?.selectlyHighlightId) {
+      ids.add(startHighlight.dataset.selectlyHighlightId);
+    }
+
+    const endHighlight = this.getClosestHighlightElement(range.endContainer);
+    if (endHighlight?.dataset?.selectlyHighlightId) {
+      ids.add(endHighlight.dataset.selectlyHighlightId);
+    }
+
+    const rootNode =
+      range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+        ? (range.commonAncestorContainer as Element)
+        : range.commonAncestorContainer.parentElement || document.body;
+
+    const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: (node) => {
+        if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_SKIP;
+        if (!node.classList.contains('selectly-highlight')) return NodeFilter.FILTER_SKIP;
+        try {
+          return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+        } catch {
+          return NodeFilter.FILTER_SKIP;
+        }
+      },
+    });
+
+    let node: Node | null;
+    while ((node = walker.nextNode())) {
+      const el = node as HTMLElement;
+      const id = el.dataset?.selectlyHighlightId;
+      if (id) ids.add(id);
+    }
+
+    return ids;
+  }
+
+  private unwrapHighlightElement(element: HTMLElement) {
+    const parent = element.parentNode;
+    if (!parent) return;
+    const textNode = document.createTextNode(element.textContent || '');
+    parent.replaceChild(textNode, element);
+    parent.normalize();
+  }
+
+  private async removeHighlightsByIds(highlightIds: Set<string>) {
+    if (highlightIds.size === 0) return;
+
+    highlightIds.forEach((id) => {
+      const nodes = document.querySelectorAll(`[data-selectly-highlight-id="${id}"]`);
+      nodes.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          this.unwrapHighlightElement(node);
+        }
+      });
+    });
+
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+
+    const deleteIds = Array.from(highlightIds).filter((id) => !id.startsWith('local-'));
+    await Promise.all(
+      deleteIds.map((id) =>
+        chrome.runtime.sendMessage({
+          action: 'deleteHighlight',
+          id,
+        })
+      )
+    );
+  }
+
   private findTextRange(text: string): Range | null {
     if (!text) return null;
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
@@ -670,6 +751,11 @@ export class Selectly {
     if (this.currentTarget && this.isEditableElement(this.currentTarget)) return;
 
     const range = selection.getRangeAt(0).cloneRange();
+    const highlightIdsInRange = this.getHighlightIdsInRange(range);
+    if (highlightIdsInRange.size > 0) {
+      await this.removeHighlightsByIds(highlightIdsInRange);
+      return;
+    }
     const anchor = this.serializeSelection(selectedText.trim(), selection);
     if (!anchor) return;
 
