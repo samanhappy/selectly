@@ -16,17 +16,17 @@ export const contentStyles = `
       filter: blur(0);
     }
   }
-  
+
   @keyframes sl-blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
   }
-  
+
   @keyframes sl-spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
-  
+
   @keyframes sl-ripple {
     0% {
       transform: scale(0);
@@ -37,22 +37,22 @@ export const contentStyles = `
       opacity: 0;
     }
   }
-  
+
   @keyframes sl-glow {
-    0%, 100% { 
-      box-shadow: 
+    0%, 100% {
+      box-shadow:
         0 0 5px rgba(96, 165, 250, 0.3),
         0 2px 10px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
-    50% { 
-      box-shadow: 
+    50% {
+      box-shadow:
         0 0 20px rgba(96, 165, 250, 0.6),
         0 2px 20px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
   }
-  
+
   @keyframes sl-fadeIn {
     from {
       opacity: 0;
@@ -61,7 +61,7 @@ export const contentStyles = `
       opacity: 1;
     }
   }
-  
+
   @keyframes sl-slideInScale {
     from {
       opacity: 0;
@@ -72,7 +72,7 @@ export const contentStyles = `
       transform: translateY(0) scale(1);
     }
   }
-  
+
   /* Glass morphism button base styles */
   .selectly-buttons .action-btn {
     all: unset;
@@ -90,7 +90,7 @@ export const contentStyles = `
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.1),
       inset 0 -1px 0 rgba(0, 0, 0, 0.1);
@@ -98,7 +98,7 @@ export const contentStyles = `
     animation-delay: var(--delay, 0s);
     animation-fill-mode: both;
   }
-  
+
   /* Neumorphism concave/convex effects */
   .selectly-buttons .action-btn::before {
     content: '';
@@ -108,40 +108,40 @@ export const contentStyles = `
     right: 0;
     bottom: 0;
     border-radius: 12px;
-    background: linear-gradient(145deg, 
-      rgba(255, 255, 255, 0.08) 0%, 
+    background: linear-gradient(145deg,
+      rgba(255, 255, 255, 0.08) 0%,
       rgba(255, 255, 255, 0.02) 50%,
       rgba(0, 0, 0, 0.05) 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-  
+
   /* Hover effects */
   .selectly-buttons .action-btn:hover {
     background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px) scale(1.05);
     color: #60a5fa;
-    box-shadow: 
+    box-shadow:
       0 8px 25px rgba(0, 0, 0, 0.25),
       0 0 20px rgba(96, 165, 250, 0.3),
       inset 0 0 0 rgba(255, 255, 255, 0.2),
       inset 0 0 0 rgba(0, 0, 0, 0.1);
   }
-  
+
   .selectly-buttons .action-btn:hover::before {
     opacity: 1;
   }
-  
+
   /* Click effects */
   .selectly-buttons .action-btn:active {
     transform: translateY(0) scale(0.98);
     background: rgba(255, 255, 255, 0.2);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.2),
       inset 0 2px 4px rgba(0, 0, 0, 0.1),
       inset 0 -1px 0 rgba(255, 255, 255, 0.1);
   }
-  
+
   /* Click ripple effect */
   .selectly-buttons .action-btn::after {
     content: '';
@@ -155,18 +155,18 @@ export const contentStyles = `
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
   }
-  
+
   .selectly-buttons .action-btn:active::after {
     width: 120px;
     height: 120px;
   animation: sl-ripple 0.6s ease-out;
   }
-  
+
   /* Selected state highlight gradient border */
   .selectly-buttons .action-btn.selected {
     background: rgba(96, 165, 250, 0.15);
     border: 2px solid transparent;
-    background-image: 
+    background-image:
       linear-gradient(rgba(20, 20, 20, 0.7), rgba(20, 20, 20, 0.7)),
       linear-gradient(135deg, #60a5fa, #a855f7, #ec4899);
     background-origin: border-box;
@@ -178,7 +178,7 @@ export const contentStyles = `
   .selectly-buttons .action-btn.btn-success {
     color: #22c55e;
   }
-  
+
   /* Copy error state styles */
   .selectly-buttons .action-btn.btn-error {
     color: #ef4444;
@@ -188,7 +188,7 @@ export const contentStyles = `
   .selectly-buttons .action-btn.btn-remove {
     color: #f97316;
   }
-  
+
   /* Glass button common styles */
   .glass-button {
     position: relative;
@@ -198,56 +198,56 @@ export const contentStyles = `
   .glass-button.btn-success {
     color: #22c55e;
   }
-  
+
   .glass-button:hover {
     background: rgba(0, 0, 0, 0.08) !important;
     border-color: rgba(0, 0, 0, 0.15) !important;
   }
-  
+
   .glass-button:active {
     transform: translateY(0) !important;
     background: rgba(0, 0, 0, 0.03) !important;
   }
-  
+
   .paste-btn:hover {
     background: rgba(0, 0, 0, 0.08) !important;
     border-color: rgba(0, 0, 0, 0.15) !important;
     transform: translateY(-1px);
-    box-shadow: 
+    box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
   }
-  
+
   .paste-btn:active {
     transform: translateY(0) !important;
     background: rgba(59, 130, 246, 0.08) !important;
   }
-  
+
   /* Streaming result window style optimization */
   .selectly-streaming-result {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
   }
-  
+
   /* Hide in certain special elements */
   input .selectly-buttons,
   textarea .selectly-buttons,
   [contenteditable] .selectly-buttons {
     display: none !important;
   }
-  
+
   /* Responsive design */
   @media (max-width: 480px) {
     .selectly-buttons {
       padding: 8px !important;
       gap: 4px !important;
     }
-    
+
     .selectly-buttons .action-btn {
       width: 40px !important;
       height: 40px !important;
     }
-    
+
     .selectly-streaming-result {
       min-width: 280px !important;
       max-width: calc(100vw - 40px) !important;
