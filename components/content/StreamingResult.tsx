@@ -619,7 +619,6 @@ export const StreamingResult = ({
           display: 'flex',
           alignItems: 'center',
           padding: '1px 12px',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9))',
           borderRadius: '16px 16px 0 0',
           cursor: isDragging ? 'grabbing' : 'grab',
@@ -967,7 +966,6 @@ export const StreamingResult = ({
           justifyContent: 'space-between',
           gap: '8px',
           padding: '1px 12px',
-          borderTop: '1px solid rgba(0, 0, 0, 0.06)',
           background: 'rgba(255, 255, 255, 0.8)',
           borderRadius: isDialogue ? '0 0 16px 16px' : '0 0 16px 16px',
         }}
