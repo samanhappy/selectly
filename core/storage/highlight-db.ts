@@ -21,7 +21,7 @@ export interface HighlightItem {
   url: string;
   hostname: string;
   title: string;
-  color: string;
+  color?: string;
   anchor: HighlightAnchor;
   created_at?: number;
   updated_at?: number;
@@ -73,7 +73,7 @@ class HighlightDB extends Dexie {
     return itemWithId.id;
   }
 
-  async updateItem(id: string, updates: HighlightItem) {
+  async updateItem(id: string, updates: Partial<HighlightItem>) {
     const now = Date.now();
     await this.items.update(id, {
       ...updates,

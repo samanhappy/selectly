@@ -13,9 +13,10 @@ import { PALETTE } from './constants';
 
 interface HighlightsPageProps {
   t: any; // i18n translations
+  highlightColor: string;
 }
 
-export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t }) => {
+export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColor }) => {
   const [items, setItems] = useState<HighlightItem[]>([]);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
@@ -142,7 +143,7 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t }) => {
                       >
                         <div
                           className="mt-1 h-3 w-3 rounded-sm border border-slate-200"
-                          style={{ backgroundColor: item.color || '#fff59d' }}
+                          style={{ backgroundColor: highlightColor || '#fff59d' }}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="whitespace-pre-wrap break-words text-lg leading-relaxed text-slate-800 font-serif">

@@ -426,7 +426,12 @@ const OptionsPage: React.FC = () => {
             />
             <div className="flex-1 overflow-y-auto">
               {active === 'collected' && <CollectionsPage t={t} />}
-              {active === 'highlights' && <HighlightsPage t={t} />}
+              {active === 'highlights' && (
+                <HighlightsPage
+                  t={t}
+                  highlightColor={userConfig.functions?.highlight?.highlightColor || '#fff59d'}
+                />
+              )}
               {active === 'dictionary' && <DictionaryPage t={t} />}
               {active === 'functions' && (
                 <FunctionsPage

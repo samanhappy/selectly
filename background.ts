@@ -205,7 +205,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         url: string;
         title: string;
         hostname: string;
-        color: string;
         anchor: {
           startXPath: string;
           startOffset: number;
@@ -228,7 +227,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             url: payload.url,
             title: payload.title,
             hostname: payload.hostname,
-            color: payload.color,
             anchor: payload.anchor,
             created_at: payload.createdAt || Date.now(),
           } as any);

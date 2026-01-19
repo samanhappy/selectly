@@ -774,7 +774,7 @@ export class Selectly {
     const url = window.location.href;
     const title = document.title || url;
     const hostname = window.location.hostname;
-    const color = config.highlightColor || '#fff59d';
+    const color = this.getHighlightColor(config);
 
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
       this.applyHighlightRange(range, `local-${Date.now()}`, color);
@@ -788,7 +788,6 @@ export class Selectly {
         url,
         title,
         hostname,
-        color,
         anchor,
         createdAt: Date.now(),
       },
@@ -818,7 +817,7 @@ export class Selectly {
         }
 
         const anchor = item.anchor;
-        const color = item.color || '#fff59d';
+        const color = this.getHighlightColor();
         let range: Range | null = null;
         if (anchor?.startXPath && anchor?.endXPath) {
           const startNode = this.resolveXPath(anchor.startXPath, document);
@@ -862,6 +861,7 @@ export class Selectly {
         if (changes.userConfig || changes.userInfo) {
           await this.loadConfig();
           await this.llmService.configure(this.userConfig.llm);
+          this.refreshHighlightColors();
         }
       });
     }
@@ -870,6 +870,22 @@ export class Selectly {
   private addStyles() {
     if (this.styleContent) return;
     this.styleContent = contentStyles;
+  }
+
+  private getHighlightColor(config?: FunctionConfig): string {
+    return (
+      config?.highlightColor || this.userConfig?.functions?.highlight?.highlightColor || '#fff59d'
+    );
+  }
+
+  private refreshHighlightColors() {
+    const color = this.getHighlightColor();
+    const nodes = document.querySelectorAll('.selectly-highlight');
+    nodes.forEach((node) => {
+      if (node instanceof HTMLElement) {
+        node.style.backgroundColor = color;
+      }
+    });
   }
 
   private handleTextSelection(event: MouseEvent | TouchEvent) {
