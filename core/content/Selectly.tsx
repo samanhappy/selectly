@@ -66,8 +66,10 @@ export class Selectly {
       if (current.nodeType === Node.TEXT_NODE) {
         const parent = current.parentNode;
         if (!parent) break;
-        const siblings = Array.from(parent.childNodes).filter((n) => n.nodeType === Node.TEXT_NODE);
-        const index = Math.max(1, siblings.indexOf(current) + 1);
+        const siblings = Array.from(parent.childNodes).filter(
+          (n) => n.nodeType === Node.TEXT_NODE
+        ) as ChildNode[];
+        const index = Math.max(1, siblings.indexOf(current as ChildNode) + 1);
         segments.unshift(`text()[${index}]`);
         current = parent;
         continue;
@@ -78,8 +80,8 @@ export class Selectly {
         const tag = el.tagName.toLowerCase();
         const siblings = Array.from(el.parentElement?.children || []).filter(
           (s) => s.tagName === el.tagName
-        );
-        const index = Math.max(1, siblings.indexOf(el) + 1);
+        ) as ChildNode[];
+        const index = Math.max(1, siblings.indexOf(el as ChildNode) + 1);
         segments.unshift(`${tag}[${index}]`);
         current = el.parentNode;
         continue;
@@ -177,6 +179,16 @@ export class Selectly {
   private collectTextNodesInRange(range: Range): Text[] {
     const nodes: Text[] = [];
     const root = range.commonAncestorContainer;
+    if (root.nodeType === Node.TEXT_NODE) {
+      const textNode = root as Text;
+      if (textNode.textContent?.trim() && !this.isInSelectlyUI(textNode)) {
+        const parent = textNode.parentElement;
+        if (!parent || !['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName)) {
+          nodes.push(textNode);
+        }
+      }
+      return nodes;
+    }
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
       acceptNode: (node) => {
         if (!(node as Text).textContent?.trim()) return NodeFilter.FILTER_REJECT;
