@@ -4,6 +4,7 @@ import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
 import { collectSyncService } from './core/services/collect-sync-service';
 import { highlightService } from './core/services/highlight-service';
+import { highlightSyncService } from './core/services/highlight-sync-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
@@ -68,6 +69,15 @@ chrome.runtime.onStartup.addListener(async () => {
   } catch (error) {
     console.warn('Collect sync service initialization failed:', error);
   }
+
+  // Initialize and start highlight sync service
+  try {
+    await highlightSyncService.initialize();
+    highlightSyncService.startPeriodicSync();
+    console.log('Highlight sync service started');
+  } catch (error) {
+    console.warn('Highlight sync service initialization failed:', error);
+  }
 });
 
 // Also run migration when extension is enabled/reloaded
@@ -95,6 +105,15 @@ chrome.runtime.onStartup.addListener(async () => {
     console.log('Collect sync service started on load');
   } catch (error) {
     console.warn('Collect sync service initialization failed on load:', error);
+  }
+
+  // Initialize and start highlight sync service
+  try {
+    await highlightSyncService.initialize();
+    highlightSyncService.startPeriodicSync();
+    console.log('Highlight sync service started on load');
+  } catch (error) {
+    console.warn('Highlight sync service initialization failed on load:', error);
   }
 })();
 
@@ -246,7 +265,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ success: false, error: 'Missing url' });
             return;
           }
-          const items = await highlightService.getItemsByUrl(url);
+          const items = await highlightService.getItemsByUrlWithOthers(url);
           sendResponse({ success: true, items });
         } catch (err: any) {
           console.error('Failed to load highlights:', err);

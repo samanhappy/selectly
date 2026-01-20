@@ -149,7 +149,8 @@ export class Selectly {
     start: number,
     end: number,
     highlightId: string,
-    color: string
+    color: string,
+    source: 'self' | 'others'
   ) {
     if (start >= end) return;
     const parent = node.parentNode;
@@ -162,9 +163,18 @@ export class Selectly {
     const span = document.createElement('span');
     span.className = 'selectly-highlight';
     span.dataset.selectlyHighlightId = highlightId;
-    span.style.backgroundColor = color;
-    span.style.padding = '0 2px';
-    span.style.borderRadius = '2px';
+    span.dataset.selectlyHighlightSource = source;
+    if (source === 'others') {
+      span.classList.add('selectly-highlight--others');
+      span.style.textDecoration = 'underline';
+      span.style.textDecorationThickness = '2px';
+      span.style.textDecorationColor = color;
+      span.style.backgroundColor = 'transparent';
+    } else {
+      span.style.backgroundColor = color;
+      span.style.padding = '0 2px';
+      span.style.borderRadius = '2px';
+    }
     // span.style.boxShadow = 'inset 0 -1px 0 rgba(0, 0, 0, 0.15)';
     span.textContent = middle;
 
@@ -212,7 +222,12 @@ export class Selectly {
     return nodes;
   }
 
-  private applyHighlightRange(range: Range, highlightId: string, color: string) {
+  private applyHighlightRange(
+    range: Range,
+    highlightId: string,
+    color: string,
+    source: 'self' | 'others' = 'self'
+  ) {
     const textNodes = this.collectTextNodesInRange(range);
     for (const node of textNodes) {
       if (this.isInSelectlyUI(node)) continue;
@@ -225,7 +240,7 @@ export class Selectly {
       if (node === range.endContainer) {
         end = range.endOffset;
       }
-      this.wrapTextSegment(node, start, end, highlightId, color);
+      this.wrapTextSegment(node, start, end, highlightId, color, source);
     }
   }
 
@@ -241,12 +256,18 @@ export class Selectly {
     const ids = new Set<string>();
 
     const startHighlight = this.getClosestHighlightElement(range.startContainer);
-    if (startHighlight?.dataset?.selectlyHighlightId) {
+    if (
+      startHighlight?.dataset?.selectlyHighlightId &&
+      startHighlight.dataset.selectlyHighlightSource !== 'others'
+    ) {
       ids.add(startHighlight.dataset.selectlyHighlightId);
     }
 
     const endHighlight = this.getClosestHighlightElement(range.endContainer);
-    if (endHighlight?.dataset?.selectlyHighlightId) {
+    if (
+      endHighlight?.dataset?.selectlyHighlightId &&
+      endHighlight.dataset.selectlyHighlightSource !== 'others'
+    ) {
       ids.add(endHighlight.dataset.selectlyHighlightId);
     }
 
@@ -271,7 +292,7 @@ export class Selectly {
     while ((node = walker.nextNode())) {
       const el = node as HTMLElement;
       const id = el.dataset?.selectlyHighlightId;
-      if (id) ids.add(id);
+      if (id && el.dataset?.selectlyHighlightSource !== 'others') ids.add(id);
     }
 
     return ids;
@@ -777,7 +798,7 @@ export class Selectly {
     const color = this.getHighlightColor(config);
 
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
-      this.applyHighlightRange(range, `local-${Date.now()}`, color);
+      this.applyHighlightRange(range, `local-${Date.now()}`, color, 'self');
       return;
     }
 
@@ -799,7 +820,7 @@ export class Selectly {
     }
 
     const highlightId = res?.id || `highlight-${Date.now()}`;
-    this.applyHighlightRange(range, highlightId, color);
+    this.applyHighlightRange(range, highlightId, color, 'self');
   }
 
   private async restoreHighlights() {
@@ -813,6 +834,10 @@ export class Selectly {
 
       for (const item of res.items) {
         if (!item?.id || document.querySelector(`[data-selectly-highlight-id="${item.id}"]`)) {
+          continue;
+        }
+
+        if (item.source === 'others' && (!item.others_count || item.others_count <= 1)) {
           continue;
         }
 
@@ -838,7 +863,12 @@ export class Selectly {
         }
 
         if (range) {
-          this.applyHighlightRange(range, item.id, color);
+          this.applyHighlightRange(
+            range,
+            item.id,
+            color,
+            item.source === 'others' ? 'others' : 'self'
+          );
         }
       }
     } catch (e) {
@@ -885,7 +915,14 @@ export class Selectly {
     const nodes = document.querySelectorAll('.selectly-highlight');
     nodes.forEach((node) => {
       if (node instanceof HTMLElement) {
-        node.style.backgroundColor = color;
+        if (node.dataset?.selectlyHighlightSource === 'others') {
+          node.style.textDecoration = 'underline';
+          node.style.textDecorationThickness = '2px';
+          node.style.textDecorationColor = color;
+          node.style.backgroundColor = 'transparent';
+        } else {
+          node.style.backgroundColor = color;
+        }
       }
     });
   }

@@ -14,6 +14,8 @@ export interface HighlightAnchor {
   suffix?: string;
 }
 
+export type HighlightSource = 'self' | 'others';
+
 export interface HighlightItem {
   id?: string;
   user_id?: string;
@@ -23,6 +25,9 @@ export interface HighlightItem {
   title: string;
   color?: string;
   anchor: HighlightAnchor;
+  source?: HighlightSource;
+  aggregate_id?: string;
+  others_count?: number;
   created_at?: number;
   updated_at?: number;
   deleted_at?: number;
@@ -47,6 +52,10 @@ class HighlightDB extends Dexie {
       items: 'id, url, hostname, created_at, updated_at, deleted_at',
     });
 
+    this.version(2).stores({
+      items: 'id, url, hostname, source, created_at, updated_at, deleted_at',
+    });
+
     this.items.mapToClass(Object);
   }
 
@@ -65,6 +74,7 @@ class HighlightDB extends Dexie {
     const itemWithId: HighlightItem = {
       ...item,
       id: uuidv4(),
+      source: item.source || 'self',
       created_at: now,
       updated_at: now,
     };
@@ -93,15 +103,28 @@ class HighlightDB extends Dexie {
   }
 
   async getAll() {
+    return this.getAllSelf();
+  }
+
+  async getAllSelf() {
     await authService.initialize();
     const user_id = authService.getState()?.user?.uuid;
     return this.items
-      .filter((item) => !item.deleted_at && (!user_id || !item.user_id || item.user_id === user_id))
+      .filter(
+        (item) =>
+          !item.deleted_at &&
+          item.source !== 'others' &&
+          (!user_id || !item.user_id || item.user_id === user_id)
+      )
       .sortBy('created_at')
       .then((items) => items.reverse());
   }
 
   async getByUrl(url: string) {
+    return this.getByUrlSelf(url);
+  }
+
+  async getByUrlSelf(url: string) {
     await authService.initialize();
     const user_id = authService.getState()?.user?.uuid;
     return this.items
@@ -109,7 +132,22 @@ class HighlightDB extends Dexie {
         (item) =>
           !item.deleted_at &&
           item.url === url &&
+          item.source !== 'others' &&
           (!user_id || !item.user_id || item.user_id === user_id)
+      )
+      .sortBy('created_at')
+      .then((items) => items.reverse());
+  }
+
+  async getByUrlIncludingOthers(url: string) {
+    await authService.initialize();
+    const user_id = authService.getState()?.user?.uuid;
+    return this.items
+      .filter(
+        (item) =>
+          !item.deleted_at &&
+          item.url === url &&
+          (item.source === 'others' || !user_id || !item.user_id || item.user_id === user_id)
       )
       .sortBy('created_at')
       .then((items) => items.reverse());
@@ -121,6 +159,38 @@ class HighlightDB extends Dexie {
 
   async getById(id: string) {
     return this.items.get(id);
+  }
+
+  async upsert(item: HighlightItem) {
+    await this.items.put(item);
+    this.notifyChange();
+  }
+
+  async batchUpsert(items: HighlightItem[]) {
+    await this.items.bulkPut(items);
+    this.notifyChange();
+  }
+
+  async replaceAggregatesForUrl(url: string, items: HighlightItem[]) {
+    const existing = await this.items
+      .filter((item) => item.url === url && item.source === 'others')
+      .toArray();
+
+    const nextIds = new Set(items.map((item) => item.id).filter(Boolean) as string[]);
+    const toDelete = existing
+      .filter((item) => item.id && !nextIds.has(item.id))
+      .map((item) => item.id!)
+      .filter(Boolean);
+
+    if (toDelete.length > 0) {
+      await this.items.bulkDelete(toDelete);
+    }
+
+    if (items.length > 0) {
+      await this.items.bulkPut(items);
+    }
+
+    this.notifyChange();
   }
 
   async softDelete(id: string) {
