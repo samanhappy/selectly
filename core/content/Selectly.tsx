@@ -165,7 +165,7 @@ export class Selectly {
     span.style.backgroundColor = color;
     span.style.padding = '0 2px';
     span.style.borderRadius = '2px';
-    span.style.boxShadow = 'inset 0 -1px 0 rgba(0, 0, 0, 0.15)';
+    // span.style.boxShadow = 'inset 0 -1px 0 rgba(0, 0, 0, 0.15)';
     span.textContent = middle;
 
     const frag = document.createDocumentFragment();
@@ -874,7 +874,9 @@ export class Selectly {
 
   private getHighlightColor(config?: FunctionConfig): string {
     return (
-      config?.highlightColor || this.userConfig?.functions?.highlight?.highlightColor || '#fff59d'
+      config?.highlightColor ||
+      this.userConfig?.functions?.highlight?.highlightColor ||
+      'rgba(255, 204, 0, 0.24)'
     );
   }
 

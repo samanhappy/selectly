@@ -84,7 +84,7 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
               <input
                 className="sl-input"
                 type="color"
-                value={config.highlightColor || '#fff59d'}
+                value={config.highlightColor || 'rgba(255, 204, 0, 0.24)'}
                 onChange={(e) => onChange('highlightColor', e.target.value)}
               />
               {i18n.popup.functions.labels.highlightColorHelp && (

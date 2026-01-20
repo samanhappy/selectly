@@ -131,7 +131,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       highlight: {
         title: config.defaultFunctions.highlight.title,
         description: config.defaultFunctions.highlight.description,
-        icon: 'pencilline',
+        icon: 'highlight',
         model: 'default',
         prompt: config.defaultFunctions.highlight.prompt,
         autoExecute: false,
@@ -143,7 +143,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: false,
-        highlightColor: '#fff59d',
+        highlightColor: 'rgba(255, 204, 0, 0.24)',
       },
       translate: {
         title: config.defaultFunctions.translate.title,

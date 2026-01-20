@@ -429,7 +429,9 @@ const OptionsPage: React.FC = () => {
               {active === 'highlights' && (
                 <HighlightsPage
                   t={t}
-                  highlightColor={userConfig.functions?.highlight?.highlightColor || '#fff59d'}
+                  highlightColor={
+                    userConfig.functions?.highlight?.highlightColor || 'rgba(255, 204, 0, 0.24)'
+                  }
                 />
               )}
               {active === 'dictionary' && <DictionaryPage t={t} />}

@@ -143,7 +143,7 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColo
                       >
                         <div
                           className="mt-1 h-3 w-3 rounded-sm border border-slate-200"
-                          style={{ backgroundColor: highlightColor || '#fff59d' }}
+                          style={{ backgroundColor: highlightColor || 'rgba(255, 204, 0, 0.24)' }}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="whitespace-pre-wrap break-words text-lg leading-relaxed text-slate-800 font-serif">

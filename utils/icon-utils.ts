@@ -26,7 +26,6 @@ import {
   ListTree,
   MessageCircle,
   Pencil,
-  PencilLine,
   PenTool,
   Quote,
   Scissors,
@@ -55,7 +54,6 @@ export const ICON_REGISTRY: Record<string, any> = {
   // Core defaults
   default: Sparkles,
   wand: Wand2,
-  pencilline: PencilLine,
   languages: Languages,
   search: Search,
   explain: Lightbulb,
