@@ -163,6 +163,9 @@ export const en: I18nConfig = {
         searchEngineHelp: 'Choose which search engine to use for search queries',
         highlightColor: 'Highlight Color',
         highlightColorHelp: 'Choose the highlight color for this action',
+        highlightColorPresets: 'Preset colors',
+        highlightColorCustom: 'Custom color',
+        highlightColorOpacity: 'Opacity',
       },
       editTitle: 'Edit Function',
       searchEngines: {

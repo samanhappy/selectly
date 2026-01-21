@@ -51,6 +51,8 @@ export interface UserConfig {
   functionOrder?: string[];
 }
 
+export const DEFAULT_HIGHLIGHT_COLOR = 'rgba(255, 204, 0, 0.24)';
+
 export const CLOUD_PROVIDER: LLMProvider = {
   id: 'cloud',
   name: 'Cloud',
@@ -143,7 +145,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: false,
-        highlightColor: 'rgba(255, 204, 0, 0.24)',
+        highlightColor: DEFAULT_HIGHLIGHT_COLOR,
       },
       translate: {
         title: config.defaultFunctions.translate.title,

@@ -24,6 +24,7 @@ import { getAuthStateFromBackground } from './core/auth/auth-background-bridge';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
+  DEFAULT_HIGHLIGHT_COLOR,
   type FunctionConfig,
   type GeneralConfig,
   type LLMConfig,
@@ -430,7 +431,7 @@ const OptionsPage: React.FC = () => {
                 <HighlightsPage
                   t={t}
                   highlightColor={
-                    userConfig.functions?.highlight?.highlightColor || 'rgba(255, 204, 0, 0.24)'
+                    userConfig.functions?.highlight?.highlightColor || DEFAULT_HIGHLIGHT_COLOR
                   }
                 />
               )}

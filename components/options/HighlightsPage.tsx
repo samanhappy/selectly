@@ -6,6 +6,7 @@
 import { Copy, Search, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { DEFAULT_HIGHLIGHT_COLOR } from '../../core/config/llm-config';
 import { highlightDB, type HighlightItem } from '../../core/storage/highlight-db';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -143,7 +144,7 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColo
                       >
                         <div
                           className="mt-1 h-3 w-3 rounded-sm border border-slate-200"
-                          style={{ backgroundColor: highlightColor || 'rgba(255, 204, 0, 0.24)' }}
+                          style={{ backgroundColor: highlightColor || DEFAULT_HIGHLIGHT_COLOR }}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="whitespace-pre-wrap break-words text-lg leading-relaxed text-slate-800 font-serif">

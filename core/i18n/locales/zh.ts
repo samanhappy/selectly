@@ -158,6 +158,9 @@ export const zh: I18nConfig = {
         searchEngineHelp: '选择用于搜索的搜索引擎',
         highlightColor: '高亮颜色',
         highlightColorHelp: '为高亮选择颜色',
+        highlightColorPresets: '基础配色',
+        highlightColorCustom: '自定义颜色',
+        highlightColorOpacity: '不透明度',
       },
       editTitle: '编辑功能',
       searchEngines: {

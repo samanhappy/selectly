@@ -2,9 +2,10 @@ import { Trash2 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
 import type { FunctionConfig } from '../../../core/config/llm-config';
-import { ConfigManager } from '../../../core/config/llm-config';
+import { ConfigManager, DEFAULT_HIGHLIGHT_COLOR } from '../../../core/config/llm-config';
 import { getActionIcon } from '../../../utils/icon-utils';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
+import { parseColorToRgba, rgbaToHex, rgbaToString, type RgbaColor } from './highlight-color-utils';
 import { IconSelector } from './IconSelector';
 
 interface EditFunctionFormProps {
@@ -31,6 +32,25 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
   const [localPrompt, setLocalPrompt] = useState(config.prompt || '');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const saveTimer = useRef<number | null>(null);
+
+  const highlightFallback: RgbaColor = { r: 255, g: 204, b: 0, a: 0.24 };
+  const highlightColorValue = config.highlightColor || DEFAULT_HIGHLIGHT_COLOR;
+  const currentHighlight = parseColorToRgba(highlightColorValue, highlightFallback);
+  const currentHighlightHex = rgbaToHex(currentHighlight);
+  const currentHighlightOpacity = currentHighlight.a;
+
+  const presetLabel = i18n.popup?.functions?.labels?.highlightColorPresets || 'Preset colors';
+  const customLabel = i18n.popup?.functions?.labels?.highlightColorCustom || 'Custom color';
+  const opacityLabel = i18n.popup?.functions?.labels?.highlightColorOpacity || 'Opacity';
+
+  const presetColors = [
+    { id: 'sun', name: 'Sunshine', color: DEFAULT_HIGHLIGHT_COLOR },
+    { id: 'mint', name: 'Mint', color: 'rgba(16, 185, 129, 0.22)' },
+    { id: 'sky', name: 'Sky', color: 'rgba(56, 189, 248, 0.22)' },
+    { id: 'lavender', name: 'Lavender', color: 'rgba(139, 92, 246, 0.22)' },
+    { id: 'rose', name: 'Rose', color: 'rgba(244, 63, 94, 0.2)' },
+    { id: 'peach', name: 'Peach', color: 'rgba(251, 146, 60, 0.22)' },
+  ];
 
   const configManager = ConfigManager.getInstance();
   const userConfig = configManager.getConfig();
@@ -81,12 +101,70 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
               <label className="sl-label">
                 {i18n.popup.functions.labels.highlightColor || 'Highlight Color'}
               </label>
-              <input
-                className="sl-input"
-                type="color"
-                value={config.highlightColor || 'rgba(255, 204, 0, 0.24)'}
-                onChange={(e) => onChange('highlightColor', e.target.value)}
-              />
+              <div className="flex flex-col gap-3">
+                <div className="text-xs font-medium text-slate-600">{presetLabel}</div>
+                <div className="flex flex-wrap gap-2">
+                  {presetColors.map((preset) => {
+                    const isSelected =
+                      rgbaToString(parseColorToRgba(preset.color, currentHighlight)) ===
+                      rgbaToString(currentHighlight);
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => onChange('highlightColor', preset.color)}
+                        className={`h-7 w-7 rounded border border-slate-200 transition-shadow ${
+                          isSelected ? 'ring-2 ring-slate-400' : 'hover:ring-2 hover:ring-slate-200'
+                        }`}
+                        style={{ backgroundColor: preset.color }}
+                        title={preset.name}
+                        aria-label={preset.name}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-xs font-medium text-slate-600">{customLabel}</div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      className="sl-input !h-8 !w-10 !p-0"
+                      type="color"
+                      value={currentHighlightHex}
+                      onChange={(e) => {
+                        const next = parseColorToRgba(e.target.value, currentHighlight);
+                        onChange(
+                          'highlightColor',
+                          rgbaToString({ ...next, a: currentHighlight.a })
+                        );
+                      }}
+                      aria-label={customLabel}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">{opacityLabel}</span>
+                      <input
+                        type="range"
+                        min={0.05}
+                        max={0.6}
+                        step={0.01}
+                        value={currentHighlightOpacity}
+                        onChange={(e) =>
+                          onChange(
+                            'highlightColor',
+                            rgbaToString({
+                              ...currentHighlight,
+                              a: Number(e.target.value),
+                            })
+                          )
+                        }
+                        aria-label={opacityLabel}
+                      />
+                      <span className="text-xs text-slate-500 w-10">
+                        {Math.round(currentHighlightOpacity * 100)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
               {i18n.popup.functions.labels.highlightColorHelp && (
                 <div className="sl-helper">{i18n.popup.functions.labels.highlightColorHelp}</div>
               )}

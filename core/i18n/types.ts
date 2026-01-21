@@ -161,6 +161,9 @@ export interface I18nConfig {
         searchEngineHelp?: string;
         highlightColor?: string;
         highlightColorHelp?: string;
+        highlightColorPresets?: string;
+        highlightColorCustom?: string;
+        highlightColorOpacity?: string;
       };
       editTitle: string;
       searchEngines?: {
