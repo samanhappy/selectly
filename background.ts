@@ -119,7 +119,12 @@ chrome.runtime.onStartup.addListener(async () => {
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
+  const resolvedAction =
+    typeof request === 'string'
+      ? request
+      : request?.action?.type || request?.action || request?.type || request?.event;
+
+  switch (resolvedAction) {
     case 'authenticate': {
       // Handle authentication request from popup
       (async () => {
@@ -359,7 +364,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     default:
-      sendResponse({ error: 'Unknown action' });
+      sendResponse({ error: 'Unknown action', action: resolvedAction });
   }
 });
 
