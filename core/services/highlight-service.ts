@@ -38,8 +38,9 @@ export class HighlightService {
   }
 
   async getItemsByUrlWithOthers(url: string): Promise<HighlightItem[]> {
-    await highlightSyncService.refreshAggregatesForUrl(url);
-    return await highlightDB.getByUrlIncludingOthers(url);
+    // await highlightSyncService.refreshAggregatesForUrl(url);
+    // return await highlightDB.getByUrlIncludingOthers(url);
+    return await highlightDB.getByUrl(url);
   }
 
   async sync(): Promise<void> {

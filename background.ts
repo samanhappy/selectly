@@ -270,7 +270,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ success: false, error: 'Missing url' });
             return;
           }
-          const items = await highlightService.getItemsByUrlWithOthers(url);
+          // const items = await highlightService.getItemsByUrlWithOthers(url);
+          const items = await highlightService.getItemsByUrl(url);
           sendResponse({ success: true, items });
         } catch (err: any) {
           console.error('Failed to load highlights:', err);
