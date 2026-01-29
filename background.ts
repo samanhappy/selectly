@@ -3,6 +3,8 @@ import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
 import { collectSyncService } from './core/services/collect-sync-service';
+import { highlightService } from './core/services/highlight-service';
+import { highlightSyncService } from './core/services/highlight-sync-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
@@ -67,6 +69,15 @@ chrome.runtime.onStartup.addListener(async () => {
   } catch (error) {
     console.warn('Collect sync service initialization failed:', error);
   }
+
+  // Initialize and start highlight sync service
+  try {
+    await highlightSyncService.initialize();
+    highlightSyncService.startPeriodicSync();
+    console.log('Highlight sync service started');
+  } catch (error) {
+    console.warn('Highlight sync service initialization failed:', error);
+  }
 });
 
 // Also run migration when extension is enabled/reloaded
@@ -95,11 +106,25 @@ chrome.runtime.onStartup.addListener(async () => {
   } catch (error) {
     console.warn('Collect sync service initialization failed on load:', error);
   }
+
+  // Initialize and start highlight sync service
+  try {
+    await highlightSyncService.initialize();
+    highlightSyncService.startPeriodicSync();
+    console.log('Highlight sync service started on load');
+  } catch (error) {
+    console.warn('Highlight sync service initialization failed on load:', error);
+  }
 })();
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
+  const resolvedAction =
+    typeof request === 'string'
+      ? request
+      : request?.action?.type || request?.action || request?.type || request?.event;
+
+  switch (resolvedAction) {
     case 'authenticate': {
       // Handle authentication request from popup
       (async () => {
@@ -198,6 +223,80 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })();
       return true; // Keep message channel open for async response
     }
+    case 'addHighlight': {
+      const payload = request.payload as {
+        text: string;
+        url: string;
+        title: string;
+        hostname: string;
+        anchor: {
+          startXPath: string;
+          startOffset: number;
+          endXPath: string;
+          endOffset: number;
+          text: string;
+          prefix?: string;
+          suffix?: string;
+        };
+        createdAt?: number;
+      };
+      (async () => {
+        try {
+          if (!payload || !payload.text?.trim()) {
+            sendResponse({ success: false, error: 'Empty payload' });
+            return;
+          }
+          const id = await highlightService.addItem({
+            text: payload.text.trim(),
+            url: payload.url,
+            title: payload.title,
+            hostname: payload.hostname,
+            anchor: payload.anchor,
+            created_at: payload.createdAt || Date.now(),
+          } as any);
+          sendResponse({ success: true, id });
+        } catch (err: any) {
+          console.error('Failed to save highlight:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'getHighlightsForUrl': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          if (!url) {
+            sendResponse({ success: false, error: 'Missing url' });
+            return;
+          }
+          // const items = await highlightService.getItemsByUrlWithOthers(url);
+          const items = await highlightService.getItemsByUrl(url);
+          sendResponse({ success: true, items });
+        } catch (err: any) {
+          console.error('Failed to load highlights:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error', items: [] });
+        }
+      })();
+      return true;
+    }
+    case 'deleteHighlight': {
+      (async () => {
+        try {
+          const id = request.id as string;
+          if (!id) {
+            sendResponse({ success: false, error: 'Missing id' });
+            return;
+          }
+          await highlightService.deleteItem(id);
+          sendResponse({ success: true });
+        } catch (err: any) {
+          console.error('Failed to delete highlight:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
     case 'addDictionaryEntry': {
       const payload = request.payload as {
         source: string;
@@ -266,7 +365,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     default:
-      sendResponse({ error: 'Unknown action' });
+      sendResponse({ error: 'Unknown action', action: resolvedAction });
   }
 });
 

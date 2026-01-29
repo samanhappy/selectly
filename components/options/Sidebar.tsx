@@ -10,6 +10,7 @@ import {
   BookOpen,
   Bot,
   Crown,
+  Highlighter,
   PanelLeftClose,
   PanelLeftOpen,
   Settings as SettingsIcon,
@@ -190,8 +191,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onNavigate('llm')}
           />
         </div>
-        <div className="mt-2 border-t border-slate-200" />
-        <div className="flex justify-center pt-2">
+        <div className="border-t border-slate-200" />
+        <div className="flex justify-center">
+          <SidebarItem
+            icon={<Highlighter className="h-4 w-4" />}
+            label={t.options?.sidebar.highlights || 'Highlights'}
+            collapsed={collapsed}
+            active={active === 'highlights'}
+            onClick={() => onNavigate('highlights')}
+          />
+        </div>
+        <div className="flex justify-center">
           <SidebarItem
             icon={<Bookmark className="h-4 w-4" />}
             label={t.options?.sidebar.collections || 'Collection'}
@@ -209,7 +219,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onNavigate('dictionary')}
           />
         </div>
-        <div className="mt-2 border-t border-slate-200" />
+        <div className="border-t border-slate-200" />
         <div className="flex justify-center">
           <SidebarItem
             icon={<SettingsIcon className="h-4 w-4" />}

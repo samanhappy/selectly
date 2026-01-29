@@ -137,6 +137,7 @@ export const getActionIcon = (actionKey: string) => {
     copy: Copy,
     open: ExternalLink,
     share: Share,
+    highlight: Highlighter,
     default: Sparkles,
   };
 

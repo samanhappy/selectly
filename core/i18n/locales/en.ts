@@ -161,6 +161,11 @@ export const en: I18nConfig = {
         isPremiumHelp: 'When enabled, this function requires an active premium subscription to use',
         searchEngine: 'Search Engine',
         searchEngineHelp: 'Choose which search engine to use for search queries',
+        highlightColor: 'Highlight Color',
+        highlightColorHelp: 'Choose the highlight color for this action',
+        highlightColorPresets: 'Preset colors',
+        highlightColorCustom: 'Custom color',
+        highlightColorOpacity: 'Opacity',
       },
       editTitle: 'Edit Function',
       searchEngines: {
@@ -257,6 +262,7 @@ export const en: I18nConfig = {
     sidebar: {
       collections: 'Collection',
       dictionary: 'Dictionary',
+      highlights: 'Highlights',
     },
     collections: {
       title: 'Collection',
@@ -283,6 +289,19 @@ export const en: I18nConfig = {
       csvHeaderTitle: 'Title',
       csvHeaderHostname: 'Hostname',
       csvHeaderCreatedAt: 'Created At',
+    },
+    highlights: {
+      title: 'Highlights',
+      groups: 'Highlight Groups',
+      search: 'Search',
+      searchPlaceholder: 'Search',
+      clearAll: 'Clear All',
+      clearAllConfirm: 'Clear all highlights?',
+      loading: 'Loading...',
+      noHighlights: 'No highlights yet. Select text on any page and click the highlight button.',
+      copy: 'Copy',
+      delete: 'Delete',
+      visitPage: 'Visit page',
     },
     general: {
       dataManagement: 'Data Management',
@@ -401,6 +420,11 @@ export const en: I18nConfig = {
     share: {
       title: 'Share',
       description: 'Generate share image',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: 'Highlight',
+      description: 'Highlight selected text',
       prompt: '{text}',
     },
   },

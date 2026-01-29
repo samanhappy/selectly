@@ -165,6 +165,8 @@ export const es: I18nConfig = {
           'Cuando esté habilitado, esta función requiere una suscripción premium activa',
         searchEngine: 'Motor de Búsqueda',
         searchEngineHelp: 'Elige qué motor de búsqueda usar para las consultas',
+        highlightColor: 'Color de Resaltado',
+        highlightColorHelp: 'Elige el color de resaltado para esta acción',
       },
       editTitle: 'Editar Función',
       searchEngines: {
@@ -262,6 +264,7 @@ export const es: I18nConfig = {
     sidebar: {
       collections: 'Colecciones',
       dictionary: 'Diccionario',
+      highlights: 'Resaltados',
     },
     collections: {
       title: 'Colecciones',
@@ -288,6 +291,19 @@ export const es: I18nConfig = {
       csvHeaderTitle: 'Título',
       csvHeaderHostname: 'Nombre de Host',
       csvHeaderCreatedAt: 'Creado En',
+    },
+    highlights: {
+      title: 'Resaltados',
+      groups: 'Grupos de Resaltados',
+      search: 'Buscar',
+      searchPlaceholder: 'Buscar',
+      clearAll: 'Limpiar Todo',
+      clearAllConfirm: '¿Limpiar todos los resaltados?',
+      loading: 'Cargando...',
+      noHighlights: 'Aún no hay resaltados. Selecciona texto y haz clic en resaltar.',
+      copy: 'Copiar',
+      delete: 'Eliminar',
+      visitPage: 'Visitar página',
     },
   },
 
@@ -388,6 +404,11 @@ export const es: I18nConfig = {
     share: {
       title: 'Compartir',
       description: 'Generar imagen para compartir',
+      prompt: '{text}',
+    },
+    highlight: {
+      title: 'Resaltar',
+      description: 'Resaltar texto seleccionado',
       prompt: '{text}',
     },
   },

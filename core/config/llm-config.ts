@@ -36,6 +36,7 @@ export interface FunctionConfig {
   requiresAI?: boolean;
   targetLanguage?: string;
   searchEngine?: 'google' | 'bing' | 'baidu';
+  highlightColor?: string;
 }
 
 export interface GeneralConfig {
@@ -49,6 +50,8 @@ export interface UserConfig {
   functions: Record<string, FunctionConfig>;
   functionOrder?: string[];
 }
+
+export const DEFAULT_HIGHLIGHT_COLOR = 'rgba(255, 204, 0, 0.24)';
 
 export const CLOUD_PROVIDER: LLMProvider = {
   id: 'cloud',
@@ -127,6 +130,23 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       providers,
     },
     functions: {
+      highlight: {
+        title: config.defaultFunctions.highlight.title,
+        description: config.defaultFunctions.highlight.description,
+        icon: 'highlight',
+        model: 'default',
+        prompt: config.defaultFunctions.highlight.prompt,
+        autoExecute: false,
+        autoExecuteDomains: [],
+        autoCloseButtons: true,
+        autoCloseResult: true,
+        collapsed: false,
+        enabled: true,
+        displayDomains: [],
+        isBuiltIn: true,
+        requiresAI: false,
+        highlightColor: DEFAULT_HIGHLIGHT_COLOR,
+      },
       translate: {
         title: config.defaultFunctions.translate.title,
         description: config.defaultFunctions.translate.description,
@@ -291,6 +311,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       },
     },
     functionOrder: [
+      'highlight',
       'translate',
       'polish',
       'explain',
@@ -508,8 +529,9 @@ export class ConfigManager {
       'open',
       'chat',
       'share',
+      'highlight',
     ];
-    const nonAIKeys = ['copy', 'search', 'open', 'share'];
+    const nonAIKeys = ['copy', 'search', 'open', 'share', 'highlight'];
     // Ensure collect is treated as non-AI by default
     if (!nonAIKeys.includes('collect')) nonAIKeys.push('collect');
 

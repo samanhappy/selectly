@@ -15,6 +15,7 @@ import { GeneralSettingsForm } from './components/options/forms/GeneralSettingsF
 import { ProviderConfigForm } from './components/options/forms/ProviderConfigForm';
 import { FunctionsPage } from './components/options/FunctionsPage';
 import { GeneralPage } from './components/options/GeneralPage';
+import { HighlightsPage } from './components/options/HighlightsPage';
 import { LLMPage } from './components/options/LLMPage';
 import { OptionsHeader } from './components/options/OptionsHeader';
 import { Sidebar } from './components/options/Sidebar';
@@ -23,6 +24,7 @@ import { getAuthStateFromBackground } from './core/auth/auth-background-bridge';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
+  DEFAULT_HIGHLIGHT_COLOR,
   type FunctionConfig,
   type GeneralConfig,
   type LLMConfig,
@@ -425,6 +427,14 @@ const OptionsPage: React.FC = () => {
             />
             <div className="flex-1 overflow-y-auto">
               {active === 'collected' && <CollectionsPage t={t} />}
+              {active === 'highlights' && (
+                <HighlightsPage
+                  t={t}
+                  highlightColor={
+                    userConfig.functions?.highlight?.highlightColor || DEFAULT_HIGHLIGHT_COLOR
+                  }
+                />
+              )}
               {active === 'dictionary' && <DictionaryPage t={t} />}
               {active === 'functions' && (
                 <FunctionsPage

@@ -43,6 +43,7 @@ export const ActionButtons = ({
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [collectStatus, setCollectStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [isSelectionHighlighted, setIsSelectionHighlighted] = useState(false);
 
   const subscriptionService = SubscriptionServiceV2.getInstance();
 
@@ -120,11 +121,18 @@ export const ActionButtons = ({
           onSelectionUpdate(newSelectedText);
         }
       }
+
+      setIsSelectionHighlighted(checkSelectionHasHighlight(selection));
     };
 
     document.addEventListener('selectionchange', handleSelectionChange);
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [selectedText, onClose, onSelectionUpdate]);
+
+  useEffect(() => {
+    const selection = window.getSelection();
+    setIsSelectionHighlighted(checkSelectionHasHighlight(selection));
+  }, [selectedText]);
 
   const checkSubscriptionStatus = async () => {
     try {
@@ -247,6 +255,10 @@ export const ActionButtons = ({
     let IconComponent =
       config.icon && isValidIconKey(config.icon) ? getActionIcon(config.icon) : getActionIcon(key);
 
+    if (key === 'highlight' && isSelectionHighlighted) {
+      IconComponent = getActionIcon('eraser');
+    }
+
     if (!IconComponent) {
       console.warn(`[ActionButtons] IconComponent is undefined for key: ${key}`);
       return;
@@ -309,7 +321,13 @@ export const ActionButtons = ({
       }}
     >
       {visibleButtons.map((button, index) => {
-        let className = calcClass(button, copyStatus, collectStatus, shareStatus);
+        let className = calcClass(
+          button,
+          copyStatus,
+          collectStatus,
+          shareStatus,
+          isSelectionHighlighted
+        );
         return (
           <button
             key={button.key}
@@ -371,7 +389,13 @@ export const ActionButtons = ({
               }}
             >
               {collapsedButtons.map((btn) => {
-                let className = calcClass(btn, copyStatus, collectStatus, shareStatus);
+                let className = calcClass(
+                  btn,
+                  copyStatus,
+                  collectStatus,
+                  shareStatus,
+                  isSelectionHighlighted
+                );
                 return (
                   <button
                     key={btn.key}
@@ -410,7 +434,8 @@ function calcClass(
   btn: { key: string; icon: JSX.Element; title: string },
   copyStatus: string,
   collectStatus: string,
-  shareStatus: string
+  shareStatus: string,
+  isSelectionHighlighted: boolean
 ) {
   let className = 'action-btn';
   if (btn.key === 'copy') {
@@ -431,6 +456,45 @@ function calcClass(
     } else if (shareStatus === 'error') {
       className += ' btn-error';
     }
+  } else if (btn.key === 'highlight') {
+    if (isSelectionHighlighted) {
+      className += ' btn-remove';
+    }
   }
   return className;
+}
+
+function checkSelectionHasHighlight(selection: Selection | null): boolean {
+  if (!selection || selection.rangeCount === 0) return false;
+  const range = selection.getRangeAt(0);
+  if (range.collapsed) return false;
+
+  const getClosestHighlight = (node: Node | null): HTMLElement | null => {
+    if (!node) return null;
+    const el = node instanceof HTMLElement ? node : node.parentElement;
+    if (!el || !el.closest) return null;
+    return el.closest('.selectly-highlight') as HTMLElement | null;
+  };
+
+  if (getClosestHighlight(range.startContainer)) return true;
+  if (getClosestHighlight(range.endContainer)) return true;
+
+  const rootNode =
+    range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+      ? (range.commonAncestorContainer as Element)
+      : range.commonAncestorContainer.parentElement || document.body;
+
+  const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ELEMENT, {
+    acceptNode: (node) => {
+      if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_SKIP;
+      if (!node.classList.contains('selectly-highlight')) return NodeFilter.FILTER_SKIP;
+      try {
+        return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+      } catch {
+        return NodeFilter.FILTER_SKIP;
+      }
+    },
+  });
+
+  return !!walker.nextNode();
 }

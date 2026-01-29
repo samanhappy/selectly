@@ -115,7 +115,7 @@ class CollectDB extends Dexie {
   }
 
   async updateUserId(id: string) {
-    const user_id = authService.getState()?.user?.id;
+    const user_id = authService.getState()?.user?.uuid;
     if (!user_id) return;
 
     const item = await this.items.get(id);

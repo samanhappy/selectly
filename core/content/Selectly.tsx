@@ -5,7 +5,12 @@ import SubscriptionServiceV2 from '~core/services/subscription-service-v2';
 import { ActionButtons } from '../../components/content/ActionButtons';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
-import { ConfigManager, DEFAULT_CONFIG, type UserConfig } from '../config/llm-config';
+import {
+  ConfigManager,
+  DEFAULT_CONFIG,
+  type FunctionConfig,
+  type UserConfig,
+} from '../config/llm-config';
 import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
@@ -51,6 +56,307 @@ export class Selectly {
 
   constructor() {
     this.init();
+  }
+
+  private createXPath(node: Node): string {
+    const segments: string[] = [];
+    let current: Node | null = node;
+
+    while (current && current.nodeType !== Node.DOCUMENT_NODE) {
+      if (current.nodeType === Node.TEXT_NODE) {
+        const parent = current.parentNode;
+        if (!parent) break;
+        const siblings = Array.from(parent.childNodes).filter(
+          (n) => n.nodeType === Node.TEXT_NODE
+        ) as ChildNode[];
+        const index = Math.max(1, siblings.indexOf(current as ChildNode) + 1);
+        segments.unshift(`text()[${index}]`);
+        current = parent;
+        continue;
+      }
+
+      if (current.nodeType === Node.ELEMENT_NODE) {
+        const el = current as Element;
+        const tag = el.tagName.toLowerCase();
+        const siblings = Array.from(el.parentElement?.children || []).filter(
+          (s) => s.tagName === el.tagName
+        ) as ChildNode[];
+        const index = Math.max(1, siblings.indexOf(el as ChildNode) + 1);
+        segments.unshift(`${tag}[${index}]`);
+        current = el.parentNode;
+        continue;
+      }
+
+      current = current.parentNode;
+    }
+
+    return '/' + segments.join('/');
+  }
+
+  private resolveXPath(path: string, doc: Document): Node | null {
+    try {
+      const result = doc.evaluate(path, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+      return result.singleNodeValue;
+    } catch {
+      return null;
+    }
+  }
+
+  private isInSelectlyUI(node: Node): boolean {
+    const el = node.parentElement || (node as any);
+    if (!el || !(el as HTMLElement).closest) return false;
+    return !!(el as HTMLElement).closest(
+      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight'
+    );
+  }
+
+  private serializeSelection(
+    selectedText: string,
+    selection: Selection
+  ): {
+    startXPath: string;
+    startOffset: number;
+    endXPath: string;
+    endOffset: number;
+    text: string;
+    prefix?: string;
+    suffix?: string;
+  } | null {
+    if (!selection || selection.rangeCount === 0) return null;
+    const range = selection.getRangeAt(0);
+    const startNode = range.startContainer;
+    const endNode = range.endContainer;
+    const startXPath = this.createXPath(startNode);
+    const endXPath = this.createXPath(endNode);
+    const startText = startNode.textContent || '';
+    const endText = endNode.textContent || '';
+    const prefixStart = Math.max(0, range.startOffset - 20);
+    const suffixEnd = Math.min(endText.length, range.endOffset + 20);
+
+    return {
+      startXPath,
+      startOffset: range.startOffset,
+      endXPath,
+      endOffset: range.endOffset,
+      text: selectedText,
+      prefix: startText.slice(prefixStart, range.startOffset),
+      suffix: endText.slice(range.endOffset, suffixEnd),
+    };
+  }
+
+  private wrapTextSegment(
+    node: Text,
+    start: number,
+    end: number,
+    highlightId: string,
+    color: string,
+    source: 'self' | 'others'
+  ) {
+    if (start >= end) return;
+    const parent = node.parentNode;
+    if (!parent) return;
+    const text = node.textContent || '';
+    const before = text.slice(0, start);
+    const middle = text.slice(start, end);
+    const after = text.slice(end);
+
+    const span = document.createElement('span');
+    span.className = 'selectly-highlight';
+    span.dataset.selectlyHighlightId = highlightId;
+    span.dataset.selectlyHighlightSource = source;
+    if (source === 'others') {
+      span.classList.add('selectly-highlight--others');
+      span.style.textDecoration = 'underline';
+      span.style.textDecorationThickness = '2px';
+      span.style.textDecorationColor = color;
+      span.style.backgroundColor = 'transparent';
+    } else {
+      span.style.backgroundColor = color;
+      span.style.padding = '0 2px';
+      span.style.borderRadius = '2px';
+    }
+    // span.style.boxShadow = 'inset 0 -1px 0 rgba(0, 0, 0, 0.15)';
+    span.textContent = middle;
+
+    const frag = document.createDocumentFragment();
+    if (before) frag.appendChild(document.createTextNode(before));
+    frag.appendChild(span);
+    if (after) frag.appendChild(document.createTextNode(after));
+
+    parent.replaceChild(frag, node);
+  }
+
+  private collectTextNodesInRange(range: Range): Text[] {
+    const nodes: Text[] = [];
+    const root = range.commonAncestorContainer;
+    if (root.nodeType === Node.TEXT_NODE) {
+      const textNode = root as Text;
+      if (textNode.textContent?.trim() && !this.isInSelectlyUI(textNode)) {
+        const parent = textNode.parentElement;
+        if (!parent || !['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName)) {
+          nodes.push(textNode);
+        }
+      }
+      return nodes;
+    }
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => {
+        if (!(node as Text).textContent?.trim()) return NodeFilter.FILTER_REJECT;
+        if (this.isInSelectlyUI(node)) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (parent && ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        try {
+          return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        } catch {
+          return NodeFilter.FILTER_REJECT;
+        }
+      },
+    });
+
+    let node: Node | null;
+    while ((node = walker.nextNode())) {
+      nodes.push(node as Text);
+    }
+    return nodes;
+  }
+
+  private applyHighlightRange(
+    range: Range,
+    highlightId: string,
+    color: string,
+    source: 'self' | 'others' = 'self'
+  ) {
+    const textNodes = this.collectTextNodesInRange(range);
+    for (const node of textNodes) {
+      if (this.isInSelectlyUI(node)) continue;
+      const text = node.textContent || '';
+      let start = 0;
+      let end = text.length;
+      if (node === range.startContainer) {
+        start = range.startOffset;
+      }
+      if (node === range.endContainer) {
+        end = range.endOffset;
+      }
+      this.wrapTextSegment(node, start, end, highlightId, color, source);
+    }
+  }
+
+  private getClosestHighlightElement(node: Node | null): HTMLElement | null {
+    if (!node) return null;
+    const el = node instanceof HTMLElement ? node : node.parentElement;
+    if (!el || !el.closest) return null;
+    const highlightEl = el.closest('.selectly-highlight') as HTMLElement | null;
+    return highlightEl || null;
+  }
+
+  private getHighlightIdsInRange(range: Range): Set<string> {
+    const ids = new Set<string>();
+
+    const startHighlight = this.getClosestHighlightElement(range.startContainer);
+    if (
+      startHighlight?.dataset?.selectlyHighlightId &&
+      startHighlight.dataset.selectlyHighlightSource !== 'others'
+    ) {
+      ids.add(startHighlight.dataset.selectlyHighlightId);
+    }
+
+    const endHighlight = this.getClosestHighlightElement(range.endContainer);
+    if (
+      endHighlight?.dataset?.selectlyHighlightId &&
+      endHighlight.dataset.selectlyHighlightSource !== 'others'
+    ) {
+      ids.add(endHighlight.dataset.selectlyHighlightId);
+    }
+
+    const rootNode =
+      range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE
+        ? (range.commonAncestorContainer as Element)
+        : range.commonAncestorContainer.parentElement || document.body;
+
+    const walker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: (node) => {
+        if (!(node instanceof HTMLElement)) return NodeFilter.FILTER_SKIP;
+        if (!node.classList.contains('selectly-highlight')) return NodeFilter.FILTER_SKIP;
+        try {
+          return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+        } catch {
+          return NodeFilter.FILTER_SKIP;
+        }
+      },
+    });
+
+    let node: Node | null;
+    while ((node = walker.nextNode())) {
+      const el = node as HTMLElement;
+      const id = el.dataset?.selectlyHighlightId;
+      if (id && el.dataset?.selectlyHighlightSource !== 'others') ids.add(id);
+    }
+
+    return ids;
+  }
+
+  private unwrapHighlightElement(element: HTMLElement) {
+    const parent = element.parentNode;
+    if (!parent) return;
+    const textNode = document.createTextNode(element.textContent || '');
+    parent.replaceChild(textNode, element);
+    parent.normalize();
+  }
+
+  private async removeHighlightsByIds(highlightIds: Set<string>) {
+    if (highlightIds.size === 0) return;
+
+    highlightIds.forEach((id) => {
+      const nodes = document.querySelectorAll(`[data-selectly-highlight-id="${id}"]`);
+      nodes.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          this.unwrapHighlightElement(node);
+        }
+      });
+    });
+
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+
+    const deleteIds = Array.from(highlightIds).filter((id) => !id.startsWith('local-'));
+    await Promise.all(
+      deleteIds.map((id) =>
+        chrome.runtime.sendMessage({
+          action: 'deleteHighlight',
+          id,
+        })
+      )
+    );
+  }
+
+  private findTextRange(text: string): Range | null {
+    if (!text) return null;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => {
+        if (!(node as Text).textContent?.trim()) return NodeFilter.FILTER_REJECT;
+        if (this.isInSelectlyUI(node)) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (parent && ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName)) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+
+    let node: Node | null;
+    while ((node = walker.nextNode())) {
+      const content = node.textContent || '';
+      const idx = content.indexOf(text);
+      if (idx !== -1) {
+        const range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + text.length);
+        return range;
+      }
+    }
+    return null;
   }
 
   /**
@@ -453,6 +759,8 @@ export class Selectly {
 
     this.addStyles();
 
+    await this.restoreHighlights();
+
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
     document.addEventListener('touchend', this.handleTextSelection.bind(this));
 
@@ -467,6 +775,105 @@ export class Selectly {
 
     // Monitor and attach listeners to iframes
     this.setupIframeMonitoring();
+  }
+
+  public async applyHighlight(selectedText: string, config: FunctionConfig) {
+    if (!selectedText?.trim()) return;
+    const selection = this.currentSelection || window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    if (this.currentTarget && this.isEditableElement(this.currentTarget)) return;
+
+    const range = selection.getRangeAt(0).cloneRange();
+    const highlightIdsInRange = this.getHighlightIdsInRange(range);
+    if (highlightIdsInRange.size > 0) {
+      await this.removeHighlightsByIds(highlightIdsInRange);
+      return;
+    }
+    const anchor = this.serializeSelection(selectedText.trim(), selection);
+    if (!anchor) return;
+
+    const url = window.location.href;
+    const title = document.title || url;
+    const hostname = window.location.hostname;
+    const color = this.getHighlightColor(config);
+
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
+      this.applyHighlightRange(range, `local-${Date.now()}`, color, 'self');
+      return;
+    }
+
+    const res = await chrome.runtime.sendMessage({
+      action: 'addHighlight',
+      payload: {
+        text: selectedText.trim(),
+        url,
+        title,
+        hostname,
+        anchor,
+        createdAt: Date.now(),
+      },
+    });
+
+    if (!res?.success) {
+      console.warn('[Selectly] Failed to persist highlight:', res?.error);
+      return;
+    }
+
+    const highlightId = res?.id || `highlight-${Date.now()}`;
+    this.applyHighlightRange(range, highlightId, color, 'self');
+  }
+
+  private async restoreHighlights() {
+    try {
+      if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+      const res = await chrome.runtime.sendMessage({
+        action: 'getHighlightsForUrl',
+        url: window.location.href,
+      });
+      if (!res?.success || !Array.isArray(res.items)) return;
+
+      for (const item of res.items) {
+        if (!item?.id || document.querySelector(`[data-selectly-highlight-id="${item.id}"]`)) {
+          continue;
+        }
+
+        if (item.source === 'others' && (!item.others_count || item.others_count <= 1)) {
+          continue;
+        }
+
+        const anchor = item.anchor;
+        const color = this.getHighlightColor();
+        let range: Range | null = null;
+        if (anchor?.startXPath && anchor?.endXPath) {
+          const startNode = this.resolveXPath(anchor.startXPath, document);
+          const endNode = this.resolveXPath(anchor.endXPath, document);
+          if (startNode && endNode) {
+            try {
+              range = document.createRange();
+              range.setStart(startNode, anchor.startOffset || 0);
+              range.setEnd(endNode, anchor.endOffset || 0);
+            } catch {
+              range = null;
+            }
+          }
+        }
+
+        if (!range && anchor?.text) {
+          range = this.findTextRange(anchor.text);
+        }
+
+        if (range) {
+          this.applyHighlightRange(
+            range,
+            item.id,
+            color,
+            item.source === 'others' ? 'others' : 'self'
+          );
+        }
+      }
+    } catch (e) {
+      console.warn('[Selectly] Failed to restore highlights:', e);
+    }
   }
 
   private async loadConfig() {
@@ -484,6 +891,7 @@ export class Selectly {
         if (changes.userConfig || changes.userInfo) {
           await this.loadConfig();
           await this.llmService.configure(this.userConfig.llm);
+          this.refreshHighlightColors();
         }
       });
     }
@@ -492,6 +900,31 @@ export class Selectly {
   private addStyles() {
     if (this.styleContent) return;
     this.styleContent = contentStyles;
+  }
+
+  private getHighlightColor(config?: FunctionConfig): string {
+    return (
+      config?.highlightColor ||
+      this.userConfig?.functions?.highlight?.highlightColor ||
+      'rgba(255, 204, 0, 0.24)'
+    );
+  }
+
+  private refreshHighlightColors() {
+    const color = this.getHighlightColor();
+    const nodes = document.querySelectorAll('.selectly-highlight');
+    nodes.forEach((node) => {
+      if (node instanceof HTMLElement) {
+        if (node.dataset?.selectlyHighlightSource === 'others') {
+          node.style.textDecoration = 'underline';
+          node.style.textDecorationThickness = '2px';
+          node.style.textDecorationColor = color;
+          node.style.backgroundColor = 'transparent';
+        } else {
+          node.style.backgroundColor = color;
+        }
+      }
+    });
   }
 
   private handleTextSelection(event: MouseEvent | TouchEvent) {
