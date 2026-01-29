@@ -40,6 +40,7 @@ export class HighlightSyncService {
     const stored = await secureStorage.get('highlightSyncState');
     if (stored && stored.highlightSyncState) {
       this.syncState = stored.highlightSyncState as HighlightSyncState;
+      this.syncState.syncing = false;
     }
 
     this.initialized = true;
