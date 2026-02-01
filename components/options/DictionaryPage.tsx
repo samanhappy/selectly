@@ -6,7 +6,8 @@
 import { ExternalLink, Search, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { dictionaryDB, type DictionaryEntry } from '../../core/storage/dictionary-db';
+import { dictionaryService } from '../../core/services/dictionary-service';
+import { type DictionaryEntry } from '../../core/storage/dictionary-db';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { openExternal, PALETTE } from './constants';
@@ -22,7 +23,7 @@ export const DictionaryPage: React.FC<DictionaryPageProps> = ({ t }) => {
 
   const loadDictionary = async () => {
     setDictLoading(true);
-    const list = await dictionaryDB.getAll();
+    const list = await dictionaryService.getAllEntries();
     setDictItems(list);
     setDictLoading(false);
   };
@@ -68,13 +69,13 @@ export const DictionaryPage: React.FC<DictionaryPageProps> = ({ t }) => {
   }, [dictItems, q]);
 
   const removeDict = async (id: string) => {
-    await dictionaryDB.remove(id);
+    await dictionaryService.deleteEntry(id);
     await loadDictionary();
   };
 
   const clearAllDict = async () => {
     if (!confirm(t.options?.collections.clearAllConfirm || 'Clear all dictionary entries?')) return;
-    await dictionaryDB.clearAll();
+    await dictionaryService.clearAll();
     await loadDictionary();
   };
 

@@ -28,18 +28,19 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({ t }) => {
   };
 
   useEffect(() => {
-    // Trigger sync first, then load
-    const syncAndLoad = async () => {
+    load();
+
+    // Trigger async sync without blocking UI
+    const triggerSync = async () => {
       try {
         const { collectService } = await import('../../core/services/collect-service');
         await collectService.sync();
       } catch (error) {
         console.warn('Failed to sync collections:', error);
       }
-      await load();
     };
 
-    syncAndLoad();
+    triggerSync();
 
     // Listen for data changes via BroadcastChannel
     const collectChannel = new BroadcastChannel('selectly-collect-changes');
@@ -53,13 +54,8 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({ t }) => {
     // Also sync and reload when page becomes visible (handles tab switching)
     const handleVisibilityChange = async () => {
       if (!document.hidden) {
-        try {
-          const { collectService } = await import('../../core/services/collect-service');
-          await collectService.sync();
-        } catch (error) {
-          console.warn('Failed to sync collections:', error);
-        }
-        await load();
+        load();
+        triggerSync();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);

@@ -6,25 +6,52 @@
 import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
 import { AuthService } from '../auth/auth-service';
 import { highlightDB, type HighlightItem } from '../storage/highlight-db';
-import { highlightSyncQueueDB } from '../storage/highlight-sync-queue-db';
-import { secureStorage } from '../storage/secure-storage';
+import {
+  highlightSyncQueueDB,
+  type HighlightSyncQueueItem,
+} from '../storage/highlight-sync-queue-db';
 import { highlightSyncAPI } from './highlight-sync-api';
 import type { HighlightSyncState } from './highlight-sync-types';
+import { SyncCore, type SyncAdapter } from './sync-core';
 
 export class HighlightSyncService {
   private static instance: HighlightSyncService;
   private authService: AuthService;
   private subscriptionService: SubscriptionServiceV2 = SubscriptionServiceV2.getInstance();
-  private syncState: HighlightSyncState = {
-    lastSyncTime: 0,
-    syncing: false,
-  };
-  private syncInterval?: NodeJS.Timeout;
+  private syncCore: SyncCore<HighlightItem, HighlightSyncQueueItem>;
   private initialized = false;
   private readonly SYNC_INTERVAL = 60000;
 
   private constructor() {
     this.authService = AuthService.getInstance();
+
+    const adapter: SyncAdapter<HighlightItem, HighlightSyncQueueItem> = {
+      name: 'HighlightSync',
+      syncStateKey: 'highlightSyncState',
+      isSyncEnabled: async () => {
+        const isAuthenticated = await this.authService.isAuthenticated();
+        const isSubscribed = await this.subscriptionService.isSubscriptionActive();
+        return isAuthenticated && isSubscribed;
+      },
+      getQueue: () => highlightSyncQueueDB.getAll(),
+      getItemById: (id) => highlightDB.getById(id),
+      shouldUploadItem: (item) => item.source !== 'others',
+      getItemId: (item) => item.id,
+      getUpdatedAt: (item) => item.updated_at || 0,
+      isDeleted: (item) => Boolean(item.deleted_at),
+      upsertLocal: (item) => highlightDB.upsert(item),
+      updateLocalUserId: (id) => highlightDB.updateUserId(id),
+      enqueue: (itemId, operation) => highlightSyncQueueDB.enqueue(itemId, operation),
+      dequeue: (queueId) => highlightSyncQueueDB.dequeue(queueId),
+      dequeueByItemId: (itemId) => highlightSyncQueueDB.dequeueByItemId(itemId),
+      markFailed: (queueId, error) => highlightSyncQueueDB.markFailed(queueId, error),
+      clearQueue: () => highlightSyncQueueDB.clear(),
+      countQueue: () => highlightSyncQueueDB.count(),
+      uploadItems: (items) => highlightSyncAPI.batchUpload(items),
+      fetchRemote: (since) => highlightSyncAPI.incrementalFetch(since),
+    };
+
+    this.syncCore = new SyncCore(adapter, this.SYNC_INTERVAL);
   }
 
   static getInstance(): HighlightSyncService {
@@ -37,64 +64,21 @@ export class HighlightSyncService {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    const stored = await secureStorage.get('highlightSyncState');
-    if (stored && stored.highlightSyncState) {
-      this.syncState = stored.highlightSyncState as HighlightSyncState;
-      this.syncState.syncing = false;
-    }
+    await this.syncCore.initialize();
 
     this.initialized = true;
-    console.log('[HighlightSync] Initialized with lastSyncTime:', this.syncState.lastSyncTime);
   }
 
   startPeriodicSync(): void {
-    if (this.syncInterval) return;
-
-    console.log('[HighlightSync] Starting periodic sync every', this.SYNC_INTERVAL, 'ms');
-    this.sync().catch(console.error);
-
-    this.syncInterval = setInterval(() => {
-      this.sync().catch(console.error);
-    }, this.SYNC_INTERVAL);
+    this.syncCore.startPeriodicSync();
   }
 
   stopPeriodicSync(): void {
-    if (this.syncInterval) {
-      clearInterval(this.syncInterval);
-      this.syncInterval = undefined;
-      console.log('[HighlightSync] Stopped periodic sync');
-    }
+    this.syncCore.stopPeriodicSync();
   }
 
   async sync(): Promise<void> {
-    const isAuthenticated = await this.authService.isAuthenticated();
-    const isSubscribed = await this.subscriptionService.isSubscriptionActive();
-    if (!isAuthenticated || !isSubscribed) return;
-
-    if (this.syncState.syncing) {
-      console.log('[HighlightSync] Sync already in progress, skipping');
-      return;
-    }
-
-    this.syncState.syncing = true;
-    console.log('[HighlightSync] Starting sync...');
-
-    try {
-      await this.uploadLocalChanges();
-      await this.downloadRemoteUpdates();
-
-      this.syncState.lastSyncTime = Date.now();
-      this.syncState.lastError = undefined;
-      await this.saveSyncState();
-
-      console.log('[HighlightSync] Sync completed successfully');
-    } catch (error) {
-      console.error('[HighlightSync] Sync failed:', error);
-      this.syncState.lastError = error instanceof Error ? error.message : String(error);
-      await this.saveSyncState();
-    } finally {
-      this.syncState.syncing = false;
-    }
+    await this.syncCore.sync();
   }
 
   async refreshAggregatesForUrl(url: string): Promise<void> {
@@ -134,128 +118,20 @@ export class HighlightSyncService {
     }
   }
 
-  private async uploadLocalChanges(): Promise<void> {
-    const queue = await highlightSyncQueueDB.getAll();
-    if (queue.length === 0) {
-      console.log('[HighlightSync] No local changes to upload');
-      return;
-    }
-
-    console.log(`[HighlightSync] Uploading ${queue.length} local changes`);
-
-    const itemsToUpload: HighlightItem[] = [];
-
-    for (const queueItem of queue) {
-      const item = await highlightDB.getById(queueItem.itemId);
-      if (item && item.source !== 'others') {
-        itemsToUpload.push(item);
-      } else if (queueItem.operation !== 'delete') {
-        await highlightSyncQueueDB.dequeue(queueItem.id!);
-      }
-    }
-
-    if (itemsToUpload.length === 0 && queue.every((q) => q.operation === 'delete')) {
-      console.log('[HighlightSync] Only delete operations in queue');
-      for (const queueItem of queue) {
-        await highlightSyncQueueDB.dequeue(queueItem.id!);
-      }
-      return;
-    }
-
-    if (itemsToUpload.length > 0) {
-      try {
-        const response = await highlightSyncAPI.batchUpload(itemsToUpload);
-
-        for (const itemId of response.data.synced) {
-          await highlightSyncQueueDB.dequeueByItemId(itemId);
-          await highlightDB.updateUserId(itemId);
-        }
-
-        if (response.data.failed && response.data.failed.length > 0) {
-          for (const failed of response.data.failed) {
-            const queueItem = queue.find((q) => q.itemId === failed.id);
-            if (queueItem && queueItem.id) {
-              await highlightSyncQueueDB.markFailed(queueItem.id, failed.error);
-            }
-          }
-        }
-
-        console.log(`[HighlightSync] Successfully synced ${response.data.synced.length} items`);
-      } catch (error) {
-        console.error('[HighlightSync] Upload failed:', error);
-        for (const queueItem of queue) {
-          if (queueItem.id) {
-            await highlightSyncQueueDB.markFailed(
-              queueItem.id,
-              error instanceof Error ? error.message : String(error)
-            );
-          }
-        }
-        throw error;
-      }
-    }
-  }
-
-  private async downloadRemoteUpdates(): Promise<void> {
-    const response = await highlightSyncAPI.incrementalFetch(this.syncState.lastSyncTime);
-
-    if (!response.data || response.data.length === 0) {
-      console.log('[HighlightSync] No remote updates');
-      return;
-    }
-
-    console.log(`[HighlightSync] Received ${response.data.length} remote updates`);
-    await this.mergeRemoteItems(response.data);
-  }
-
-  private async mergeRemoteItems(remoteItems: HighlightItem[]): Promise<void> {
-    for (const remoteItem of remoteItems) {
-      const localItem = remoteItem.id ? await highlightDB.getById(remoteItem.id) : undefined;
-
-      if (!localItem) {
-        await highlightDB.upsert(remoteItem);
-        continue;
-      }
-
-      if ((remoteItem.updated_at || 0) > (localItem.updated_at || 0)) {
-        await highlightDB.upsert(remoteItem);
-      } else if ((remoteItem.updated_at || 0) < (localItem.updated_at || 0)) {
-        const operation = remoteItem.deleted_at ? 'delete' : 'update';
-        await highlightSyncQueueDB.enqueue(localItem.id!, operation);
-      } else {
-        if (remoteItem.deleted_at && !localItem.deleted_at) {
-          await highlightDB.upsert(remoteItem);
-        } else if (!remoteItem.deleted_at && localItem.deleted_at) {
-          await highlightSyncQueueDB.enqueue(localItem.id!, 'delete');
-        }
-      }
-    }
-  }
-
   async queueForSync(itemId: string, operation: 'create' | 'update' | 'delete'): Promise<void> {
-    await highlightSyncQueueDB.enqueue(itemId, operation);
-    console.log(`[HighlightSync] Queued ${operation} for item: ${itemId}`);
+    await this.syncCore.queueForSync(itemId, operation);
   }
 
   getSyncStatus(): HighlightSyncState {
-    return { ...this.syncState };
+    return this.syncCore.getSyncStatus();
   }
 
   async getPendingSyncCount(): Promise<number> {
-    return await highlightSyncQueueDB.count();
-  }
-
-  private async saveSyncState(): Promise<void> {
-    await secureStorage.set({ highlightSyncState: this.syncState });
+    return await this.syncCore.getPendingSyncCount();
   }
 
   async clearSyncState(): Promise<void> {
-    this.syncState = {
-      lastSyncTime: 0,
-      syncing: false,
-    };
-    await this.saveSyncState();
-    await highlightSyncQueueDB.clear();
+    await this.syncCore.clearSyncState();
   }
 }
 

@@ -3,6 +3,8 @@ import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
 import { collectSyncService } from './core/services/collect-sync-service';
+import { dictionaryService } from './core/services/dictionary-service';
+import { dictionarySyncService } from './core/services/dictionary-sync-service';
 import { highlightService } from './core/services/highlight-service';
 import { highlightSyncService } from './core/services/highlight-sync-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
@@ -61,22 +63,31 @@ chrome.runtime.onStartup.addListener(async () => {
   subscriptionService.enableAutoRefresh();
   await subscriptionService.refreshOnceAtStartup();
 
-  // Initialize and start collect sync service
+  // Initialize and trigger collect sync once
   try {
     await collectSyncService.initialize();
-    collectSyncService.startPeriodicSync();
-    console.log('Collect sync service started');
+    void collectSyncService.sync();
+    console.log('Collect sync service initialized and sync triggered');
   } catch (error) {
     console.warn('Collect sync service initialization failed:', error);
   }
 
-  // Initialize and start highlight sync service
+  // Initialize and trigger highlight sync once
   try {
     await highlightSyncService.initialize();
-    highlightSyncService.startPeriodicSync();
-    console.log('Highlight sync service started');
+    void highlightSyncService.sync();
+    console.log('Highlight sync service initialized and sync triggered');
   } catch (error) {
     console.warn('Highlight sync service initialization failed:', error);
+  }
+
+  // Initialize and trigger dictionary sync once
+  try {
+    await dictionarySyncService.initialize();
+    void dictionarySyncService.sync();
+    console.log('Dictionary sync service initialized and sync triggered');
+  } catch (error) {
+    console.warn('Dictionary sync service initialization failed:', error);
   }
 });
 
@@ -98,22 +109,31 @@ chrome.runtime.onStartup.addListener(async () => {
   subscriptionService.enableAutoRefresh();
   await subscriptionService.refreshOnceAtStartup();
 
-  // Initialize and start collect sync service
+  // Initialize and trigger collect sync once
   try {
     await collectSyncService.initialize();
-    collectSyncService.startPeriodicSync();
-    console.log('Collect sync service started on load');
+    void collectSyncService.sync();
+    console.log('Collect sync service initialized and sync triggered on load');
   } catch (error) {
     console.warn('Collect sync service initialization failed on load:', error);
   }
 
-  // Initialize and start highlight sync service
+  // Initialize and trigger highlight sync once
   try {
     await highlightSyncService.initialize();
-    highlightSyncService.startPeriodicSync();
-    console.log('Highlight sync service started on load');
+    void highlightSyncService.sync();
+    console.log('Highlight sync service initialized and sync triggered on load');
   } catch (error) {
     console.warn('Highlight sync service initialization failed on load:', error);
+  }
+
+  // Initialize and trigger dictionary sync once
+  try {
+    await dictionarySyncService.initialize();
+    void dictionarySyncService.sync();
+    console.log('Dictionary sync service initialized and sync triggered on load');
+  } catch (error) {
+    console.warn('Dictionary sync service initialization failed on load:', error);
   }
 })();
 
@@ -313,7 +333,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ success: false, error: 'Empty payload' });
             return;
           }
-          await dictionaryDB.addItem({
+          await dictionaryService.addEntry({
             source: payload.source.trim(),
             translation: payload.translation.trim(),
             sentence: payload.sentence?.trim() || '',
