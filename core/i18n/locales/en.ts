@@ -181,6 +181,11 @@ export const en: I18nConfig = {
       buttonPosition: 'Button Position',
       buttonPositionAbove: 'Above',
       buttonPositionBelow: 'Below',
+      readingProgressTitle: 'Reading Progress',
+      showReadingProgressBar: 'Show progress bar',
+      autoSaveReadingProgress: 'Auto save reading progress',
+      autoRestoreReadingProgress: 'Restore last position on load',
+      readingProgressBarColor: 'Progress bar color',
     },
     subscription: {
       signIn: 'Sign In',
@@ -248,6 +253,8 @@ export const en: I18nConfig = {
     pin: 'Pin',
     unpin: 'Unpin',
     addToDictionary: 'Add to Dictionary',
+    saveProgress: 'Save progress',
+    progressSaved: 'Progress saved',
   },
 
   button: {

@@ -36,6 +36,7 @@ class SecureStorageManager {
       'accessToken',
       'userInfo',
       'dailyUsageLimit',
+      'readingProgressSync',
     ];
 
     knownKeys.forEach((realKey) => {

@@ -184,6 +184,11 @@ export const fr: I18nConfig = {
       buttonPosition: 'Position du Bouton',
       buttonPositionAbove: 'Au-dessus',
       buttonPositionBelow: 'En-dessous',
+      readingProgressTitle: 'Progression de lecture',
+      showReadingProgressBar: 'Afficher la barre de progression',
+      autoSaveReadingProgress: 'Enregistrer automatiquement la progression',
+      autoRestoreReadingProgress: 'Restaurer la dernière position au chargement',
+      readingProgressBarColor: 'Couleur de la barre de progression',
     },
     subscription: {
       signIn: 'Se Connecter',
@@ -403,6 +408,8 @@ export const fr: I18nConfig = {
       prompt:
         'Vous êtes un assistant IA utile. Veuillez répondre aux messages de l\'utilisateur de manière conversationnelle. L\'utilisateur a sélectionné ce texte : "{text}".',
     },
+    saveProgress: 'Enregistrer la progression',
+    progressSaved: 'Progression enregistrée',
     share: {
       title: 'Partager',
       description: 'Générer une image de partage',

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import SubscriptionServiceV2 from '~core/services/subscription-service-v2';
 
 import { ActionButtons } from '../../components/content/ActionButtons';
+import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
 import {
@@ -14,6 +15,7 @@ import {
 import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
+import { readingProgressService } from '../services/reading-progress-service';
 import { secureStorage } from '../storage/secure-storage';
 import { contentStyles } from './content-styles';
 
@@ -38,6 +40,17 @@ export class Selectly {
   private sharePreviewHost: HTMLDivElement | null = null;
   private sharePreviewContainer: HTMLDivElement | null = null;
   private sharePreviewRoot: any = null;
+  private progressHost: HTMLDivElement | null = null;
+  private progressFill: HTMLDivElement | null = null;
+  private globalActionsHost: HTMLDivElement | null = null;
+  private globalActionsContainer: HTMLDivElement | null = null;
+  private globalActionsRoot: any = null;
+  private readingProgressInitialized = false;
+  private scrollRafId: number | null = null;
+  private scrollSaveTimer: number | null = null;
+  private lastSavedScrollTop = 0;
+  private lastSyncSavedAt = 0;
+  private isRestoringProgress = false;
   private isShowingButtons = false;
   private userConfig: UserConfig = DEFAULT_CONFIG;
   private configManager = ConfigManager.getInstance();
@@ -106,7 +119,7 @@ export class Selectly {
     const el = node.parentElement || (node as any);
     if (!el || !(el as HTMLElement).closest) return false;
     return !!(el as HTMLElement).closest(
-      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight'
+      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, #selectly-progress-host, #selectly-global-actions-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight, .selectly-progress-bar, .selectly-global-actions'
     );
   }
 
@@ -759,6 +772,8 @@ export class Selectly {
 
     this.addStyles();
 
+    this.setupReadingProgress();
+
     await this.restoreHighlights();
 
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
@@ -892,6 +907,8 @@ export class Selectly {
           await this.loadConfig();
           await this.llmService.configure(this.userConfig.llm);
           this.refreshHighlightColors();
+          this.applyReadingProgressConfig();
+          this.renderGlobalActionBar();
         }
       });
     }
@@ -900,6 +917,206 @@ export class Selectly {
   private addStyles() {
     if (this.styleContent) return;
     this.styleContent = contentStyles;
+  }
+
+  private getReadingProgressConfig() {
+    const general = this.userConfig?.general || ({} as any);
+    return {
+      showProgressBar: general.showReadingProgressBar !== false,
+      progressBarColor: general.readingProgressBarColor || '#60a5fa',
+      autoSave: general.autoSaveReadingProgress !== false,
+      autoRestore: general.autoRestoreReadingProgress !== false,
+    };
+  }
+
+  private setupReadingProgress() {
+    if (this.readingProgressInitialized) return;
+    if (window.top !== window.self) return;
+
+    this.readingProgressInitialized = true;
+    this.mountProgressBar();
+    this.renderGlobalActionBar();
+    this.applyReadingProgressConfig();
+    this.updateProgressBar();
+
+    document.addEventListener('scroll', this.handleScroll, { passive: true });
+    window.addEventListener('resize', this.handleScroll);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    window.addEventListener('pagehide', this.handlePageHide);
+
+    this.restoreReadingProgress();
+  }
+
+  private mountProgressBar() {
+    if (this.progressHost) return;
+
+    this.progressHost = document.createElement('div');
+    this.progressHost.id = 'selectly-progress-host';
+    const shadow = this.progressHost.attachShadow({ mode: 'open' });
+    document.body.appendChild(this.progressHost);
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = this.styleContent;
+    shadow.appendChild(styleEl);
+
+    const bar = document.createElement('div');
+    bar.className = 'selectly-progress-bar';
+    const fill = document.createElement('div');
+    fill.className = 'selectly-progress-bar__fill';
+    bar.appendChild(fill);
+    shadow.appendChild(bar);
+    this.progressFill = fill;
+  }
+
+  private renderGlobalActionBar() {
+    if (window.top !== window.self) return;
+
+    if (!this.globalActionsHost) {
+      this.globalActionsHost = document.createElement('div');
+      this.globalActionsHost.id = 'selectly-global-actions-host';
+      const shadow = this.globalActionsHost.attachShadow({ mode: 'open' });
+      document.body.appendChild(this.globalActionsHost);
+
+      const styleEl = document.createElement('style');
+      styleEl.textContent = this.styleContent;
+      shadow.appendChild(styleEl);
+
+      this.globalActionsContainer = document.createElement('div');
+      shadow.appendChild(this.globalActionsContainer);
+      this.globalActionsRoot = createRoot(this.globalActionsContainer);
+    }
+
+    const t = i18n.getConfig();
+    const labels = {
+      saveProgress: t?.content?.saveProgress || 'Save progress',
+      progressSaved: t?.content?.progressSaved || 'Progress saved',
+    };
+
+    this.globalActionsRoot?.render(
+      <GlobalActionBar onSaveProgress={() => this.saveReadingProgress('manual')} labels={labels} />
+    );
+  }
+
+  private applyReadingProgressConfig() {
+    const { showProgressBar, progressBarColor } = this.getReadingProgressConfig();
+    if (this.progressHost) {
+      this.progressHost.style.display = showProgressBar ? 'block' : 'none';
+    }
+    if (this.progressFill) {
+      this.progressFill.style.background = progressBarColor;
+    }
+  }
+
+  private handleScroll = () => {
+    if (this.scrollRafId) return;
+    this.scrollRafId = window.requestAnimationFrame(() => {
+      this.scrollRafId = null;
+      this.updateProgressBar();
+    });
+    this.scheduleSaveProgress('scroll');
+  };
+
+  private handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      this.saveReadingProgress('visibility');
+    }
+  };
+
+  private handlePageHide = () => {
+    this.saveReadingProgress('pagehide');
+  };
+
+  private scheduleSaveProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
+    const { autoSave } = this.getReadingProgressConfig();
+    if (reason === 'scroll' && !autoSave) return;
+
+    if (this.scrollSaveTimer) {
+      window.clearTimeout(this.scrollSaveTimer);
+    }
+
+    const delay = reason === 'scroll' ? 500 : 0;
+    this.scrollSaveTimer = window.setTimeout(() => {
+      this.saveReadingProgress(reason);
+    }, delay);
+  }
+
+  private getScrollMetrics() {
+    const docEl = document.documentElement;
+    const body = document.body;
+    const scrollTop = docEl.scrollTop || body.scrollTop || 0;
+    const scrollHeight = Math.max(docEl.scrollHeight, body.scrollHeight);
+    const clientHeight = docEl.clientHeight || window.innerHeight;
+    return { scrollTop, scrollHeight, clientHeight };
+  }
+
+  private updateProgressBar() {
+    if (!this.progressFill) return;
+    const { showProgressBar } = this.getReadingProgressConfig();
+    if (!showProgressBar) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
+    const maxScroll = Math.max(1, scrollHeight - clientHeight);
+    const progress = Math.max(0, Math.min(1, scrollTop / maxScroll));
+    this.progressFill.style.width = `${progress * 100}%`;
+  }
+
+  private async saveReadingProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
+    if (window.top !== window.self) return;
+    if (this.isRestoringProgress) return;
+
+    const { autoSave } = this.getReadingProgressConfig();
+    if (reason !== 'manual' && !autoSave) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
+    if (reason === 'scroll' && Math.abs(scrollTop - this.lastSavedScrollTop) < 8) return;
+
+    const shouldSync =
+      reason === 'manual' || Date.now() - this.lastSyncSavedAt > 8000 || reason !== 'scroll';
+
+    await readingProgressService.saveProgress(
+      window.location.href,
+      {
+        url: window.location.href,
+        title: document.title || window.location.href,
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+      },
+      { local: true, sync: shouldSync }
+    );
+
+    this.lastSavedScrollTop = scrollTop;
+    if (shouldSync) this.lastSyncSavedAt = Date.now();
+  }
+
+  private async restoreReadingProgress() {
+    const { autoRestore } = this.getReadingProgressConfig();
+    if (!autoRestore) return;
+
+    const record = await readingProgressService.getProgress(window.location.href);
+    if (!record) return;
+
+    const attemptRestore = (tries = 0) => {
+      const { scrollHeight, clientHeight } = this.getScrollMetrics();
+      const maxScroll = Math.max(0, scrollHeight - clientHeight);
+      if (maxScroll <= 0 && tries < 6) {
+        window.setTimeout(() => attemptRestore(tries + 1), 300);
+        return;
+      }
+
+      const savedMax = Math.max(1, record.scrollHeight - record.clientHeight);
+      const ratio = Math.max(0, Math.min(1, record.scrollTop / savedMax));
+      const target = ratio * Math.max(0, scrollHeight - clientHeight);
+
+      this.isRestoringProgress = true;
+      window.scrollTo({ top: target, left: 0, behavior: 'auto' });
+      window.setTimeout(() => {
+        this.isRestoringProgress = false;
+        this.updateProgressBar();
+      }, 400);
+    };
+
+    attemptRestore();
   }
 
   private getHighlightColor(config?: FunctionConfig): string {
@@ -1140,18 +1357,38 @@ export class Selectly {
       return true;
     }
 
+    if (this.progressHost && (target === this.progressHost || this.progressHost.contains(target))) {
+      return true;
+    }
+
+    if (
+      this.globalActionsHost &&
+      (target === this.globalActionsHost || this.globalActionsHost.contains(target))
+    ) {
+      return true;
+    }
+
     if ('composedPath' in event && typeof event.composedPath === 'function') {
       const path = event.composedPath();
       for (const element of path) {
-        if (element === this.buttonsHost || element === this.streamingHost) {
+        if (
+          element === this.buttonsHost ||
+          element === this.streamingHost ||
+          element === this.progressHost ||
+          element === this.globalActionsHost
+        ) {
           return true;
         }
         if (element instanceof HTMLElement) {
           if (
             element.closest('#selectly-buttons-host') ||
             element.closest('#selectly-streaming-host') ||
+            element.closest('#selectly-progress-host') ||
+            element.closest('#selectly-global-actions-host') ||
             element.classList.contains('selectly-buttons') ||
             element.classList.contains('selectly-streaming-result') ||
+            element.classList.contains('selectly-progress-bar') ||
+            element.classList.contains('selectly-global-actions') ||
             element.classList.contains('action-btn')
           ) {
             return true;
@@ -1166,8 +1403,12 @@ export class Selectly {
       if (
         el.id === 'selectly-buttons-host' ||
         el.id === 'selectly-streaming-host' ||
+        el.id === 'selectly-progress-host' ||
+        el.id === 'selectly-global-actions-host' ||
         el.classList.contains('selectly-buttons') ||
         el.classList.contains('selectly-streaming-result') ||
+        el.classList.contains('selectly-progress-bar') ||
+        el.classList.contains('selectly-global-actions') ||
         el.classList.contains('action-btn') ||
         el.classList.contains('glass-button')
       ) {

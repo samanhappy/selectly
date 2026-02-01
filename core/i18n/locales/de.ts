@@ -183,6 +183,11 @@ export const de: I18nConfig = {
       buttonPosition: 'Schaltflächenposition',
       buttonPositionAbove: 'Oben',
       buttonPositionBelow: 'Unten',
+      readingProgressTitle: 'Leseverlauf',
+      showReadingProgressBar: 'Fortschrittsleiste anzeigen',
+      autoSaveReadingProgress: 'Leseverlauf automatisch speichern',
+      autoRestoreReadingProgress: 'Letzte Position beim Laden wiederherstellen',
+      readingProgressBarColor: 'Farbe der Fortschrittsleiste',
     },
     subscription: {
       signIn: 'Anmelden',
@@ -252,6 +257,8 @@ export const de: I18nConfig = {
     pin: 'Anheften',
     unpin: 'Loslösen',
     addToDictionary: 'Zum Wörterbuch hinzufügen',
+    saveProgress: 'Fortschritt speichern',
+    progressSaved: 'Fortschritt gespeichert',
   },
 
   button: {

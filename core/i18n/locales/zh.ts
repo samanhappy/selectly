@@ -176,6 +176,11 @@ export const zh: I18nConfig = {
       buttonPosition: '按钮位置',
       buttonPositionAbove: '上方',
       buttonPositionBelow: '下方',
+      readingProgressTitle: '阅读进度',
+      showReadingProgressBar: '显示进度条',
+      autoSaveReadingProgress: '自动保存阅读进度',
+      autoRestoreReadingProgress: '进入时恢复上次位置',
+      readingProgressBarColor: '进度条颜色',
     },
     subscription: {
       signIn: '登录',
@@ -241,6 +246,8 @@ export const zh: I18nConfig = {
     pin: '固定',
     unpin: '取消固定',
     addToDictionary: '添加到词典',
+    saveProgress: '保存进度',
+    progressSaved: '已保存进度',
   },
 
   button: {

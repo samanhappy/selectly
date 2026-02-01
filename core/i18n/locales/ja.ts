@@ -180,6 +180,11 @@ export const ja: I18nConfig = {
       buttonPosition: 'ボタンの位置',
       buttonPositionAbove: '上',
       buttonPositionBelow: '下',
+      readingProgressTitle: '読書進捗',
+      showReadingProgressBar: '進捗バーを表示',
+      autoSaveReadingProgress: '進捗を自動保存',
+      autoRestoreReadingProgress: '読み込み時に前回位置を復元',
+      readingProgressBarColor: '進捗バーの色',
     },
     subscription: {
       signIn: 'ログイン',
@@ -398,6 +403,8 @@ export const ja: I18nConfig = {
       prompt:
         'あなたは有用なAIアシスタントです。ユーザーのメッセージに会話的に応答してください。ユーザーがこのテキストを選択しました: "{text}"。',
     },
+    saveProgress: '進捗を保存',
+    progressSaved: '進捗を保存しました',
     share: {
       title: '共有',
       description: '共有画像を生成',

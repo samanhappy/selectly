@@ -179,6 +179,11 @@ export interface I18nConfig {
       buttonPosition: string;
       buttonPositionAbove: string;
       buttonPositionBelow: string;
+      readingProgressTitle?: string;
+      showReadingProgressBar?: string;
+      autoSaveReadingProgress?: string;
+      autoRestoreReadingProgress?: string;
+      readingProgressBarColor?: string;
     };
     subscription: {
       signIn: string;
@@ -247,6 +252,8 @@ export interface I18nConfig {
     pin: string;
     unpin: string;
     addToDictionary: string;
+    saveProgress?: string;
+    progressSaved?: string;
   };
 
   button: {

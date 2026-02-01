@@ -42,6 +42,10 @@ export interface FunctionConfig {
 export interface GeneralConfig {
   language: SupportedLanguage;
   buttonPosition: 'above' | 'below';
+  showReadingProgressBar?: boolean;
+  readingProgressBarColor?: string;
+  autoSaveReadingProgress?: boolean;
+  autoRestoreReadingProgress?: boolean;
 }
 
 export interface UserConfig {
@@ -124,6 +128,10 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
     general: {
       language: i18n.getCurrentLanguage(),
       buttonPosition: 'above',
+      showReadingProgressBar: true,
+      readingProgressBarColor: '#60a5fa',
+      autoSaveReadingProgress: true,
+      autoRestoreReadingProgress: true,
     },
     llm: {
       defaultModel: '',
@@ -331,6 +339,10 @@ export const DEFAULT_CONFIG: UserConfig = {
   general: {
     language: 'en',
     buttonPosition: 'above',
+    showReadingProgressBar: true,
+    readingProgressBarColor: '#60a5fa',
+    autoSaveReadingProgress: true,
+    autoRestoreReadingProgress: true,
   },
   llm: {
     defaultModel: '',

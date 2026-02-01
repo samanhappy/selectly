@@ -181,6 +181,11 @@ export const pt: I18nConfig = {
       buttonPosition: 'Posição do Botão',
       buttonPositionAbove: 'Acima',
       buttonPositionBelow: 'Abaixo',
+      readingProgressTitle: 'Progresso de leitura',
+      showReadingProgressBar: 'Mostrar barra de progresso',
+      autoSaveReadingProgress: 'Salvar progresso automaticamente',
+      autoRestoreReadingProgress: 'Restaurar última posição ao carregar',
+      readingProgressBarColor: 'Cor da barra de progresso',
     },
     subscription: {
       signIn: 'Entrar',
@@ -400,6 +405,8 @@ export const pt: I18nConfig = {
       prompt:
         'Você é um assistente de IA útil. Por favor, responda às mensagens do usuário de forma conversacional. O usuário selecionou este texto: "{text}".',
     },
+    saveProgress: 'Salvar progresso',
+    progressSaved: 'Progresso salvo',
     share: {
       title: 'Compartilhar',
       description: 'Gerar imagem de compartilhamento',
