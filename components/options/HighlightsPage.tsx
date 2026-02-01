@@ -4,7 +4,7 @@
  */
 
 import { Copy, Search, Trash2 } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { DEFAULT_HIGHLIGHT_COLOR } from '../../core/config/llm-config';
 import { highlightDB, type HighlightItem } from '../../core/storage/highlight-db';
@@ -21,12 +21,23 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColo
   const [items, setItems] = useState<HighlightItem[]>([]);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (preserveScroll = false) => {
+    const scrollTop = preserveScroll ? containerRef.current?.scrollTop : undefined;
+    if (!preserveScroll) {
+      setLoading(true);
+    }
     const list = await highlightDB.getAll();
     setItems(list);
     setLoading(false);
+    if (preserveScroll && scrollTop !== undefined) {
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = scrollTop;
+        }
+      });
+    }
   };
 
   useEffect(() => {
@@ -35,13 +46,13 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColo
     const highlightChannel = new BroadcastChannel('selectly-highlight-changes');
     highlightChannel.onmessage = (event) => {
       if (event.data === 'changed') {
-        load();
+        load(true);
       }
     };
 
     const handleVisibilityChange = async () => {
       if (!document.hidden) {
-        await load();
+        await load(true);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -82,22 +93,25 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColo
   const remove = async (id: string) => {
     const { highlightService } = await import('../../core/services/highlight-service');
     await highlightService.deleteItem(id);
-    await load();
+    await load(true);
   };
 
   const clearAll = async () => {
     if (!confirm(t.options?.highlights?.clearAllConfirm || 'Clear all highlights?')) return;
     await highlightDB.clearAll();
-    await load();
+    await load(true);
   };
 
   return (
-    <div style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}>
+    <div
+      ref={containerRef}
+      style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}
+    >
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between rounded-t-lg border-b border-slate-200 bg-slate-50 px-3 py-2">
           <div className="min-w-0">
             <h3 className="truncate text-sm font-semibold text-slate-900">
-              {t.options?.highlights?.groups || 'Highlight Groups'}
+              {t.options?.highlights?.groups || 'Highlights'}
             </h3>
           </div>
           <div className="flex items-center gap-2">

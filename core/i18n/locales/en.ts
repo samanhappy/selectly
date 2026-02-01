@@ -292,7 +292,7 @@ export const en: I18nConfig = {
     },
     highlights: {
       title: 'Highlights',
-      groups: 'Highlight Groups',
+      groups: 'Highlights',
       search: 'Search',
       searchPlaceholder: 'Search',
       clearAll: 'Clear All',
