@@ -1,7 +1,5 @@
 import { createRoot } from 'react-dom/client';
 
-import SubscriptionServiceV2 from '~core/services/subscription-service-v2';
-
 import { ActionButtons } from '../../components/content/ActionButtons';
 import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
@@ -55,7 +53,6 @@ export class Selectly {
   private userConfig: UserConfig = DEFAULT_CONFIG;
   private configManager = ConfigManager.getInstance();
   private llmService = LLMService.getInstance();
-  private subscriptionService = SubscriptionServiceV2.getInstance();
   private styleContent = '';
   private currentSelection: Selection | null = null;
   private currentTarget: HTMLElement | null = null;
@@ -952,6 +949,13 @@ export class Selectly {
 
     this.progressHost = document.createElement('div');
     this.progressHost.id = 'selectly-progress-host';
+    this.progressHost.style.position = 'fixed';
+    this.progressHost.style.top = '0';
+    this.progressHost.style.left = '0';
+    this.progressHost.style.width = '100%';
+    this.progressHost.style.height = '4px';
+    this.progressHost.style.zIndex = '1000000';
+    this.progressHost.style.pointerEvents = 'none';
     const shadow = this.progressHost.attachShadow({ mode: 'open' });
     document.body.appendChild(this.progressHost);
 

@@ -479,7 +479,14 @@ const OptionsPage: React.FC = () => {
                   onOpenConfig={() => openDrawer('config')}
                 />
               )}
-              {active === 'general' && <GeneralPage t={t} onReload={loadConfig} />}
+              {active === 'general' && (
+                <GeneralPage
+                  t={t}
+                  onReload={loadConfig}
+                  userConfig={userConfig}
+                  onChange={handleGeneralConfigChange}
+                />
+              )}
               {active === 'llm' && (
                 <LLMPage
                   llm={userConfig.llm}

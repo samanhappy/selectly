@@ -2,7 +2,6 @@ import { Globe, MousePointer } from 'lucide-react';
 import React from 'react';
 
 import type { GeneralConfig, UserConfig } from '../../../core/config/llm-config';
-import type { SupportedLanguage } from '../../../core/i18n/types';
 
 interface GeneralSettingsFormProps {
   userConfig: UserConfig;
