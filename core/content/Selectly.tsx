@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
 
 import { ActionButtons } from '../../components/content/ActionButtons';
-import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
 import {
@@ -40,9 +39,6 @@ export class Selectly {
   private sharePreviewRoot: any = null;
   private progressHost: HTMLDivElement | null = null;
   private progressFill: HTMLDivElement | null = null;
-  private globalActionsHost: HTMLDivElement | null = null;
-  private globalActionsContainer: HTMLDivElement | null = null;
-  private globalActionsRoot: any = null;
   private readingProgressInitialized = false;
   private scrollRafId: number | null = null;
   private scrollSaveTimer: number | null = null;
@@ -116,7 +112,7 @@ export class Selectly {
     const el = node.parentElement || (node as any);
     if (!el || !(el as HTMLElement).closest) return false;
     return !!(el as HTMLElement).closest(
-      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, #selectly-progress-host, #selectly-global-actions-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight, .selectly-progress-bar, .selectly-global-actions'
+      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, #selectly-progress-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight, .selectly-progress-bar'
     );
   }
 
@@ -905,7 +901,6 @@ export class Selectly {
           await this.llmService.configure(this.userConfig.llm);
           this.refreshHighlightColors();
           this.applyReadingProgressConfig();
-          this.renderGlobalActionBar();
         }
       });
     }
@@ -932,7 +927,6 @@ export class Selectly {
 
     this.readingProgressInitialized = true;
     this.mountProgressBar();
-    this.renderGlobalActionBar();
     this.applyReadingProgressConfig();
     this.updateProgressBar();
 
@@ -970,35 +964,6 @@ export class Selectly {
     bar.appendChild(fill);
     shadow.appendChild(bar);
     this.progressFill = fill;
-  }
-
-  private renderGlobalActionBar() {
-    if (window.top !== window.self) return;
-
-    if (!this.globalActionsHost) {
-      this.globalActionsHost = document.createElement('div');
-      this.globalActionsHost.id = 'selectly-global-actions-host';
-      const shadow = this.globalActionsHost.attachShadow({ mode: 'open' });
-      document.body.appendChild(this.globalActionsHost);
-
-      const styleEl = document.createElement('style');
-      styleEl.textContent = this.styleContent;
-      shadow.appendChild(styleEl);
-
-      this.globalActionsContainer = document.createElement('div');
-      shadow.appendChild(this.globalActionsContainer);
-      this.globalActionsRoot = createRoot(this.globalActionsContainer);
-    }
-
-    const t = i18n.getConfig();
-    const labels = {
-      saveProgress: t?.content?.saveProgress || 'Save progress',
-      progressSaved: t?.content?.progressSaved || 'Progress saved',
-    };
-
-    this.globalActionsRoot?.render(
-      <GlobalActionBar onSaveProgress={() => this.saveReadingProgress('manual')} labels={labels} />
-    );
   }
 
   private applyReadingProgressConfig() {
@@ -1365,21 +1330,13 @@ export class Selectly {
       return true;
     }
 
-    if (
-      this.globalActionsHost &&
-      (target === this.globalActionsHost || this.globalActionsHost.contains(target))
-    ) {
-      return true;
-    }
-
     if ('composedPath' in event && typeof event.composedPath === 'function') {
       const path = event.composedPath();
       for (const element of path) {
         if (
           element === this.buttonsHost ||
           element === this.streamingHost ||
-          element === this.progressHost ||
-          element === this.globalActionsHost
+          element === this.progressHost
         ) {
           return true;
         }
@@ -1388,11 +1345,9 @@ export class Selectly {
             element.closest('#selectly-buttons-host') ||
             element.closest('#selectly-streaming-host') ||
             element.closest('#selectly-progress-host') ||
-            element.closest('#selectly-global-actions-host') ||
             element.classList.contains('selectly-buttons') ||
             element.classList.contains('selectly-streaming-result') ||
             element.classList.contains('selectly-progress-bar') ||
-            element.classList.contains('selectly-global-actions') ||
             element.classList.contains('action-btn')
           ) {
             return true;
@@ -1408,11 +1363,9 @@ export class Selectly {
         el.id === 'selectly-buttons-host' ||
         el.id === 'selectly-streaming-host' ||
         el.id === 'selectly-progress-host' ||
-        el.id === 'selectly-global-actions-host' ||
         el.classList.contains('selectly-buttons') ||
         el.classList.contains('selectly-streaming-result') ||
         el.classList.contains('selectly-progress-bar') ||
-        el.classList.contains('selectly-global-actions') ||
         el.classList.contains('action-btn') ||
         el.classList.contains('glass-button')
       ) {

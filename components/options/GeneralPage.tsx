@@ -68,66 +68,60 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
   return (
     <div style={{ padding: '12px', minHeight: '100%' }}>
       <div className="sl-card" style={{ marginTop: 12 }}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
             {t.popup?.general?.readingProgressTitle || 'Reading Progress'}
           </h3>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div className="sl-fn-card">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <label
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div
+            className="sl-fn-card"
+            style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}
+          >
+            <label className="sl-switch-row" style={{ margin: 0 }}>
+              <input
                 className="sl-checkbox"
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-              >
-                <input
-                  type="checkbox"
-                  checked={userConfig.general?.showReadingProgressBar !== false}
-                  onChange={(e) => onChange('showReadingProgressBar', e.target.checked)}
-                />
+                type="checkbox"
+                checked={userConfig.general?.showReadingProgressBar !== false}
+                onChange={(e) => onChange('showReadingProgressBar', e.target.checked)}
+              />
+              <span className="sl-switch-text">
                 {t.popup?.general?.showReadingProgressBar || 'Show progress bar'}
-              </label>
-              <label
+              </span>
+            </label>
+            <label className="sl-switch-row" style={{ margin: 0 }}>
+              <input
                 className="sl-checkbox"
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-              >
-                <input
-                  type="checkbox"
-                  checked={userConfig.general?.autoSaveReadingProgress !== false}
-                  onChange={(e) => onChange('autoSaveReadingProgress', e.target.checked)}
-                />
+                type="checkbox"
+                checked={userConfig.general?.autoSaveReadingProgress !== false}
+                onChange={(e) => onChange('autoSaveReadingProgress', e.target.checked)}
+              />
+              <span className="sl-switch-text">
                 {t.popup?.general?.autoSaveReadingProgress || 'Auto save reading progress'}
-              </label>
-              <label
+              </span>
+            </label>
+            <label className="sl-switch-row" style={{ margin: 0 }}>
+              <input
                 className="sl-checkbox"
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-              >
-                <input
-                  type="checkbox"
-                  checked={userConfig.general?.autoRestoreReadingProgress !== false}
-                  onChange={(e) => onChange('autoRestoreReadingProgress', e.target.checked)}
-                />
+                type="checkbox"
+                checked={userConfig.general?.autoRestoreReadingProgress !== false}
+                onChange={(e) => onChange('autoRestoreReadingProgress', e.target.checked)}
+              />
+              <span className="sl-switch-text">
                 {t.popup?.general?.autoRestoreReadingProgress || 'Restore last position on load'}
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 12, color: '#64748b' }}>
-                  {t.popup?.general?.readingProgressBarColor || 'Progress bar color'}
-                </span>
-                <input
-                  className="sl-input"
-                  type="color"
-                  value={userConfig.general?.readingProgressBarColor || '#60a5fa'}
-                  onChange={(e) => onChange('readingProgressBarColor', e.target.value)}
-                  style={{ width: 44, height: 28, padding: 0, border: 'none', background: 'none' }}
-                />
-              </div>
+              </span>
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>
+                {t.popup?.general?.readingProgressBarColor || 'Progress bar color'}
+              </span>
+              <input
+                className="sl-input"
+                type="color"
+                value={userConfig.general?.readingProgressBarColor || '#60a5fa'}
+                onChange={(e) => onChange('readingProgressBarColor', e.target.value)}
+                style={{ width: 48, height: 30, padding: 0, border: 'none', background: 'none' }}
+              />
             </div>
           </div>
         </div>

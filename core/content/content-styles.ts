@@ -98,57 +98,6 @@ export const contentStyles = `
     box-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
   }
 
-  /* Global floating actions */
-  .selectly-global-actions {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 1000000;
-    pointer-events: auto;
-  }
-
-  .selectly-global-action-btn {
-    all: unset;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    color: #0f172a;
-    box-shadow:
-      0 2px 10px rgba(0, 0, 0, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.2s ease;
-    opacity: 0.85;
-  }
-
-  .selectly-global-action-btn:hover {
-    opacity: 1;
-    transform: translateY(-1px);
-    box-shadow:
-      0 6px 18px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
-
-  .selectly-global-action-btn:active {
-    transform: translateY(0);
-    opacity: 0.95;
-  }
-
-  .selectly-global-action-btn.is-saved {
-    color: #22c55e;
-    border-color: rgba(34, 197, 94, 0.3);
-    box-shadow:
-      0 0 12px rgba(34, 197, 94, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  }
 
   /* Glass morphism button base styles */
   .selectly-buttons .action-btn {
@@ -320,10 +269,6 @@ export const contentStyles = `
       gap: 4px !important;
     }
 
-    .selectly-global-actions {
-      right: 10px;
-      bottom: 10px;
-    }
 
     .selectly-buttons .action-btn {
       width: 40px !important;
@@ -381,15 +326,6 @@ export const contentStyles = `
     .selectly-buttons .action-btn.btn-success { color: #22c55e; }
     .selectly-buttons .action-btn.btn-error { color: #ef4444; }
     .selectly-buttons .action-btn.btn-remove { color: #f97316; }
-
-    .selectly-global-action-btn {
-      background: rgba(17, 24, 39, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #e5e7eb;
-      box-shadow:
-        0 4px 16px rgba(0, 0, 0, 0.45),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    }
 
     .selectly-progress-bar {
       background: rgba(15, 23, 42, 0.4);
