@@ -79,19 +79,15 @@ export const contentStyles = `
     top: 0;
     left: 0;
     width: 100%;
-    height: 4px;
+    height: 3px;
     z-index: 1000000;
     pointer-events: none;
   }
 
   .selectly-progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     background: rgba(15, 23, 42, 0.08);
-    backdrop-filter: blur(4px);
   }
 
   .selectly-progress-bar__fill {

@@ -953,7 +953,7 @@ export class Selectly {
     this.progressHost.style.top = '0';
     this.progressHost.style.left = '0';
     this.progressHost.style.width = '100%';
-    this.progressHost.style.height = '4px';
+    this.progressHost.style.height = '3px';
     this.progressHost.style.zIndex = '1000000';
     this.progressHost.style.pointerEvents = 'none';
     const shadow = this.progressHost.attachShadow({ mode: 'open' });
