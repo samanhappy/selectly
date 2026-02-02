@@ -186,6 +186,9 @@ export const pt: I18nConfig = {
       autoSaveReadingProgress: 'Salvar progresso automaticamente',
       autoRestoreReadingProgress: 'Restaurar última posição ao carregar',
       readingProgressBarColor: 'Cor da barra de progresso',
+      readingProgressBlacklist: 'Domínios na lista negra',
+      readingProgressBlacklistDesc:
+        'Um domínio por linha. Os padrões do sistema (por exemplo, x.com) também são aplicados.',
     },
     subscription: {
       signIn: 'Entrar',

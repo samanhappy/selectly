@@ -46,6 +46,7 @@ export interface GeneralConfig {
   readingProgressBarColor?: string;
   autoSaveReadingProgress?: boolean;
   autoRestoreReadingProgress?: boolean;
+  readingProgressBlacklist?: string[];
 }
 
 export interface UserConfig {
@@ -56,6 +57,22 @@ export interface UserConfig {
 }
 
 export const DEFAULT_HIGHLIGHT_COLOR = 'rgba(255, 204, 0, 0.24)';
+
+export const SYSTEM_READING_PROGRESS_BLACKLIST = [
+  'x.com',
+  'twitter.com',
+  'youtube.com',
+  'twitch.tv',
+  'linkedin.com',
+  'instagram.com',
+  'tiktok.com',
+  'pinterest.com',
+  'reddit.com',
+  'bilibili.com',
+  'weibo.com',
+  'zhihu.com',
+  'facebook.com',
+];
 
 export const CLOUD_PROVIDER: LLMProvider = {
   id: 'cloud',
@@ -132,6 +149,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       readingProgressBarColor: '#60a5fa',
       autoSaveReadingProgress: true,
       autoRestoreReadingProgress: true,
+      readingProgressBlacklist: [],
     },
     llm: {
       defaultModel: '',
@@ -343,6 +361,7 @@ export const DEFAULT_CONFIG: UserConfig = {
     readingProgressBarColor: '#60a5fa',
     autoSaveReadingProgress: true,
     autoRestoreReadingProgress: true,
+    readingProgressBlacklist: [],
   },
   llm: {
     defaultModel: '',

@@ -123,6 +123,34 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
                 style={{ width: 48, height: 30, padding: 0, border: 'none', background: 'none' }}
               />
             </div>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 6 }}>
+                {t.popup?.general?.readingProgressBlacklist || 'Blacklisted Domains (One per line)'}
+              </div>
+              <textarea
+                className="sl-input"
+                style={{
+                  width: '100%',
+                  height: 100,
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  resize: 'vertical',
+                }}
+                value={(userConfig.general?.readingProgressBlacklist || []).join('\n')}
+                onChange={(e) => {
+                  const val = e.target.value
+                    .split('\n')
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+                  onChange('readingProgressBlacklist', val);
+                }}
+                placeholder="example.com&#10;x.com"
+              />
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                {t.popup?.general?.readingProgressBlacklistDesc ||
+                  'Progress will not be saved or restored for these domains. System defaults (e.g. x.com, youtube.com) are also applied automatically.'}
+              </div>
+            </div>
           </div>
         </div>
       </div>

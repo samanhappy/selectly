@@ -188,6 +188,9 @@ export const de: I18nConfig = {
       autoSaveReadingProgress: 'Leseverlauf automatisch speichern',
       autoRestoreReadingProgress: 'Letzte Position beim Laden wiederherstellen',
       readingProgressBarColor: 'Farbe der Fortschrittsleiste',
+      readingProgressBlacklist: 'Gesperrte Domains',
+      readingProgressBlacklistDesc:
+        'Eine Domain pro Zeile. Systemstandards (z.B. x.com) werden ebenfalls angewendet.',
     },
     subscription: {
       signIn: 'Anmelden',

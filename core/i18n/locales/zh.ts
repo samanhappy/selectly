@@ -181,6 +181,8 @@ export const zh: I18nConfig = {
       autoSaveReadingProgress: '自动保存阅读进度',
       autoRestoreReadingProgress: '进入时恢复上次位置',
       readingProgressBarColor: '进度条颜色',
+      readingProgressBlacklist: '域名黑名单',
+      readingProgressBlacklistDesc: '每行一个域名。系统默认会屏蔽 x.com 等社交媒体网站。',
     },
     subscription: {
       signIn: '登录',

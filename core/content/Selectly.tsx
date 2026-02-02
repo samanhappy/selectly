@@ -6,6 +6,7 @@ import { StreamingResult } from '../../components/content/StreamingResult';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
+  SYSTEM_READING_PROGRESS_BLACKLIST,
   type FunctionConfig,
   type UserConfig,
 } from '../config/llm-config';
@@ -785,6 +786,21 @@ export class Selectly {
     this.setupIframeMonitoring();
   }
 
+  private isReadingProgressDisabled(): boolean {
+    const blacklist = [
+      ...SYSTEM_READING_PROGRESS_BLACKLIST,
+      ...(this.userConfig.general?.readingProgressBlacklist || []),
+    ];
+
+    const url = window.location.href;
+    const hostname = window.location.hostname;
+
+    return blacklist.some((domain) => {
+      const d = domain.trim();
+      return d && (hostname === d || hostname.endsWith(`.${d}`) || url.startsWith(d));
+    });
+  }
+
   public async applyHighlight(selectedText: string, config: FunctionConfig) {
     if (!selectedText?.trim()) return;
     const selection = this.currentSelection || window.getSelection();
@@ -968,8 +984,11 @@ export class Selectly {
 
   private applyReadingProgressConfig() {
     const { showProgressBar, progressBarColor } = this.getReadingProgressConfig();
+    const disabled = this.isReadingProgressDisabled();
+
     if (this.progressHost) {
-      this.progressHost.style.display = showProgressBar ? 'block' : 'none';
+      this.progressHost.style.display = showProgressBar && !disabled ? 'block' : 'none';
+      // If disabled, ensure we reset width or just hide it. Hiding is enough.
     }
     if (this.progressFill) {
       this.progressFill.style.background = progressBarColor;
@@ -1032,6 +1051,7 @@ export class Selectly {
   private async saveReadingProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
     if (window.top !== window.self) return;
     if (this.isRestoringProgress) return;
+    if (this.isReadingProgressDisabled()) return;
 
     const { autoSave } = this.getReadingProgressConfig();
     if (reason !== 'manual' && !autoSave) return;
@@ -1059,6 +1079,8 @@ export class Selectly {
   }
 
   private async restoreReadingProgress() {
+    if (this.isReadingProgressDisabled()) return;
+
     const { autoRestore } = this.getReadingProgressConfig();
     if (!autoRestore) return;
 
