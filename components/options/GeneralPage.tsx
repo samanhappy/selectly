@@ -36,7 +36,7 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
   }));
   const progressPresetLabel = t.popup?.general?.readingProgressBarColorPresets || 'Preset colors';
   const progressCustomLabel = t.popup?.general?.readingProgressBarColorCustom || 'Custom color';
-  const listMode = userConfig.general?.readingProgressListMode || 'blacklist';
+  const listMode = userConfig.general?.readingProgressListMode || 'whitelist';
 
   const exportConfiguration = async () => {
     try {
