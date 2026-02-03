@@ -1183,6 +1183,7 @@ export class Selectly {
         scrollTop,
         scrollHeight,
         clientHeight,
+        isManual: reason === 'manual',
       },
       { local: true, sync: shouldSync },
       retentionMs
@@ -1193,8 +1194,6 @@ export class Selectly {
   }
 
   private async restoreReadingProgress() {
-    if (this.isReadingProgressDisabled()) return;
-
     const { autoRestore } = this.getReadingProgressConfig();
     if (!autoRestore) return;
 
@@ -1203,6 +1202,7 @@ export class Selectly {
       this.getReadingProgressRetentionMs()
     );
     if (!record) return;
+    if (!record.isManual && this.isReadingProgressDisabled()) return;
 
     const attemptRestore = (tries = 0) => {
       const { scrollHeight, clientHeight } = this.getScrollMetrics();

@@ -8,6 +8,7 @@ export interface ReadingProgressRecord {
   scrollHeight: number;
   clientHeight: number;
   updatedAt: number;
+  isManual?: boolean;
 }
 
 class ReadingProgressDB extends Dexie {
