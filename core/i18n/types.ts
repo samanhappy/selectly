@@ -184,8 +184,17 @@ export interface I18nConfig {
       autoSaveReadingProgress?: string;
       autoRestoreReadingProgress?: string;
       readingProgressBarColor?: string;
+      readingProgressBarColorPresets?: string;
+      readingProgressBarColorCustom?: string;
+      readingProgressMode?: string;
+      readingProgressModeBlacklist?: string;
+      readingProgressModeWhitelist?: string;
       readingProgressBlacklist?: string;
       readingProgressBlacklistDesc?: string;
+      readingProgressWhitelist?: string;
+      readingProgressWhitelistDesc?: string;
+      readingProgressUseSystemBlacklist?: string;
+      readingProgressUseSystemWhitelist?: string;
     };
     subscription: {
       signIn: string;

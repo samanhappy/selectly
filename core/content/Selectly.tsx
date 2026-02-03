@@ -7,6 +7,7 @@ import {
   ConfigManager,
   DEFAULT_CONFIG,
   SYSTEM_READING_PROGRESS_BLACKLIST,
+  SYSTEM_READING_PROGRESS_WHITELIST,
   type FunctionConfig,
   type UserConfig,
 } from '../config/llm-config';
@@ -786,19 +787,36 @@ export class Selectly {
     this.setupIframeMonitoring();
   }
 
-  private isReadingProgressDisabled(): boolean {
-    const blacklist = [
-      ...SYSTEM_READING_PROGRESS_BLACKLIST,
-      ...(this.userConfig.general?.readingProgressBlacklist || []),
-    ];
-
-    const url = window.location.href;
-    const hostname = window.location.hostname;
-
-    return blacklist.some((domain) => {
+  private isDomainMatched(domains: string[], url: string, hostname: string): boolean {
+    return domains.some((domain) => {
       const d = domain.trim();
       return d && (hostname === d || hostname.endsWith(`.${d}`) || url.startsWith(d));
     });
+  }
+
+  private isReadingProgressDisabled(): boolean {
+    const general = this.userConfig.general || ({} as any);
+    const url = window.location.href;
+    const hostname = window.location.hostname;
+    const mode = general.readingProgressListMode || 'blacklist';
+    const useSystemBlacklist = general.useSystemReadingProgressBlacklist !== false;
+    const useSystemWhitelist = general.useSystemReadingProgressWhitelist !== false;
+
+    if (mode === 'whitelist') {
+      const whitelist = [
+        ...(useSystemWhitelist ? SYSTEM_READING_PROGRESS_WHITELIST : []),
+        ...(general.readingProgressWhitelist || []),
+      ];
+      if (whitelist.length === 0) return true;
+      return !this.isDomainMatched(whitelist, url, hostname);
+    }
+
+    const blacklist = [
+      ...(useSystemBlacklist ? SYSTEM_READING_PROGRESS_BLACKLIST : []),
+      ...(general.readingProgressBlacklist || []),
+    ];
+
+    return this.isDomainMatched(blacklist, url, hostname);
   }
 
   public async applyHighlight(selectedText: string, config: FunctionConfig) {

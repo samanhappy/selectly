@@ -186,9 +186,19 @@ export const en: I18nConfig = {
       autoSaveReadingProgress: 'Auto save reading progress',
       autoRestoreReadingProgress: 'Restore last position on load',
       readingProgressBarColor: 'Progress bar color',
+      readingProgressBarColorPresets: 'Preset colors',
+      readingProgressBarColorCustom: 'Custom color',
+      readingProgressMode: 'Domain list mode',
+      readingProgressModeBlacklist: 'Blacklist',
+      readingProgressModeWhitelist: 'Whitelist',
       readingProgressBlacklist: 'Blacklisted Domains',
       readingProgressBlacklistDesc:
         'One domain per line. System defaults (e.g. x.com) are also applied.',
+      readingProgressWhitelist: 'Whitelisted Domains',
+      readingProgressWhitelistDesc:
+        'One domain per line. Progress will only be saved or restored for these domains.',
+      readingProgressUseSystemBlacklist: 'Use system blacklist',
+      readingProgressUseSystemWhitelist: 'Use system whitelist',
     },
     subscription: {
       signIn: 'Sign In',

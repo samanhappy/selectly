@@ -185,8 +185,18 @@ export const ja: I18nConfig = {
       autoSaveReadingProgress: '進捗を自動保存',
       autoRestoreReadingProgress: '読み込み時に前回位置を復元',
       readingProgressBarColor: '進捗バーの色',
+      readingProgressBarColorPresets: 'プリセット色',
+      readingProgressBarColorCustom: 'カスタム色',
+      readingProgressMode: 'ドメインリストモード',
+      readingProgressModeBlacklist: 'ブラックリスト',
+      readingProgressModeWhitelist: 'ホワイトリスト',
       readingProgressBlacklist: 'ブラックリストのドメイン',
       readingProgressBlacklistDesc: '1行に1つのドメイン。システム設定（x.comなど）も適用されます。',
+      readingProgressWhitelist: 'ホワイトリストのドメイン',
+      readingProgressWhitelistDesc:
+        '1行に1つのドメイン。これらのドメインのみで進捗を保存/復元します。',
+      readingProgressUseSystemBlacklist: 'システムのブラックリストを使用',
+      readingProgressUseSystemWhitelist: 'システムのホワイトリストを使用',
     },
     subscription: {
       signIn: 'ログイン',

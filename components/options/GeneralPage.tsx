@@ -8,7 +8,14 @@ import React from 'react';
 
 import type { GeneralConfig, UserConfig } from '../../core/config/llm-config';
 import { secureStorage } from '../../core/storage/secure-storage';
+import { COLOR_PRESETS } from './color-presets';
 import { PALETTE } from './constants';
+import {
+  parseColorToRgba,
+  rgbaToHex,
+  rgbaToString,
+  type RgbaColor,
+} from './forms/highlight-color-utils';
 
 interface GeneralPageProps {
   t: any; // i18n translations
@@ -18,6 +25,19 @@ interface GeneralPageProps {
 }
 
 export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfig, onChange }) => {
+  const progressFallback: RgbaColor = { r: 96, g: 165, b: 250, a: 1 };
+  const progressColorValue = userConfig.general?.readingProgressBarColor || '#60a5fa';
+  const currentProgress = parseColorToRgba(progressColorValue, progressFallback);
+  const currentProgressHex = rgbaToHex(currentProgress);
+  const progressPresets = COLOR_PRESETS.map((preset) => ({
+    id: preset.id,
+    name: preset.name,
+    color: preset.solidColor,
+  }));
+  const progressPresetLabel = t.popup?.general?.readingProgressBarColorPresets || 'Preset colors';
+  const progressCustomLabel = t.popup?.general?.readingProgressBarColorCustom || 'Custom color';
+  const listMode = userConfig.general?.readingProgressListMode || 'blacklist';
+
   const exportConfiguration = async () => {
     try {
       const jsonData = await secureStorage.exportAllData();
@@ -115,42 +135,141 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
               <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>
                 {t.popup?.general?.readingProgressBarColor || 'Progress bar color'}
               </span>
-              <input
-                className="sl-input"
-                type="color"
-                value={userConfig.general?.readingProgressBarColor || '#60a5fa'}
-                onChange={(e) => onChange('readingProgressBarColor', e.target.value)}
-                style={{ width: 48, height: 30, padding: 0, border: 'none', background: 'none' }}
-              />
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-slate-600">{progressCustomLabel}</span>
+                <input
+                  className="sl-input"
+                  type="color"
+                  value={currentProgressHex}
+                  onChange={(e) => onChange('readingProgressBarColor', e.target.value)}
+                  style={{ width: 48, height: 30, padding: 0, border: 'none', background: 'none' }}
+                  aria-label={progressCustomLabel}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="text-xs font-medium text-slate-600">{progressPresetLabel}</div>
+              <div className="flex flex-wrap gap-2">
+                {progressPresets.map((preset) => {
+                  const isSelected =
+                    rgbaToString(parseColorToRgba(preset.color, currentProgress)) ===
+                    rgbaToString(currentProgress);
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => onChange('readingProgressBarColor', preset.color)}
+                      className={`h-7 w-7 rounded border border-slate-200 transition-shadow ${
+                        isSelected ? 'ring-2 ring-slate-400' : 'hover:ring-2 hover:ring-slate-200'
+                      }`}
+                      style={{ backgroundColor: preset.color }}
+                      title={preset.name}
+                      aria-label={preset.name}
+                    />
+                  );
+                })}
+              </div>
             </div>
             <div style={{ marginTop: 8 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 6 }}>
-                {t.popup?.general?.readingProgressBlacklist || 'Blacklisted Domains (One per line)'}
+                {t.popup?.general?.readingProgressMode || 'Domain list mode'}
               </div>
-              <textarea
+              <select
                 className="sl-input"
-                style={{
-                  width: '100%',
-                  height: 100,
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  resize: 'vertical',
-                }}
-                value={(userConfig.general?.readingProgressBlacklist || []).join('\n')}
-                onChange={(e) => {
-                  const val = e.target.value
-                    .split('\n')
-                    .map((s) => s.trim())
-                    .filter(Boolean);
-                  onChange('readingProgressBlacklist', val);
-                }}
-                placeholder="example.com&#10;x.com"
-              />
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
-                {t.popup?.general?.readingProgressBlacklistDesc ||
-                  'Progress will not be saved or restored for these domains. System defaults (e.g. x.com, youtube.com) are also applied automatically.'}
-              </div>
+                value={listMode}
+                onChange={(e) => onChange('readingProgressListMode', e.target.value)}
+              >
+                <option value="blacklist">
+                  {t.popup?.general?.readingProgressModeBlacklist || 'Blacklist'}
+                </option>
+                <option value="whitelist">
+                  {t.popup?.general?.readingProgressModeWhitelist || 'Whitelist'}
+                </option>
+              </select>
             </div>
+            <label className="sl-switch-row" style={{ margin: 0 }}>
+              <input
+                className="sl-checkbox"
+                type="checkbox"
+                checked={userConfig.general?.useSystemReadingProgressBlacklist !== false}
+                onChange={(e) => onChange('useSystemReadingProgressBlacklist', e.target.checked)}
+              />
+              <span className="sl-switch-text">
+                {t.popup?.general?.readingProgressUseSystemBlacklist || 'Use system blacklist'}
+              </span>
+            </label>
+            <label className="sl-switch-row" style={{ margin: 0 }}>
+              <input
+                className="sl-checkbox"
+                type="checkbox"
+                checked={userConfig.general?.useSystemReadingProgressWhitelist !== false}
+                onChange={(e) => onChange('useSystemReadingProgressWhitelist', e.target.checked)}
+              />
+              <span className="sl-switch-text">
+                {t.popup?.general?.readingProgressUseSystemWhitelist || 'Use system whitelist'}
+              </span>
+            </label>
+            {listMode === 'blacklist' ? (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 6 }}>
+                  {t.popup?.general?.readingProgressBlacklist ||
+                    'Blacklisted Domains (One per line)'}
+                </div>
+                <textarea
+                  className="sl-input"
+                  style={{
+                    width: '100%',
+                    height: 100,
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    resize: 'vertical',
+                  }}
+                  value={(userConfig.general?.readingProgressBlacklist || []).join('\n')}
+                  onChange={(e) => {
+                    const val = e.target.value
+                      .split('\n')
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                    onChange('readingProgressBlacklist', val);
+                  }}
+                  placeholder="example.com\nx.com"
+                />
+                <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                  {t.popup?.general?.readingProgressBlacklistDesc ||
+                    'Progress will not be saved or restored for these domains. System defaults (e.g. x.com, youtube.com) are also applied automatically.'}
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginTop: 8 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 6 }}>
+                  {t.popup?.general?.readingProgressWhitelist ||
+                    'Whitelisted Domains (One per line)'}
+                </div>
+                <textarea
+                  className="sl-input"
+                  style={{
+                    width: '100%',
+                    height: 100,
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    resize: 'vertical',
+                  }}
+                  value={(userConfig.general?.readingProgressWhitelist || []).join('\n')}
+                  onChange={(e) => {
+                    const val = e.target.value
+                      .split('\n')
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                    onChange('readingProgressWhitelist', val);
+                  }}
+                  placeholder="example.com\nread.example"
+                />
+                <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                  {t.popup?.general?.readingProgressWhitelistDesc ||
+                    'Progress will only be saved or restored for these domains. You can also enable system whitelist defaults.'}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

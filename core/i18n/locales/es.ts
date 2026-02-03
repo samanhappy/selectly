@@ -187,9 +187,19 @@ export const es: I18nConfig = {
       autoSaveReadingProgress: 'Guardar progreso automáticamente',
       autoRestoreReadingProgress: 'Restaurar última posición al cargar',
       readingProgressBarColor: 'Color de la barra de progreso',
+      readingProgressBarColorPresets: 'Colores preestablecidos',
+      readingProgressBarColorCustom: 'Color personalizado',
+      readingProgressMode: 'Modo de lista de dominios',
+      readingProgressModeBlacklist: 'Lista negra',
+      readingProgressModeWhitelist: 'Lista blanca',
       readingProgressBlacklist: 'Dominios en lista negra',
       readingProgressBlacklistDesc:
         'Un dominio por línea. También se aplican los valores predeterminados del sistema (por ejemplo, x.com).',
+      readingProgressWhitelist: 'Dominios en lista blanca',
+      readingProgressWhitelistDesc:
+        'Un dominio por línea. El progreso solo se guardará o restaurará en estos dominios.',
+      readingProgressUseSystemBlacklist: 'Usar lista negra del sistema',
+      readingProgressUseSystemWhitelist: 'Usar lista blanca del sistema',
     },
     subscription: {
       signIn: 'Iniciar Sesión',

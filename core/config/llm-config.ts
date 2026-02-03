@@ -46,7 +46,11 @@ export interface GeneralConfig {
   readingProgressBarColor?: string;
   autoSaveReadingProgress?: boolean;
   autoRestoreReadingProgress?: boolean;
+  readingProgressListMode?: 'blacklist' | 'whitelist';
   readingProgressBlacklist?: string[];
+  readingProgressWhitelist?: string[];
+  useSystemReadingProgressBlacklist?: boolean;
+  useSystemReadingProgressWhitelist?: boolean;
 }
 
 export interface UserConfig {
@@ -72,6 +76,14 @@ export const SYSTEM_READING_PROGRESS_BLACKLIST = [
   'weibo.com',
   'zhihu.com',
   'facebook.com',
+  'google.com',
+  'baidu.com',
+];
+
+export const SYSTEM_READING_PROGRESS_WHITELIST = [
+  'wikipedia.org',
+  'developer.mozilla.org',
+  'medium.com',
 ];
 
 export const CLOUD_PROVIDER: LLMProvider = {
@@ -149,7 +161,11 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       readingProgressBarColor: '#60a5fa',
       autoSaveReadingProgress: true,
       autoRestoreReadingProgress: true,
+      readingProgressListMode: 'blacklist',
       readingProgressBlacklist: [],
+      readingProgressWhitelist: [],
+      useSystemReadingProgressBlacklist: true,
+      useSystemReadingProgressWhitelist: true,
     },
     llm: {
       defaultModel: '',
@@ -361,7 +377,11 @@ export const DEFAULT_CONFIG: UserConfig = {
     readingProgressBarColor: '#60a5fa',
     autoSaveReadingProgress: true,
     autoRestoreReadingProgress: true,
+    readingProgressListMode: 'blacklist',
     readingProgressBlacklist: [],
+    readingProgressWhitelist: [],
+    useSystemReadingProgressBlacklist: true,
+    useSystemReadingProgressWhitelist: true,
   },
   llm: {
     defaultModel: '',
