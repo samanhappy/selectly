@@ -80,11 +80,7 @@ export const SYSTEM_READING_PROGRESS_BLACKLIST = [
   'baidu.com',
 ];
 
-export const SYSTEM_READING_PROGRESS_WHITELIST = [
-  'wikipedia.org',
-  'developer.mozilla.org',
-  'medium.com',
-];
+export const SYSTEM_READING_PROGRESS_WHITELIST = [];
 
 export const CLOUD_PROVIDER: LLMProvider = {
   id: 'cloud',
