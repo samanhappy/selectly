@@ -1073,7 +1073,22 @@ export class Selectly {
 
   private hasVerticalScroll(): boolean {
     const { scrollHeight, clientHeight } = this.getScrollMetrics();
-    return scrollHeight > clientHeight + 1;
+    if (scrollHeight <= clientHeight + 1) return false;
+
+    try {
+      const docEl = document.documentElement;
+      const body = document.body;
+      const docOverflow = window.getComputedStyle(docEl).overflowY;
+      const bodyOverflow = body ? window.getComputedStyle(body).overflowY : '';
+      const blocked = ['hidden', 'clip'];
+      if (blocked.includes(docOverflow) && blocked.includes(bodyOverflow)) {
+        return false;
+      }
+    } catch {
+      // fallback to height check only
+    }
+
+    return true;
   }
 
   private updateProgressBar() {
