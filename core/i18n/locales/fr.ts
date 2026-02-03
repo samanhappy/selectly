@@ -188,6 +188,8 @@ export const fr: I18nConfig = {
       showReadingProgressBar: 'Afficher la barre de progression',
       autoSaveReadingProgress: 'Enregistrer automatiquement la progression',
       autoRestoreReadingProgress: 'Restaurer la dernière position au chargement',
+      readingProgressRetention: 'Conservation de la progression (jours)',
+      readingProgressRetentionDesc: 'La progression plus ancienne sera supprimée automatiquement.',
       readingProgressBarColor: 'Couleur de la barre de progression',
       readingProgressBarColorPresets: 'Couleurs prédéfinies',
       readingProgressBarColorCustom: 'Couleur personnalisée',

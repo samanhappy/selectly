@@ -180,6 +180,8 @@ export const zh: I18nConfig = {
       showReadingProgressBar: '显示进度条',
       autoSaveReadingProgress: '自动保存阅读进度',
       autoRestoreReadingProgress: '进入时恢复上次位置',
+      readingProgressRetention: '进度保留天数',
+      readingProgressRetentionDesc: '超过该天数的进度会自动清理。',
       readingProgressBarColor: '进度条颜色',
       readingProgressBarColorPresets: '预置颜色',
       readingProgressBarColorCustom: '自定义颜色',

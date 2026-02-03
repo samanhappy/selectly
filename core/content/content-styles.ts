@@ -98,6 +98,54 @@ export const contentStyles = `
     box-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
   }
 
+  /* Manual reading progress save button */
+  .selectly-global-actions {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1000000;
+    pointer-events: auto;
+  }
+
+  .selectly-global-action-btn {
+    all: unset;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #f8fafc;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .selectly-global-action-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow:
+      0 10px 24px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .selectly-global-action-btn:active {
+    transform: translateY(0);
+    background: rgba(15, 23, 42, 0.85);
+  }
+
+  .selectly-global-action-btn.is-saved {
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow:
+      0 8px 18px rgba(34, 197, 94, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
 
   /* Glass morphism button base styles */
   .selectly-buttons .action-btn {

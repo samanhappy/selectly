@@ -185,6 +185,8 @@ export const pt: I18nConfig = {
       showReadingProgressBar: 'Mostrar barra de progresso',
       autoSaveReadingProgress: 'Salvar progresso automaticamente',
       autoRestoreReadingProgress: 'Restaurar última posição ao carregar',
+      readingProgressRetention: 'Retenção de progresso (dias)',
+      readingProgressRetentionDesc: 'O progresso mais antigo será removido automaticamente.',
       readingProgressBarColor: 'Cor da barra de progresso',
       readingProgressBarColorPresets: 'Cores predefinidas',
       readingProgressBarColorCustom: 'Cor personalizada',

@@ -187,6 +187,8 @@ export const de: I18nConfig = {
       showReadingProgressBar: 'Fortschrittsleiste anzeigen',
       autoSaveReadingProgress: 'Leseverlauf automatisch speichern',
       autoRestoreReadingProgress: 'Letzte Position beim Laden wiederherstellen',
+      readingProgressRetention: 'Fortschritt aufbewahren (Tage)',
+      readingProgressRetentionDesc: 'Fortschritt, der älter ist, wird automatisch entfernt.',
       readingProgressBarColor: 'Farbe der Fortschrittsleiste',
       readingProgressBarColorPresets: 'Voreingestellte Farben',
       readingProgressBarColorCustom: 'Benutzerdefinierte Farbe',

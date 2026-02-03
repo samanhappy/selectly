@@ -46,6 +46,7 @@ export interface GeneralConfig {
   readingProgressBarColor?: string;
   autoSaveReadingProgress?: boolean;
   autoRestoreReadingProgress?: boolean;
+  readingProgressRetentionDays?: number;
   readingProgressListMode?: 'blacklist' | 'whitelist';
   readingProgressBlacklist?: string[];
   readingProgressWhitelist?: string[];
@@ -157,7 +158,8 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       readingProgressBarColor: '#60a5fa',
       autoSaveReadingProgress: true,
       autoRestoreReadingProgress: true,
-      readingProgressListMode: 'whitelist',
+      readingProgressRetentionDays: 30,
+      readingProgressListMode: 'blacklist',
       readingProgressBlacklist: [],
       readingProgressWhitelist: [],
       useSystemReadingProgressBlacklist: true,
@@ -373,7 +375,8 @@ export const DEFAULT_CONFIG: UserConfig = {
     readingProgressBarColor: '#60a5fa',
     autoSaveReadingProgress: true,
     autoRestoreReadingProgress: true,
-    readingProgressListMode: 'whitelist',
+    readingProgressRetentionDays: 30,
+    readingProgressListMode: 'blacklist',
     readingProgressBlacklist: [],
     readingProgressWhitelist: [],
     useSystemReadingProgressBlacklist: true,

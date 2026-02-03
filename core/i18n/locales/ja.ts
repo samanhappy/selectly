@@ -184,6 +184,8 @@ export const ja: I18nConfig = {
       showReadingProgressBar: '進捗バーを表示',
       autoSaveReadingProgress: '進捗を自動保存',
       autoRestoreReadingProgress: '読み込み時に前回位置を復元',
+      readingProgressRetention: '進捗の保持日数',
+      readingProgressRetentionDesc: '指定日数を超えた進捗は自動的に削除されます。',
       readingProgressBarColor: '進捗バーの色',
       readingProgressBarColorPresets: 'プリセット色',
       readingProgressBarColorCustom: 'カスタム色',

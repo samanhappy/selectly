@@ -183,6 +183,8 @@ export interface I18nConfig {
       showReadingProgressBar?: string;
       autoSaveReadingProgress?: string;
       autoRestoreReadingProgress?: string;
+      readingProgressRetention?: string;
+      readingProgressRetentionDesc?: string;
       readingProgressBarColor?: string;
       readingProgressBarColorPresets?: string;
       readingProgressBarColorCustom?: string;

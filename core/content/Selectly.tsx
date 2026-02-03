@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 
 import { ActionButtons } from '../../components/content/ActionButtons';
+import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
 import {
@@ -41,6 +42,9 @@ export class Selectly {
   private sharePreviewRoot: any = null;
   private progressHost: HTMLDivElement | null = null;
   private progressFill: HTMLDivElement | null = null;
+  private globalActionHost: HTMLDivElement | null = null;
+  private globalActionContainer: HTMLDivElement | null = null;
+  private globalActionRoot: any = null;
   private readingProgressInitialized = false;
   private scrollRafId: number | null = null;
   private scrollSaveTimer: number | null = null;
@@ -798,7 +802,7 @@ export class Selectly {
     const general = this.userConfig.general || ({} as any);
     const url = window.location.href;
     const hostname = window.location.hostname;
-    const mode = general.readingProgressListMode || 'whitelist';
+    const mode = general.readingProgressListMode || 'blacklist';
     const useSystemBlacklist = general.useSystemReadingProgressBlacklist !== false;
     const useSystemWhitelist = general.useSystemReadingProgressWhitelist !== false;
 
@@ -952,7 +956,16 @@ export class Selectly {
       progressBarColor: general.readingProgressBarColor || '#60a5fa',
       autoSave: general.autoSaveReadingProgress !== false,
       autoRestore: general.autoRestoreReadingProgress !== false,
+      retentionDays: Number.isFinite(general.readingProgressRetentionDays)
+        ? Number(general.readingProgressRetentionDays)
+        : 30,
     };
+  }
+
+  private getReadingProgressRetentionMs(): number {
+    const { retentionDays } = this.getReadingProgressConfig();
+    if (!retentionDays || retentionDays <= 0) return 0;
+    return retentionDays * 24 * 60 * 60 * 1000;
   }
 
   private setupReadingProgress() {
@@ -963,6 +976,7 @@ export class Selectly {
     this.mountProgressBar();
     this.applyReadingProgressConfig();
     this.updateProgressBar();
+    this.updateGlobalActionBar();
 
     document.addEventListener('scroll', this.handleScroll, { passive: true });
     window.addEventListener('resize', this.handleScroll);
@@ -1013,6 +1027,8 @@ export class Selectly {
     if (this.progressFill) {
       this.progressFill.style.background = progressBarColor;
     }
+
+    this.updateGlobalActionBar();
   }
 
   private handleScroll = () => {
@@ -1068,6 +1084,7 @@ export class Selectly {
     if (!showProgressBar) return;
     if (!this.hasVerticalScroll()) {
       if (this.progressHost) this.progressHost.style.display = 'none';
+      this.updateGlobalActionBar();
       return;
     }
 
@@ -1075,17 +1092,86 @@ export class Selectly {
     const maxScroll = Math.max(1, scrollHeight - clientHeight);
     const progress = Math.max(0, Math.min(1, scrollTop / maxScroll));
     this.progressFill.style.width = `${progress * 100}%`;
+
+    this.updateGlobalActionBar();
+  }
+
+  private shouldShowManualSaveButton(): boolean {
+    const { autoSave } = this.getReadingProgressConfig();
+    return this.hasVerticalScroll() && (!autoSave || this.isReadingProgressDisabled());
+  }
+
+  private mountGlobalActionBar() {
+    if (this.globalActionHost) return;
+
+    this.globalActionHost = document.createElement('div');
+    this.globalActionHost.id = 'selectly-global-actions-host';
+    const shadow = this.globalActionHost.attachShadow({ mode: 'open' });
+    document.body.appendChild(this.globalActionHost);
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = this.styleContent;
+    shadow.appendChild(styleEl);
+
+    this.globalActionContainer = document.createElement('div');
+    shadow.appendChild(this.globalActionContainer);
+
+    this.globalActionRoot = createRoot(this.globalActionContainer);
+
+    this.globalActionRoot.render(
+      <GlobalActionBar
+        onSaveProgress={() => this.saveReadingProgress('manual')}
+        labels={{
+          saveProgress: i18n.getConfig().content?.saveProgress || 'Save progress',
+          progressSaved: i18n.getConfig().content?.progressSaved || 'Progress saved',
+        }}
+      />
+    );
+  }
+
+  private hideGlobalActionBar() {
+    if (this.globalActionRoot) {
+      try {
+        this.globalActionRoot.unmount();
+      } catch {}
+    }
+    if (this.globalActionContainer) this.globalActionContainer.remove();
+    if (this.globalActionHost) this.globalActionHost.remove();
+    this.globalActionRoot = null;
+    this.globalActionContainer = null;
+    this.globalActionHost = null;
+  }
+
+  private updateGlobalActionBar() {
+    if (this.shouldShowManualSaveButton()) {
+      this.mountGlobalActionBar();
+    } else if (this.globalActionHost) {
+      this.hideGlobalActionBar();
+    }
   }
 
   private async saveReadingProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
     if (window.top !== window.self) return;
     if (this.isRestoringProgress) return;
-    if (this.isReadingProgressDisabled()) return;
+    if (reason !== 'manual' && this.isReadingProgressDisabled()) return;
 
     const { autoSave } = this.getReadingProgressConfig();
     if (reason !== 'manual' && !autoSave) return;
 
     const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
+    const maxScroll = Math.max(0, scrollHeight - clientHeight);
+    const retentionMs = this.getReadingProgressRetentionMs();
+
+    if (maxScroll <= 0) return;
+    const progress = Math.max(0, Math.min(1, scrollTop / Math.max(1, maxScroll)));
+    if (progress >= 0.999) {
+      await readingProgressService.deleteProgress(window.location.href, {
+        local: true,
+        sync: true,
+      });
+      this.lastSavedScrollTop = 0;
+      return;
+    }
     if (reason === 'scroll' && Math.abs(scrollTop - this.lastSavedScrollTop) < 8) return;
 
     const shouldSync =
@@ -1100,7 +1186,8 @@ export class Selectly {
         scrollHeight,
         clientHeight,
       },
-      { local: true, sync: shouldSync }
+      { local: true, sync: shouldSync },
+      retentionMs
     );
 
     this.lastSavedScrollTop = scrollTop;
@@ -1113,7 +1200,10 @@ export class Selectly {
     const { autoRestore } = this.getReadingProgressConfig();
     if (!autoRestore) return;
 
-    const record = await readingProgressService.getProgress(window.location.href);
+    const record = await readingProgressService.getProgress(
+      window.location.href,
+      this.getReadingProgressRetentionMs()
+    );
     if (!record) return;
 
     const attemptRestore = (tries = 0) => {
@@ -1381,13 +1471,21 @@ export class Selectly {
       return true;
     }
 
+    if (
+      this.globalActionHost &&
+      (target === this.globalActionHost || this.globalActionHost.contains(target))
+    ) {
+      return true;
+    }
+
     if ('composedPath' in event && typeof event.composedPath === 'function') {
       const path = event.composedPath();
       for (const element of path) {
         if (
           element === this.buttonsHost ||
           element === this.streamingHost ||
-          element === this.progressHost
+          element === this.progressHost ||
+          element === this.globalActionHost
         ) {
           return true;
         }
@@ -1396,9 +1494,12 @@ export class Selectly {
             element.closest('#selectly-buttons-host') ||
             element.closest('#selectly-streaming-host') ||
             element.closest('#selectly-progress-host') ||
+            element.closest('#selectly-global-actions-host') ||
             element.classList.contains('selectly-buttons') ||
             element.classList.contains('selectly-streaming-result') ||
             element.classList.contains('selectly-progress-bar') ||
+            element.classList.contains('selectly-global-actions') ||
+            element.classList.contains('selectly-global-action-btn') ||
             element.classList.contains('action-btn')
           ) {
             return true;
@@ -1414,9 +1515,12 @@ export class Selectly {
         el.id === 'selectly-buttons-host' ||
         el.id === 'selectly-streaming-host' ||
         el.id === 'selectly-progress-host' ||
+        el.id === 'selectly-global-actions-host' ||
         el.classList.contains('selectly-buttons') ||
         el.classList.contains('selectly-streaming-result') ||
         el.classList.contains('selectly-progress-bar') ||
+        el.classList.contains('selectly-global-actions') ||
+        el.classList.contains('selectly-global-action-btn') ||
         el.classList.contains('action-btn') ||
         el.classList.contains('glass-button')
       ) {

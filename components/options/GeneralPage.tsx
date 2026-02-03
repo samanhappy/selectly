@@ -36,7 +36,7 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
   }));
   const progressPresetLabel = t.popup?.general?.readingProgressBarColorPresets || 'Preset colors';
   const progressCustomLabel = t.popup?.general?.readingProgressBarColorCustom || 'Custom color';
-  const listMode = userConfig.general?.readingProgressListMode || 'whitelist';
+  const listMode = userConfig.general?.readingProgressListMode || 'blacklist';
 
   const exportConfiguration = async () => {
     try {
@@ -131,6 +131,25 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
                 {t.popup?.general?.autoRestoreReadingProgress || 'Restore last position on load'}
               </span>
             </label>
+            <div style={{ marginTop: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 6 }}>
+                {t.popup?.general?.readingProgressRetention || 'Progress retention (days)'}
+              </div>
+              <input
+                className="sl-input"
+                type="number"
+                min={1}
+                step={1}
+                value={userConfig.general?.readingProgressRetentionDays ?? 30}
+                onChange={(e) =>
+                  onChange('readingProgressRetentionDays', Math.max(1, Number(e.target.value || 0)))
+                }
+              />
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>
+                {t.popup?.general?.readingProgressRetentionDesc ||
+                  'Progress older than this will be removed automatically.'}
+              </div>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>
                 {t.popup?.general?.readingProgressBarColor || 'Progress bar color'}
