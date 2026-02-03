@@ -116,34 +116,34 @@ export const contentStyles = `
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #f8fafc;
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #334155;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(15, 23, 42, 0.12);
     box-shadow:
-      0 6px 16px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      0 6px 14px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
   .selectly-global-action-btn:hover {
     transform: translateY(-2px);
-    background: rgba(30, 41, 59, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     box-shadow:
-      0 10px 24px rgba(0, 0, 0, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      0 10px 20px rgba(15, 23, 42, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
 
   .selectly-global-action-btn:active {
     transform: translateY(0);
-    background: rgba(15, 23, 42, 0.85);
+    background: rgba(248, 250, 252, 0.95);
   }
 
   .selectly-global-action-btn.is-saved {
     color: #22c55e;
     border-color: rgba(34, 197, 94, 0.4);
     box-shadow:
-      0 8px 18px rgba(34, 197, 94, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 8px 16px rgba(34, 197, 94, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 
 
