@@ -46,9 +46,14 @@ export class Selectly {
   private globalActionRoot: any = null;
   private readingProgressInitialized = false;
   private scrollRafId: number | null = null;
+  private progressRefreshRafId: number | null = null;
   private scrollSaveTimer: number | null = null;
   private lastSavedScrollTop = 0;
   private lastSyncSavedAt = 0;
+  private lastScrollCheckAt = 0;
+  private lastScrollCheckKey = '';
+  private lastHasVerticalScroll: boolean | null = null;
+  private progressResizeObserver: ResizeObserver | null = null;
   private isRestoringProgress = false;
   private isShowingButtons = false;
   private userConfig: UserConfig = DEFAULT_CONFIG;
@@ -982,7 +987,41 @@ export class Selectly {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
     window.addEventListener('pagehide', this.handlePageHide);
 
+    const refreshProgressUI = () => this.scheduleProgressRefresh();
+
+    // Re-check after initial layout/paint settles to avoid first-render false positives
+    window.setTimeout(refreshProgressUI, 300);
+    window.setTimeout(refreshProgressUI, 1200);
+    window.addEventListener('load', refreshProgressUI, { once: true });
+
+    if (!this.progressResizeObserver && 'ResizeObserver' in window) {
+      this.progressResizeObserver = new ResizeObserver(() => this.scheduleProgressRefresh());
+      try {
+        if (document.documentElement) {
+          this.progressResizeObserver.observe(document.documentElement);
+        }
+        if (document.body) {
+          this.progressResizeObserver.observe(document.body);
+        }
+        const scrollEl = document.scrollingElement;
+        if (scrollEl && scrollEl !== document.documentElement && scrollEl !== document.body) {
+          this.progressResizeObserver.observe(scrollEl);
+        }
+      } catch {
+        // noop
+      }
+    }
+
     this.restoreReadingProgress();
+  }
+
+  private scheduleProgressRefresh() {
+    if (this.progressRefreshRafId) return;
+    this.progressRefreshRafId = window.requestAnimationFrame(() => {
+      this.progressRefreshRafId = null;
+      this.applyReadingProgressConfig();
+      this.updateProgressBar();
+    });
   }
 
   private mountProgressBar() {
@@ -1018,6 +1057,10 @@ export class Selectly {
     const hasScroll = this.hasVerticalScroll();
 
     if (this.progressHost) {
+      console.debug('[Selectly][reading-progress] apply config', {
+        showProgressBar,
+        hasScroll,
+      });
       this.progressHost.style.display = showProgressBar && hasScroll ? 'block' : 'none';
       // If disabled, ensure we reset width or just hide it. Hiding is enough.
     }
@@ -1064,29 +1107,82 @@ export class Selectly {
   private getScrollMetrics() {
     const docEl = document.documentElement;
     const body = document.body;
-    const scrollTop = docEl.scrollTop || body.scrollTop || 0;
-    const scrollHeight = Math.max(docEl.scrollHeight, body.scrollHeight);
-    const clientHeight = docEl.clientHeight || window.innerHeight;
+    const scrollEl = document.scrollingElement || docEl;
+    const scrollTop = scrollEl?.scrollTop ?? (docEl.scrollTop || body.scrollTop || 0);
+    const scrollHeight = scrollEl?.scrollHeight ?? Math.max(docEl.scrollHeight, body.scrollHeight);
+    const clientHeight = scrollEl?.clientHeight ?? (docEl.clientHeight || window.innerHeight);
+    console.debug('[Selectly][reading-progress] scroll metrics', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      scrollEl: scrollEl?.tagName,
+      docEl: docEl?.tagName,
+    });
     return { scrollTop, scrollHeight, clientHeight };
   }
 
   private hasVerticalScroll(): boolean {
     const { scrollHeight, clientHeight } = this.getScrollMetrics();
-    if (scrollHeight <= clientHeight + 1) return false;
+    const maxScroll = scrollHeight - clientHeight;
+    const minScrollablePx = Math.max(64, Math.round(clientHeight * 0.12));
+    if (maxScroll <= 1) {
+      console.debug('[Selectly][reading-progress] no vertical scroll: height check', {
+        scrollHeight,
+        clientHeight,
+        maxScroll,
+      });
+      this.lastHasVerticalScroll = false;
+      this.lastScrollCheckKey = `${scrollHeight}:${clientHeight}`;
+      this.lastScrollCheckAt = Date.now();
+      return false;
+    }
+
+    const now = Date.now();
+    const key = `${scrollHeight}:${clientHeight}`;
+    if (
+      this.lastHasVerticalScroll !== null &&
+      this.lastScrollCheckKey === key &&
+      now - this.lastScrollCheckAt < 1000
+    ) {
+      return this.lastHasVerticalScroll;
+    }
 
     try {
       const docEl = document.documentElement;
       const body = document.body;
+      const scrollEl = document.scrollingElement || docEl;
       const docOverflow = window.getComputedStyle(docEl).overflowY;
       const bodyOverflow = body ? window.getComputedStyle(body).overflowY : '';
+      const scrollOverflow = scrollEl ? window.getComputedStyle(scrollEl).overflowY : '';
       const blocked = ['hidden', 'clip'];
+      if (blocked.includes(scrollOverflow)) {
+        console.debug('[Selectly][reading-progress] no vertical scroll: scrollEl overflow', {
+          scrollOverflow,
+          scrollEl: scrollEl?.tagName,
+        });
+        this.lastHasVerticalScroll = false;
+        this.lastScrollCheckKey = key;
+        this.lastScrollCheckAt = now;
+        return false;
+      }
       if (blocked.includes(docOverflow) && blocked.includes(bodyOverflow)) {
+        console.debug('[Selectly][reading-progress] no vertical scroll: doc/body overflow', {
+          docOverflow,
+          bodyOverflow,
+        });
+        this.lastHasVerticalScroll = false;
+        this.lastScrollCheckKey = key;
+        this.lastScrollCheckAt = now;
         return false;
       }
     } catch {
       // fallback to height check only
     }
 
+    console.debug('[Selectly][reading-progress] vertical scroll available');
+    this.lastHasVerticalScroll = true;
+    this.lastScrollCheckKey = key;
+    this.lastScrollCheckAt = now;
     return true;
   }
 
@@ -1096,6 +1192,7 @@ export class Selectly {
     if (!showProgressBar) return;
     if (!this.hasVerticalScroll()) {
       if (this.progressHost) this.progressHost.style.display = 'none';
+      console.debug('[Selectly][reading-progress] hide progress bar: no vertical scroll');
       this.updateGlobalActionBar();
       return;
     }
@@ -1103,6 +1200,13 @@ export class Selectly {
     const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
     const maxScroll = Math.max(1, scrollHeight - clientHeight);
     const progress = Math.max(0, Math.min(1, scrollTop / maxScroll));
+    console.debug('[Selectly][reading-progress] update progress bar', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      maxScroll,
+      progress,
+    });
     this.progressFill.style.width = `${progress * 100}%`;
 
     this.updateGlobalActionBar();
