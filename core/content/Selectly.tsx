@@ -1006,7 +1006,8 @@ export class Selectly {
     const hasScroll = this.hasVerticalScroll();
 
     if (this.progressHost) {
-      this.progressHost.style.display = showProgressBar && !disabled && hasScroll ? 'block' : 'none';
+      this.progressHost.style.display =
+        showProgressBar && !disabled && hasScroll ? 'block' : 'none';
       // If disabled, ensure we reset width or just hide it. Hiding is enough.
     }
     if (this.progressFill) {
