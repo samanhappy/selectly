@@ -1003,9 +1003,10 @@ export class Selectly {
   private applyReadingProgressConfig() {
     const { showProgressBar, progressBarColor } = this.getReadingProgressConfig();
     const disabled = this.isReadingProgressDisabled();
+    const hasScroll = this.hasVerticalScroll();
 
     if (this.progressHost) {
-      this.progressHost.style.display = showProgressBar && !disabled ? 'block' : 'none';
+      this.progressHost.style.display = showProgressBar && !disabled && hasScroll ? 'block' : 'none';
       // If disabled, ensure we reset width or just hide it. Hiding is enough.
     }
     if (this.progressFill) {
@@ -1055,10 +1056,19 @@ export class Selectly {
     return { scrollTop, scrollHeight, clientHeight };
   }
 
+  private hasVerticalScroll(): boolean {
+    const { scrollHeight, clientHeight } = this.getScrollMetrics();
+    return scrollHeight > clientHeight + 1;
+  }
+
   private updateProgressBar() {
     if (!this.progressFill) return;
     const { showProgressBar } = this.getReadingProgressConfig();
     if (!showProgressBar) return;
+    if (!this.hasVerticalScroll()) {
+      if (this.progressHost) this.progressHost.style.display = 'none';
+      return;
+    }
 
     const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
     const maxScroll = Math.max(1, scrollHeight - clientHeight);
