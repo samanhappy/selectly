@@ -15,7 +15,6 @@ import {
 import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
-import { readingProgressService } from '../services/reading-progress-service';
 import { secureStorage } from '../storage/secure-storage';
 import { contentStyles } from './content-styles';
 
@@ -1163,6 +1162,44 @@ export class Selectly {
     }
   }
 
+  private async getReadingProgressFromBackground(maxAgeMs?: number) {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return null;
+    const res = await chrome.runtime.sendMessage({
+      action: 'readingProgress:get',
+      url: window.location.href,
+      maxAgeMs,
+    });
+    return res?.success ? res.record : null;
+  }
+
+  private async saveReadingProgressToBackground(
+    record: {
+      url: string;
+      title?: string;
+      scrollTop: number;
+      scrollHeight: number;
+      clientHeight: number;
+      isManual?: boolean;
+    },
+    maxAgeMs?: number
+  ) {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+    await chrome.runtime.sendMessage({
+      action: 'readingProgress:save',
+      url: record.url,
+      record,
+      maxAgeMs,
+    });
+  }
+
+  private async deleteReadingProgressFromBackground() {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+    await chrome.runtime.sendMessage({
+      action: 'readingProgress:delete',
+      url: window.location.href,
+    });
+  }
+
   private async saveReadingProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
     if (window.top !== window.self) return;
     if (this.isRestoringProgress) return;
@@ -1178,10 +1215,7 @@ export class Selectly {
     if (maxScroll <= 0) return;
     const progress = Math.max(0, Math.min(1, scrollTop / Math.max(1, maxScroll)));
     if (progress >= 0.999) {
-      await readingProgressService.deleteProgress(window.location.href, {
-        local: true,
-        sync: true,
-      });
+      await this.deleteReadingProgressFromBackground();
       this.lastSavedScrollTop = 0;
       return;
     }
@@ -1189,9 +1223,9 @@ export class Selectly {
 
     const shouldSync =
       reason === 'manual' || Date.now() - this.lastSyncSavedAt > 8000 || reason !== 'scroll';
+    void shouldSync;
 
-    await readingProgressService.saveProgress(
-      window.location.href,
+    await this.saveReadingProgressToBackground(
       {
         url: window.location.href,
         title: document.title || window.location.href,
@@ -1200,7 +1234,6 @@ export class Selectly {
         clientHeight,
         isManual: reason === 'manual',
       },
-      { local: true, sync: shouldSync },
       retentionMs
     );
 
@@ -1212,8 +1245,7 @@ export class Selectly {
     const { autoRestore } = this.getReadingProgressConfig();
     if (!autoRestore) return;
 
-    const record = await readingProgressService.getProgress(
-      window.location.href,
+    const record = await this.getReadingProgressFromBackground(
       this.getReadingProgressRetentionMs()
     );
     if (!record) return;

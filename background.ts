@@ -7,6 +7,7 @@ import { dictionaryService } from './core/services/dictionary-service';
 import { dictionarySyncService } from './core/services/dictionary-sync-service';
 import { highlightService } from './core/services/highlight-service';
 import { highlightSyncService } from './core/services/highlight-sync-service';
+import { readingProgressService } from './core/services/reading-progress-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
@@ -349,6 +350,65 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             success: false,
             error: err?.message || 'Unknown error',
           });
+        }
+      })();
+      return true;
+    }
+    case 'readingProgress:get': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          const maxAgeMs = request.maxAgeMs as number | undefined;
+          if (!url) {
+            sendResponse({ success: false, error: 'Missing url' });
+            return;
+          }
+          const record = await readingProgressService.getProgress(url, maxAgeMs);
+          sendResponse({ success: true, record });
+        } catch (err: any) {
+          console.error('Failed to get reading progress:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'readingProgress:save': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          const payload = request.record as any;
+          const maxAgeMs = request.maxAgeMs as number | undefined;
+          if (!url || !payload) {
+            sendResponse({ success: false, error: 'Missing payload' });
+            return;
+          }
+          await readingProgressService.saveProgress(
+            url,
+            payload,
+            { local: true, sync: true },
+            maxAgeMs
+          );
+          sendResponse({ success: true });
+        } catch (err: any) {
+          console.error('Failed to save reading progress:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'readingProgress:delete': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          if (!url) {
+            sendResponse({ success: false, error: 'Missing url' });
+            return;
+          }
+          await readingProgressService.deleteProgress(url, { local: true, sync: true });
+          sendResponse({ success: true });
+        } catch (err: any) {
+          console.error('Failed to delete reading progress:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
       return true;
