@@ -806,7 +806,7 @@ export class Selectly {
     const general = this.userConfig.general || ({} as any);
     const url = window.location.href;
     const hostname = window.location.hostname;
-    const mode = general.readingProgressListMode || 'blacklist';
+    const mode = general.readingProgressListMode || 'whitelist';
     const useSystemBlacklist = general.useSystemReadingProgressBlacklist !== false;
     const useSystemWhitelist = general.useSystemReadingProgressWhitelist !== false;
 
