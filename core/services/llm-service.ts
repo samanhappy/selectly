@@ -89,17 +89,20 @@ export class LLMService {
     console.log('Using model:', modelName);
 
     try {
-      const response = await client.chat.completions.create({
-        model: modelName,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      });
+      const response = await client.chat.completions.create(
+        {
+          model: modelName,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
+        },
+        { timeout: 10000 }
+      );
 
       const content = response.choices[0]?.message?.content;
       if (!content) {
@@ -147,13 +150,16 @@ export class LLMService {
           ? [{ role: 'user' as const, content: messagesOrPrompt }]
           : messagesOrPrompt.map((m) => ({ role: m.role, content: m.content }));
 
-      const stream = await client.chat.completions.create({
-        model: modelName,
-        messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: true,
-      });
+      const stream = await client.chat.completions.create(
+        {
+          model: modelName,
+          messages,
+          temperature: 0.7,
+          max_tokens: 1000,
+          stream: true,
+        },
+        { timeout: 10000 }
+      );
 
       for await (const chunk of stream) {
         // console.log("Received chunk:", chunk)
