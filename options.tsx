@@ -32,6 +32,9 @@ import {
   type UserConfig,
 } from './core/config/llm-config';
 import { i18n } from './core/i18n';
+import { collectService } from './core/services/collect-service';
+import { dictionaryService } from './core/services/dictionary-service';
+import { highlightService } from './core/services/highlight-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { UserInfoProvider } from './core/user-info';
 
@@ -74,6 +77,28 @@ const OptionsPage: React.FC = () => {
   const configManager = ConfigManager.getInstance();
   const subscriptionService = SubscriptionServiceV2.getInstance();
 
+  const triggerSyncAll = () => {
+    setTimeout(() => {
+      collectService.sync().catch(() => {});
+      highlightService.sync().catch(() => {});
+      dictionaryService.sync().catch(() => {});
+    }, 0);
+  };
+
+  const triggerSyncForKey = (key: SidebarKey) => {
+    setTimeout(() => {
+      if (key === 'collected') {
+        collectService.sync().catch(() => {});
+      }
+      if (key === 'highlights') {
+        highlightService.sync().catch(() => {});
+      }
+      if (key === 'dictionary') {
+        dictionaryService.sync().catch(() => {});
+      }
+    }, 0);
+  };
+
   // Initialize i18n and settings
   useEffect(() => {
     const init = async () => {
@@ -83,6 +108,8 @@ const OptionsPage: React.FC = () => {
       await loadConfig();
     };
     init();
+
+    triggerSyncAll();
 
     subscriptionService.initialize();
     let mounted = true;
@@ -303,6 +330,7 @@ const OptionsPage: React.FC = () => {
 
   const handleNavigate = (key: SidebarKey) => {
     setActive(key);
+    triggerSyncForKey(key);
     if (key === 'subscription') {
       subscriptionService.refresh({ force: true, reason: 'tab' });
       getAuthStateFromBackground()
@@ -451,7 +479,14 @@ const OptionsPage: React.FC = () => {
                   onOpenConfig={() => openDrawer('config')}
                 />
               )}
-              {active === 'general' && <GeneralPage t={t} onReload={loadConfig} />}
+              {active === 'general' && (
+                <GeneralPage
+                  t={t}
+                  onReload={loadConfig}
+                  userConfig={userConfig}
+                  onChange={handleGeneralConfigChange}
+                />
+              )}
               {active === 'llm' && (
                 <LLMPage
                   llm={userConfig.llm}

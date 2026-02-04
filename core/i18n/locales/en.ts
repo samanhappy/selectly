@@ -181,6 +181,26 @@ export const en: I18nConfig = {
       buttonPosition: 'Button Position',
       buttonPositionAbove: 'Above',
       buttonPositionBelow: 'Below',
+      readingProgressTitle: 'Reading Progress',
+      showReadingProgressBar: 'Show progress bar',
+      autoSaveReadingProgress: 'Auto save reading progress',
+      autoRestoreReadingProgress: 'Restore last position on load',
+      readingProgressRetention: 'Progress retention (days)',
+      readingProgressRetentionDesc: 'Progress older than this will be removed automatically.',
+      readingProgressBarColor: 'Progress bar color',
+      readingProgressBarColorPresets: 'Preset colors',
+      readingProgressBarColorCustom: 'Custom color',
+      readingProgressMode: 'Domain list mode',
+      readingProgressModeBlacklist: 'Blacklist',
+      readingProgressModeWhitelist: 'Whitelist',
+      readingProgressBlacklist: 'Blacklisted Domains',
+      readingProgressBlacklistDesc:
+        'One domain per line. System defaults (e.g. x.com) are also applied.',
+      readingProgressWhitelist: 'Whitelisted Domains',
+      readingProgressWhitelistDesc:
+        'One domain per line. Progress will only be saved or restored for these domains.',
+      readingProgressUseSystemBlacklist: 'Use system blacklist',
+      readingProgressUseSystemWhitelist: 'Use system whitelist',
     },
     subscription: {
       signIn: 'Sign In',
@@ -248,6 +268,8 @@ export const en: I18nConfig = {
     pin: 'Pin',
     unpin: 'Unpin',
     addToDictionary: 'Add to Dictionary',
+    saveProgress: 'Save progress',
+    progressSaved: 'Progress saved',
   },
 
   button: {
@@ -292,7 +314,7 @@ export const en: I18nConfig = {
     },
     highlights: {
       title: 'Highlights',
-      groups: 'Highlight Groups',
+      groups: 'Highlights',
       search: 'Search',
       searchPlaceholder: 'Search',
       clearAll: 'Clear All',

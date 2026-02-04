@@ -16,9 +16,18 @@ interface EncryptedData {
   t: number; // timestamp (for additional entropy)
 }
 
+interface ChunkManifest {
+  __chunked: true;
+  n: number;
+}
+
 class SecureStorageManager {
   private static instance: SecureStorageManager;
   private readonly storageVersion = 3;
+  private readonly maxSyncItemBytes = 8192;
+  private readonly safeSyncItemBytes = 7000;
+  private readonly defaultChunkPlaintextBytes = 3000;
+  private readonly chunkKeySeparator = '__chunk__';
 
   // Dynamic key mapping using crypto module
   private keyMap: Record<string, string> = {};
@@ -36,6 +45,7 @@ class SecureStorageManager {
       'accessToken',
       'userInfo',
       'dailyUsageLimit',
+      'readingProgressSync',
     ];
 
     knownKeys.forEach((realKey) => {
@@ -109,6 +119,116 @@ class SecureStorageManager {
     return this.reverseKeyMap[obfuscatedKey] || obfuscatedKey;
   }
 
+  private isChunkKey(key: string): boolean {
+    return key.includes(this.chunkKeySeparator);
+  }
+
+  private buildChunkKey(baseKey: string, index: number): string {
+    return `${baseKey}${this.chunkKeySeparator}${index}`;
+  }
+
+  private isChunkManifest(value: any): value is ChunkManifest {
+    return (
+      !!value &&
+      typeof value === 'object' &&
+      value.__chunked === true &&
+      typeof value.n === 'number' &&
+      Number.isFinite(value.n) &&
+      value.n >= 0
+    );
+  }
+
+  private getByteLength(value: string): number {
+    return new TextEncoder().encode(value).length;
+  }
+
+  private isEncryptedItemWithinLimit(encrypted: EncryptedData): boolean {
+    const payloadSize = this.getByteLength(JSON.stringify(encrypted));
+    return payloadSize <= this.safeSyncItemBytes;
+  }
+
+  private splitStringByBytes(value: string, maxBytes: number): string[] {
+    if (this.getByteLength(value) <= maxBytes) {
+      return [value];
+    }
+
+    const chunks: string[] = [];
+    let current = '';
+
+    for (const char of value) {
+      const next = current + char;
+      if (this.getByteLength(next) > maxBytes) {
+        if (current.length === 0) {
+          chunks.push(char);
+          current = '';
+        } else {
+          chunks.push(current);
+          current = char;
+        }
+      } else {
+        current = next;
+      }
+    }
+
+    if (current.length > 0) {
+      chunks.push(current);
+    }
+
+    return chunks;
+  }
+
+  private ensureChunkFitsLimit(chunk: string): string[] {
+    const encryptionResult = this.encrypt(chunk);
+    const encryptedItem: EncryptedData = {
+      d: encryptionResult.encrypted,
+      m: encryptionResult.metadata,
+      v: this.storageVersion,
+      t: Date.now(),
+    };
+
+    if (this.isEncryptedItemWithinLimit(encryptedItem)) {
+      return [chunk];
+    }
+
+    if (chunk.length <= 1) {
+      throw new Error('Chunk too large to store in sync storage');
+    }
+
+    const mid = Math.floor(chunk.length / 2);
+    return [
+      ...this.ensureChunkFitsLimit(chunk.slice(0, mid)),
+      ...this.ensureChunkFitsLimit(chunk.slice(mid)),
+    ];
+  }
+
+  private async cleanupExistingChunks(obfuscatedKey: string): Promise<void> {
+    if (typeof chrome === 'undefined' || !chrome.storage) {
+      return;
+    }
+
+    const existing = await chrome.storage.sync.get([obfuscatedKey]);
+    const existingValue = existing[obfuscatedKey];
+
+    if (!existingValue || !this.isEncryptedData(existingValue)) {
+      return;
+    }
+
+    try {
+      const decrypted = this.decrypt(existingValue.d, existingValue.m, (existingValue as any).v);
+      const parsed = JSON.parse(decrypted);
+      if (this.isChunkManifest(parsed)) {
+        const chunkKeys = Array.from({ length: parsed.n }, (_, i) =>
+          this.buildChunkKey(obfuscatedKey, i)
+        );
+        if (chunkKeys.length > 0) {
+          await chrome.storage.sync.remove(chunkKeys);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to cleanup existing chunks:', error);
+    }
+  }
+
   /**
    * Store encrypted data in Chrome storage
    */
@@ -120,14 +240,46 @@ class SecureStorageManager {
       for (const [realKey, value] of Object.entries(data)) {
         const obfuscatedKey = this.getObfuscatedKey(realKey);
         const jsonString = JSON.stringify(value);
-        const encryptionResult = this.encrypt(jsonString);
+        await this.cleanupExistingChunks(obfuscatedKey);
 
-        encryptedData[obfuscatedKey] = {
+        const encryptionResult = this.encrypt(jsonString);
+        const encryptedItem: EncryptedData = {
           d: encryptionResult.encrypted,
           m: encryptionResult.metadata,
           v: this.storageVersion,
           t: Date.now(),
         };
+
+        if (this.isEncryptedItemWithinLimit(encryptedItem)) {
+          encryptedData[obfuscatedKey] = encryptedItem;
+          continue;
+        }
+
+        const initialChunks = this.splitStringByBytes(jsonString, this.defaultChunkPlaintextBytes);
+        const finalChunks: string[] = [];
+
+        for (const chunk of initialChunks) {
+          finalChunks.push(...this.ensureChunkFitsLimit(chunk));
+        }
+
+        const manifest: ChunkManifest = { __chunked: true, n: finalChunks.length };
+        const manifestEncryption = this.encrypt(JSON.stringify(manifest));
+        encryptedData[obfuscatedKey] = {
+          d: manifestEncryption.encrypted,
+          m: manifestEncryption.metadata,
+          v: this.storageVersion,
+          t: Date.now(),
+        };
+
+        finalChunks.forEach((chunk, index) => {
+          const chunkEncryption = this.encrypt(chunk);
+          encryptedData[this.buildChunkKey(obfuscatedKey, index)] = {
+            d: chunkEncryption.encrypted,
+            m: chunkEncryption.metadata,
+            v: this.storageVersion,
+            t: Date.now(),
+          };
+        });
       }
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -150,20 +302,29 @@ class SecureStorageManager {
 
       let obfuscatedKeys: string[] = [];
 
+      let encryptedData: Record<string, any> = {};
+
       if (typeof keys === 'string') {
         obfuscatedKeys = [this.getObfuscatedKey(keys)];
+        encryptedData = await chrome.storage.sync.get(obfuscatedKeys);
       } else if (Array.isArray(keys)) {
         obfuscatedKeys = keys.map((key) => this.getObfuscatedKey(key));
+        encryptedData = await chrome.storage.sync.get(obfuscatedKeys);
       } else {
         // Get all data
-        const allDataResult = await chrome.storage.sync.get();
-        obfuscatedKeys = Object.keys(allDataResult);
+        encryptedData = await chrome.storage.sync.get();
+        obfuscatedKeys = Object.keys(encryptedData);
       }
 
-      const encryptedData = await chrome.storage.sync.get(obfuscatedKeys);
       const decryptedData: StorageData = {};
+      const chunkManifests: Array<{ realKey: string; baseKey: string; manifest: ChunkManifest }> =
+        [];
 
       for (const [obfuscatedKey, encryptedValue] of Object.entries(encryptedData)) {
+        if (this.isChunkKey(obfuscatedKey)) {
+          continue;
+        }
+
         try {
           const realKey = this.getRealKey(obfuscatedKey);
 
@@ -173,14 +334,56 @@ class SecureStorageManager {
               encryptedValue.m,
               (encryptedValue as any).v
             );
-            decryptedData[realKey] = JSON.parse(decrypted);
-          } else {
+            const parsed = JSON.parse(decrypted);
+            if (this.isChunkManifest(parsed)) {
+              chunkManifests.push({ realKey, baseKey: obfuscatedKey, manifest: parsed });
+            } else {
+              decryptedData[realKey] = parsed;
+            }
+          } else if (encryptedValue !== undefined) {
             // Handle legacy unencrypted data
             decryptedData[realKey] = encryptedValue;
           }
         } catch (error) {
           console.warn(`Failed to decrypt data for key ${obfuscatedKey}:`, error);
           // Skip corrupted data
+        }
+      }
+
+      for (const { realKey, baseKey, manifest } of chunkManifests) {
+        const chunkKeys = Array.from({ length: manifest.n }, (_, i) =>
+          this.buildChunkKey(baseKey, i)
+        );
+        const chunkSource =
+          typeof keys === 'undefined' ? encryptedData : await chrome.storage.sync.get(chunkKeys);
+
+        let combined = '';
+        let failed = false;
+
+        for (const chunkKey of chunkKeys) {
+          const chunkValue = (chunkSource as any)[chunkKey];
+          if (!chunkValue || !this.isEncryptedData(chunkValue)) {
+            console.warn(`Missing chunk data for key ${chunkKey}`);
+            failed = true;
+            break;
+          }
+
+          try {
+            const decryptedChunk = this.decrypt(chunkValue.d, chunkValue.m, (chunkValue as any).v);
+            combined += decryptedChunk;
+          } catch (error) {
+            console.warn(`Failed to decrypt chunk data for key ${chunkKey}:`, error);
+            failed = true;
+            break;
+          }
+        }
+
+        if (!failed) {
+          try {
+            decryptedData[realKey] = JSON.parse(combined);
+          } catch (error) {
+            console.warn(`Failed to parse chunked data for key ${realKey}:`, error);
+          }
         }
       }
 
@@ -208,7 +411,35 @@ class SecureStorageManager {
         obfuscatedKeys = keys.map((key) => this.getObfuscatedKey(key));
       }
 
-      await chrome.storage.sync.remove(obfuscatedKeys);
+      const keysToRemove = new Set<string>();
+
+      for (const obfuscatedKey of obfuscatedKeys) {
+        keysToRemove.add(obfuscatedKey);
+
+        try {
+          const existing = await chrome.storage.sync.get([obfuscatedKey]);
+          const existingValue = existing[obfuscatedKey];
+
+          if (existingValue && this.isEncryptedData(existingValue)) {
+            const decrypted = this.decrypt(
+              existingValue.d,
+              existingValue.m,
+              (existingValue as any).v
+            );
+            const parsed = JSON.parse(decrypted);
+            if (this.isChunkManifest(parsed)) {
+              const chunkKeys = Array.from({ length: parsed.n }, (_, i) =>
+                this.buildChunkKey(obfuscatedKey, i)
+              );
+              chunkKeys.forEach((chunkKey) => keysToRemove.add(chunkKey));
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to resolve chunk keys for removal:', error);
+        }
+      }
+
+      await chrome.storage.sync.remove(Array.from(keysToRemove));
     } catch (error) {
       console.error('Failed to remove data:', error);
       throw error;
@@ -252,6 +483,9 @@ class SecureStorageManager {
           const realChanges: Record<string, { oldValue?: any; newValue?: any }> = {};
 
           for (const [obfuscatedKey, change] of Object.entries(changes)) {
+            if (this.isChunkKey(obfuscatedKey)) {
+              continue;
+            }
             const realKey = this.getRealKey(obfuscatedKey);
 
             try {
@@ -263,7 +497,12 @@ class SecureStorageManager {
                   change.oldValue.m,
                   (change.oldValue as any).v
                 );
-                oldValue = JSON.parse(decrypted);
+                const parsed = JSON.parse(decrypted);
+                if (this.isChunkManifest(parsed)) {
+                  oldValue = undefined;
+                } else {
+                  oldValue = parsed;
+                }
               } else if (change.oldValue) {
                 oldValue = change.oldValue;
               }
@@ -274,7 +513,13 @@ class SecureStorageManager {
                   change.newValue.m,
                   (change.newValue as any).v
                 );
-                newValue = JSON.parse(decrypted);
+                const parsed = JSON.parse(decrypted);
+                if (this.isChunkManifest(parsed)) {
+                  const resolved = await this.get(realKey);
+                  newValue = resolved[realKey];
+                } else {
+                  newValue = parsed;
+                }
               } else if (change.newValue) {
                 newValue = change.newValue;
               }

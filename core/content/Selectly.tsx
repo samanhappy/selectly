@@ -1,13 +1,14 @@
 import { createRoot } from 'react-dom/client';
 
-import SubscriptionServiceV2 from '~core/services/subscription-service-v2';
-
 import { ActionButtons } from '../../components/content/ActionButtons';
+import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
+  SYSTEM_READING_PROGRESS_BLACKLIST,
+  SYSTEM_READING_PROGRESS_WHITELIST,
   type FunctionConfig,
   type UserConfig,
 } from '../config/llm-config';
@@ -38,11 +39,26 @@ export class Selectly {
   private sharePreviewHost: HTMLDivElement | null = null;
   private sharePreviewContainer: HTMLDivElement | null = null;
   private sharePreviewRoot: any = null;
+  private progressHost: HTMLDivElement | null = null;
+  private progressFill: HTMLDivElement | null = null;
+  private globalActionHost: HTMLDivElement | null = null;
+  private globalActionContainer: HTMLDivElement | null = null;
+  private globalActionRoot: any = null;
+  private readingProgressInitialized = false;
+  private scrollRafId: number | null = null;
+  private progressRefreshRafId: number | null = null;
+  private scrollSaveTimer: number | null = null;
+  private lastSavedScrollTop = 0;
+  private lastSyncSavedAt = 0;
+  private lastScrollCheckAt = 0;
+  private lastScrollCheckKey = '';
+  private lastHasVerticalScroll: boolean | null = null;
+  private progressResizeObserver: ResizeObserver | null = null;
+  private isRestoringProgress = false;
   private isShowingButtons = false;
   private userConfig: UserConfig = DEFAULT_CONFIG;
   private configManager = ConfigManager.getInstance();
   private llmService = LLMService.getInstance();
-  private subscriptionService = SubscriptionServiceV2.getInstance();
   private styleContent = '';
   private currentSelection: Selection | null = null;
   private currentTarget: HTMLElement | null = null;
@@ -106,7 +122,7 @@ export class Selectly {
     const el = node.parentElement || (node as any);
     if (!el || !(el as HTMLElement).closest) return false;
     return !!(el as HTMLElement).closest(
-      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight'
+      '#selectly-buttons-host, #selectly-streaming-host, #selectly-share-preview-host, #selectly-progress-host, .selectly-buttons, .selectly-streaming-result, .selectly-highlight, .selectly-progress-bar'
     );
   }
 
@@ -759,6 +775,8 @@ export class Selectly {
 
     this.addStyles();
 
+    this.setupReadingProgress();
+
     await this.restoreHighlights();
 
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
@@ -775,6 +793,38 @@ export class Selectly {
 
     // Monitor and attach listeners to iframes
     this.setupIframeMonitoring();
+  }
+
+  private isDomainMatched(domains: string[], url: string, hostname: string): boolean {
+    return domains.some((domain) => {
+      const d = domain.trim();
+      return d && (hostname === d || hostname.endsWith(`.${d}`) || url.startsWith(d));
+    });
+  }
+
+  private isReadingProgressDisabled(): boolean {
+    const general = this.userConfig.general || ({} as any);
+    const url = window.location.href;
+    const hostname = window.location.hostname;
+    const mode = general.readingProgressListMode || 'whitelist';
+    const useSystemBlacklist = general.useSystemReadingProgressBlacklist !== false;
+    const useSystemWhitelist = general.useSystemReadingProgressWhitelist !== false;
+
+    if (mode === 'whitelist') {
+      const whitelist = [
+        ...(useSystemWhitelist ? SYSTEM_READING_PROGRESS_WHITELIST : []),
+        ...(general.readingProgressWhitelist || []),
+      ];
+      if (whitelist.length === 0) return true;
+      return !this.isDomainMatched(whitelist, url, hostname);
+    }
+
+    const blacklist = [
+      ...(useSystemBlacklist ? SYSTEM_READING_PROGRESS_BLACKLIST : []),
+      ...(general.readingProgressBlacklist || []),
+    ];
+
+    return this.isDomainMatched(blacklist, url, hostname);
   }
 
   public async applyHighlight(selectedText: string, config: FunctionConfig) {
@@ -892,6 +942,7 @@ export class Selectly {
           await this.loadConfig();
           await this.llmService.configure(this.userConfig.llm);
           this.refreshHighlightColors();
+          this.applyReadingProgressConfig();
         }
       });
     }
@@ -900,6 +951,431 @@ export class Selectly {
   private addStyles() {
     if (this.styleContent) return;
     this.styleContent = contentStyles;
+  }
+
+  private getReadingProgressConfig() {
+    const general = this.userConfig?.general || ({} as any);
+    return {
+      showProgressBar: general.showReadingProgressBar !== false,
+      progressBarColor: general.readingProgressBarColor || '#60a5fa',
+      autoSave: general.autoSaveReadingProgress !== false,
+      autoRestore: general.autoRestoreReadingProgress !== false,
+      retentionDays: Number.isFinite(general.readingProgressRetentionDays)
+        ? Number(general.readingProgressRetentionDays)
+        : 30,
+    };
+  }
+
+  private getReadingProgressRetentionMs(): number {
+    const { retentionDays } = this.getReadingProgressConfig();
+    if (!retentionDays || retentionDays <= 0) return 0;
+    return retentionDays * 24 * 60 * 60 * 1000;
+  }
+
+  private setupReadingProgress() {
+    if (this.readingProgressInitialized) return;
+    if (window.top !== window.self) return;
+
+    this.readingProgressInitialized = true;
+    this.mountProgressBar();
+    this.applyReadingProgressConfig();
+    this.updateProgressBar();
+    this.updateGlobalActionBar();
+
+    document.addEventListener('scroll', this.handleScroll, { passive: true });
+    window.addEventListener('resize', this.handleScroll);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    window.addEventListener('pagehide', this.handlePageHide);
+
+    const refreshProgressUI = () => this.scheduleProgressRefresh();
+
+    // Re-check after initial layout/paint settles to avoid first-render false positives
+    window.setTimeout(refreshProgressUI, 300);
+    window.setTimeout(refreshProgressUI, 1200);
+    window.addEventListener('load', refreshProgressUI, { once: true });
+
+    if (!this.progressResizeObserver && 'ResizeObserver' in window) {
+      this.progressResizeObserver = new ResizeObserver(() => this.scheduleProgressRefresh());
+      try {
+        if (document.documentElement) {
+          this.progressResizeObserver.observe(document.documentElement);
+        }
+        if (document.body) {
+          this.progressResizeObserver.observe(document.body);
+        }
+        const scrollEl = document.scrollingElement;
+        if (scrollEl && scrollEl !== document.documentElement && scrollEl !== document.body) {
+          this.progressResizeObserver.observe(scrollEl);
+        }
+      } catch {
+        // noop
+      }
+    }
+
+    this.restoreReadingProgress();
+  }
+
+  private scheduleProgressRefresh() {
+    if (this.progressRefreshRafId) return;
+    this.progressRefreshRafId = window.requestAnimationFrame(() => {
+      this.progressRefreshRafId = null;
+      this.applyReadingProgressConfig();
+      this.updateProgressBar();
+    });
+  }
+
+  private mountProgressBar() {
+    if (this.progressHost) return;
+
+    this.progressHost = document.createElement('div');
+    this.progressHost.id = 'selectly-progress-host';
+    this.progressHost.style.position = 'fixed';
+    this.progressHost.style.top = '0';
+    this.progressHost.style.left = '0';
+    this.progressHost.style.width = '100%';
+    this.progressHost.style.height = '3px';
+    this.progressHost.style.zIndex = '1000000';
+    this.progressHost.style.pointerEvents = 'none';
+    const shadow = this.progressHost.attachShadow({ mode: 'open' });
+    document.body.appendChild(this.progressHost);
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = this.styleContent;
+    shadow.appendChild(styleEl);
+
+    const bar = document.createElement('div');
+    bar.className = 'selectly-progress-bar';
+    const fill = document.createElement('div');
+    fill.className = 'selectly-progress-bar__fill';
+    bar.appendChild(fill);
+    shadow.appendChild(bar);
+    this.progressFill = fill;
+  }
+
+  private applyReadingProgressConfig() {
+    const { showProgressBar, progressBarColor } = this.getReadingProgressConfig();
+    const hasScroll = this.hasVerticalScroll();
+
+    if (this.progressHost) {
+      console.debug('[Selectly][reading-progress] apply config', {
+        showProgressBar,
+        hasScroll,
+      });
+      this.progressHost.style.display = showProgressBar && hasScroll ? 'block' : 'none';
+      // If disabled, ensure we reset width or just hide it. Hiding is enough.
+    }
+    if (this.progressFill) {
+      this.progressFill.style.background = progressBarColor;
+    }
+
+    this.updateGlobalActionBar();
+  }
+
+  private handleScroll = () => {
+    if (this.scrollRafId) return;
+    this.scrollRafId = window.requestAnimationFrame(() => {
+      this.scrollRafId = null;
+      this.updateProgressBar();
+    });
+    this.scheduleSaveProgress('scroll');
+  };
+
+  private handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      this.saveReadingProgress('visibility');
+    }
+  };
+
+  private handlePageHide = () => {
+    this.saveReadingProgress('pagehide');
+  };
+
+  private scheduleSaveProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
+    const { autoSave } = this.getReadingProgressConfig();
+    if (reason === 'scroll' && !autoSave) return;
+
+    if (this.scrollSaveTimer) {
+      window.clearTimeout(this.scrollSaveTimer);
+    }
+
+    const delay = reason === 'scroll' ? 500 : 0;
+    this.scrollSaveTimer = window.setTimeout(() => {
+      this.saveReadingProgress(reason);
+    }, delay);
+  }
+
+  private getScrollMetrics() {
+    const docEl = document.documentElement;
+    const body = document.body;
+    const scrollEl = document.scrollingElement || docEl;
+    const scrollTop = scrollEl?.scrollTop ?? (docEl.scrollTop || body.scrollTop || 0);
+    const scrollHeight = scrollEl?.scrollHeight ?? Math.max(docEl.scrollHeight, body.scrollHeight);
+    const clientHeight = scrollEl?.clientHeight ?? (docEl.clientHeight || window.innerHeight);
+    console.debug('[Selectly][reading-progress] scroll metrics', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      scrollEl: scrollEl?.tagName,
+      docEl: docEl?.tagName,
+    });
+    return { scrollTop, scrollHeight, clientHeight };
+  }
+
+  private hasVerticalScroll(): boolean {
+    const { scrollHeight, clientHeight } = this.getScrollMetrics();
+    const maxScroll = scrollHeight - clientHeight;
+    const minScrollablePx = Math.max(64, Math.round(clientHeight * 0.12));
+    if (maxScroll <= 1) {
+      console.debug('[Selectly][reading-progress] no vertical scroll: height check', {
+        scrollHeight,
+        clientHeight,
+        maxScroll,
+      });
+      this.lastHasVerticalScroll = false;
+      this.lastScrollCheckKey = `${scrollHeight}:${clientHeight}`;
+      this.lastScrollCheckAt = Date.now();
+      return false;
+    }
+
+    const now = Date.now();
+    const key = `${scrollHeight}:${clientHeight}`;
+    if (
+      this.lastHasVerticalScroll !== null &&
+      this.lastScrollCheckKey === key &&
+      now - this.lastScrollCheckAt < 1000
+    ) {
+      return this.lastHasVerticalScroll;
+    }
+
+    try {
+      const docEl = document.documentElement;
+      const body = document.body;
+      const scrollEl = document.scrollingElement || docEl;
+      const docOverflow = window.getComputedStyle(docEl).overflowY;
+      const bodyOverflow = body ? window.getComputedStyle(body).overflowY : '';
+      const scrollOverflow = scrollEl ? window.getComputedStyle(scrollEl).overflowY : '';
+      const blocked = ['hidden', 'clip'];
+      if (blocked.includes(scrollOverflow)) {
+        console.debug('[Selectly][reading-progress] no vertical scroll: scrollEl overflow', {
+          scrollOverflow,
+          scrollEl: scrollEl?.tagName,
+        });
+        this.lastHasVerticalScroll = false;
+        this.lastScrollCheckKey = key;
+        this.lastScrollCheckAt = now;
+        return false;
+      }
+      if (blocked.includes(docOverflow) && blocked.includes(bodyOverflow)) {
+        console.debug('[Selectly][reading-progress] no vertical scroll: doc/body overflow', {
+          docOverflow,
+          bodyOverflow,
+        });
+        this.lastHasVerticalScroll = false;
+        this.lastScrollCheckKey = key;
+        this.lastScrollCheckAt = now;
+        return false;
+      }
+    } catch {
+      // fallback to height check only
+    }
+
+    console.debug('[Selectly][reading-progress] vertical scroll available');
+    this.lastHasVerticalScroll = true;
+    this.lastScrollCheckKey = key;
+    this.lastScrollCheckAt = now;
+    return true;
+  }
+
+  private updateProgressBar() {
+    if (!this.progressFill) return;
+    const { showProgressBar } = this.getReadingProgressConfig();
+    if (!showProgressBar) return;
+    if (!this.hasVerticalScroll()) {
+      if (this.progressHost) this.progressHost.style.display = 'none';
+      console.debug('[Selectly][reading-progress] hide progress bar: no vertical scroll');
+      this.updateGlobalActionBar();
+      return;
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
+    const maxScroll = Math.max(1, scrollHeight - clientHeight);
+    const progress = Math.max(0, Math.min(1, scrollTop / maxScroll));
+    console.debug('[Selectly][reading-progress] update progress bar', {
+      scrollTop,
+      scrollHeight,
+      clientHeight,
+      maxScroll,
+      progress,
+    });
+    this.progressFill.style.width = `${progress * 100}%`;
+
+    this.updateGlobalActionBar();
+  }
+
+  private shouldShowManualSaveButton(): boolean {
+    const { autoSave } = this.getReadingProgressConfig();
+    return this.hasVerticalScroll() && (!autoSave || this.isReadingProgressDisabled());
+  }
+
+  private mountGlobalActionBar() {
+    if (this.globalActionHost) return;
+
+    this.globalActionHost = document.createElement('div');
+    this.globalActionHost.id = 'selectly-global-actions-host';
+    const shadow = this.globalActionHost.attachShadow({ mode: 'open' });
+    document.body.appendChild(this.globalActionHost);
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = this.styleContent;
+    shadow.appendChild(styleEl);
+
+    this.globalActionContainer = document.createElement('div');
+    shadow.appendChild(this.globalActionContainer);
+
+    this.globalActionRoot = createRoot(this.globalActionContainer);
+
+    this.globalActionRoot.render(
+      <GlobalActionBar
+        onSaveProgress={() => this.saveReadingProgress('manual')}
+        labels={{
+          saveProgress: i18n.getConfig().content?.saveProgress || 'Save progress',
+          progressSaved: i18n.getConfig().content?.progressSaved || 'Progress saved',
+        }}
+      />
+    );
+  }
+
+  private hideGlobalActionBar() {
+    if (this.globalActionRoot) {
+      try {
+        this.globalActionRoot.unmount();
+      } catch {}
+    }
+    if (this.globalActionContainer) this.globalActionContainer.remove();
+    if (this.globalActionHost) this.globalActionHost.remove();
+    this.globalActionRoot = null;
+    this.globalActionContainer = null;
+    this.globalActionHost = null;
+  }
+
+  private updateGlobalActionBar() {
+    if (this.shouldShowManualSaveButton()) {
+      this.mountGlobalActionBar();
+    } else if (this.globalActionHost) {
+      this.hideGlobalActionBar();
+    }
+  }
+
+  private async getReadingProgressFromBackground(maxAgeMs?: number) {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return null;
+    const res = await chrome.runtime.sendMessage({
+      action: 'readingProgress:get',
+      url: window.location.href,
+      maxAgeMs,
+    });
+    return res?.success ? res.record : null;
+  }
+
+  private async saveReadingProgressToBackground(
+    record: {
+      url: string;
+      title?: string;
+      scrollTop: number;
+      scrollHeight: number;
+      clientHeight: number;
+      isManual?: boolean;
+    },
+    maxAgeMs?: number
+  ) {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+    await chrome.runtime.sendMessage({
+      action: 'readingProgress:save',
+      url: record.url,
+      record,
+      maxAgeMs,
+    });
+  }
+
+  private async deleteReadingProgressFromBackground() {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+    await chrome.runtime.sendMessage({
+      action: 'readingProgress:delete',
+      url: window.location.href,
+    });
+  }
+
+  private async saveReadingProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
+    if (window.top !== window.self) return;
+    if (this.isRestoringProgress) return;
+    if (reason !== 'manual' && this.isReadingProgressDisabled()) return;
+
+    const { autoSave } = this.getReadingProgressConfig();
+    if (reason !== 'manual' && !autoSave) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
+    const maxScroll = Math.max(0, scrollHeight - clientHeight);
+    const retentionMs = this.getReadingProgressRetentionMs();
+
+    if (maxScroll <= 0) return;
+    const progress = Math.max(0, Math.min(1, scrollTop / Math.max(1, maxScroll)));
+    if (progress >= 0.999) {
+      await this.deleteReadingProgressFromBackground();
+      this.lastSavedScrollTop = 0;
+      return;
+    }
+    if (reason === 'scroll' && Math.abs(scrollTop - this.lastSavedScrollTop) < 8) return;
+
+    const shouldSync =
+      reason === 'manual' || Date.now() - this.lastSyncSavedAt > 8000 || reason !== 'scroll';
+    void shouldSync;
+
+    await this.saveReadingProgressToBackground(
+      {
+        url: window.location.href,
+        title: document.title || window.location.href,
+        scrollTop,
+        scrollHeight,
+        clientHeight,
+        isManual: reason === 'manual',
+      },
+      retentionMs
+    );
+
+    this.lastSavedScrollTop = scrollTop;
+    if (shouldSync) this.lastSyncSavedAt = Date.now();
+  }
+
+  private async restoreReadingProgress() {
+    const { autoRestore } = this.getReadingProgressConfig();
+    if (!autoRestore) return;
+
+    const record = await this.getReadingProgressFromBackground(
+      this.getReadingProgressRetentionMs()
+    );
+    if (!record) return;
+    if (!record.isManual && this.isReadingProgressDisabled()) return;
+
+    const attemptRestore = (tries = 0) => {
+      const { scrollHeight, clientHeight } = this.getScrollMetrics();
+      const maxScroll = Math.max(0, scrollHeight - clientHeight);
+      if (maxScroll <= 0 && tries < 6) {
+        window.setTimeout(() => attemptRestore(tries + 1), 300);
+        return;
+      }
+
+      const savedMax = Math.max(1, record.scrollHeight - record.clientHeight);
+      const ratio = Math.max(0, Math.min(1, record.scrollTop / savedMax));
+      const target = ratio * Math.max(0, scrollHeight - clientHeight);
+
+      this.isRestoringProgress = true;
+      window.scrollTo({ top: target, left: 0, behavior: 'auto' });
+      window.setTimeout(() => {
+        this.isRestoringProgress = false;
+        this.updateProgressBar();
+      }, 400);
+    };
+
+    attemptRestore();
   }
 
   private getHighlightColor(config?: FunctionConfig): string {
@@ -1140,18 +1616,39 @@ export class Selectly {
       return true;
     }
 
+    if (this.progressHost && (target === this.progressHost || this.progressHost.contains(target))) {
+      return true;
+    }
+
+    if (
+      this.globalActionHost &&
+      (target === this.globalActionHost || this.globalActionHost.contains(target))
+    ) {
+      return true;
+    }
+
     if ('composedPath' in event && typeof event.composedPath === 'function') {
       const path = event.composedPath();
       for (const element of path) {
-        if (element === this.buttonsHost || element === this.streamingHost) {
+        if (
+          element === this.buttonsHost ||
+          element === this.streamingHost ||
+          element === this.progressHost ||
+          element === this.globalActionHost
+        ) {
           return true;
         }
         if (element instanceof HTMLElement) {
           if (
             element.closest('#selectly-buttons-host') ||
             element.closest('#selectly-streaming-host') ||
+            element.closest('#selectly-progress-host') ||
+            element.closest('#selectly-global-actions-host') ||
             element.classList.contains('selectly-buttons') ||
             element.classList.contains('selectly-streaming-result') ||
+            element.classList.contains('selectly-progress-bar') ||
+            element.classList.contains('selectly-global-actions') ||
+            element.classList.contains('selectly-global-action-btn') ||
             element.classList.contains('action-btn')
           ) {
             return true;
@@ -1166,8 +1663,13 @@ export class Selectly {
       if (
         el.id === 'selectly-buttons-host' ||
         el.id === 'selectly-streaming-host' ||
+        el.id === 'selectly-progress-host' ||
+        el.id === 'selectly-global-actions-host' ||
         el.classList.contains('selectly-buttons') ||
         el.classList.contains('selectly-streaming-result') ||
+        el.classList.contains('selectly-progress-bar') ||
+        el.classList.contains('selectly-global-actions') ||
+        el.classList.contains('selectly-global-action-btn') ||
         el.classList.contains('action-btn') ||
         el.classList.contains('glass-button')
       ) {

@@ -3,8 +3,11 @@ import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
 import { collectSyncService } from './core/services/collect-sync-service';
+import { dictionaryService } from './core/services/dictionary-service';
+import { dictionarySyncService } from './core/services/dictionary-sync-service';
 import { highlightService } from './core/services/highlight-service';
 import { highlightSyncService } from './core/services/highlight-sync-service';
+import { readingProgressService } from './core/services/reading-progress-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
@@ -61,22 +64,31 @@ chrome.runtime.onStartup.addListener(async () => {
   subscriptionService.enableAutoRefresh();
   await subscriptionService.refreshOnceAtStartup();
 
-  // Initialize and start collect sync service
+  // Initialize and trigger collect sync once
   try {
     await collectSyncService.initialize();
-    collectSyncService.startPeriodicSync();
-    console.log('Collect sync service started');
+    void collectSyncService.sync();
+    console.log('Collect sync service initialized and sync triggered');
   } catch (error) {
     console.warn('Collect sync service initialization failed:', error);
   }
 
-  // Initialize and start highlight sync service
+  // Initialize and trigger highlight sync once
   try {
     await highlightSyncService.initialize();
-    highlightSyncService.startPeriodicSync();
-    console.log('Highlight sync service started');
+    void highlightSyncService.sync();
+    console.log('Highlight sync service initialized and sync triggered');
   } catch (error) {
     console.warn('Highlight sync service initialization failed:', error);
+  }
+
+  // Initialize and trigger dictionary sync once
+  try {
+    await dictionarySyncService.initialize();
+    void dictionarySyncService.sync();
+    console.log('Dictionary sync service initialized and sync triggered');
+  } catch (error) {
+    console.warn('Dictionary sync service initialization failed:', error);
   }
 });
 
@@ -98,22 +110,31 @@ chrome.runtime.onStartup.addListener(async () => {
   subscriptionService.enableAutoRefresh();
   await subscriptionService.refreshOnceAtStartup();
 
-  // Initialize and start collect sync service
+  // Initialize and trigger collect sync once
   try {
     await collectSyncService.initialize();
-    collectSyncService.startPeriodicSync();
-    console.log('Collect sync service started on load');
+    void collectSyncService.sync();
+    console.log('Collect sync service initialized and sync triggered on load');
   } catch (error) {
     console.warn('Collect sync service initialization failed on load:', error);
   }
 
-  // Initialize and start highlight sync service
+  // Initialize and trigger highlight sync once
   try {
     await highlightSyncService.initialize();
-    highlightSyncService.startPeriodicSync();
-    console.log('Highlight sync service started on load');
+    void highlightSyncService.sync();
+    console.log('Highlight sync service initialized and sync triggered on load');
   } catch (error) {
     console.warn('Highlight sync service initialization failed on load:', error);
+  }
+
+  // Initialize and trigger dictionary sync once
+  try {
+    await dictionarySyncService.initialize();
+    void dictionarySyncService.sync();
+    console.log('Dictionary sync service initialized and sync triggered on load');
+  } catch (error) {
+    console.warn('Dictionary sync service initialization failed on load:', error);
   }
 })();
 
@@ -313,7 +334,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ success: false, error: 'Empty payload' });
             return;
           }
-          await dictionaryDB.addItem({
+          await dictionaryService.addEntry({
             source: payload.source.trim(),
             translation: payload.translation.trim(),
             sentence: payload.sentence?.trim() || '',
@@ -329,6 +350,65 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             success: false,
             error: err?.message || 'Unknown error',
           });
+        }
+      })();
+      return true;
+    }
+    case 'readingProgress:get': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          const maxAgeMs = request.maxAgeMs as number | undefined;
+          if (!url) {
+            sendResponse({ success: false, error: 'Missing url' });
+            return;
+          }
+          const record = await readingProgressService.getProgress(url, maxAgeMs);
+          sendResponse({ success: true, record });
+        } catch (err: any) {
+          console.error('Failed to get reading progress:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'readingProgress:save': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          const payload = request.record as any;
+          const maxAgeMs = request.maxAgeMs as number | undefined;
+          if (!url || !payload) {
+            sendResponse({ success: false, error: 'Missing payload' });
+            return;
+          }
+          await readingProgressService.saveProgress(
+            url,
+            payload,
+            { local: true, sync: true },
+            maxAgeMs
+          );
+          sendResponse({ success: true });
+        } catch (err: any) {
+          console.error('Failed to save reading progress:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'readingProgress:delete': {
+      (async () => {
+        try {
+          const url = request.url as string;
+          if (!url) {
+            sendResponse({ success: false, error: 'Missing url' });
+            return;
+          }
+          await readingProgressService.deleteProgress(url, { local: true, sync: true });
+          sendResponse({ success: true });
+        } catch (err: any) {
+          console.error('Failed to delete reading progress:', err);
+          sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
       return true;

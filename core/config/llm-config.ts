@@ -42,6 +42,16 @@ export interface FunctionConfig {
 export interface GeneralConfig {
   language: SupportedLanguage;
   buttonPosition: 'above' | 'below';
+  showReadingProgressBar?: boolean;
+  readingProgressBarColor?: string;
+  autoSaveReadingProgress?: boolean;
+  autoRestoreReadingProgress?: boolean;
+  readingProgressRetentionDays?: number;
+  readingProgressListMode?: 'blacklist' | 'whitelist';
+  readingProgressBlacklist?: string[];
+  readingProgressWhitelist?: string[];
+  useSystemReadingProgressBlacklist?: boolean;
+  useSystemReadingProgressWhitelist?: boolean;
 }
 
 export interface UserConfig {
@@ -52,6 +62,26 @@ export interface UserConfig {
 }
 
 export const DEFAULT_HIGHLIGHT_COLOR = 'rgba(255, 204, 0, 0.24)';
+
+export const SYSTEM_READING_PROGRESS_BLACKLIST = [
+  'x.com',
+  'twitter.com',
+  'youtube.com',
+  'twitch.tv',
+  'linkedin.com',
+  'instagram.com',
+  'tiktok.com',
+  'pinterest.com',
+  'reddit.com',
+  'bilibili.com',
+  'weibo.com',
+  'zhihu.com',
+  'facebook.com',
+  'google.com',
+  'baidu.com',
+];
+
+export const SYSTEM_READING_PROGRESS_WHITELIST = [];
 
 export const CLOUD_PROVIDER: LLMProvider = {
   id: 'cloud',
@@ -124,6 +154,16 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
     general: {
       language: i18n.getCurrentLanguage(),
       buttonPosition: 'above',
+      showReadingProgressBar: true,
+      readingProgressBarColor: '#60a5fa',
+      autoSaveReadingProgress: true,
+      autoRestoreReadingProgress: true,
+      readingProgressRetentionDays: 30,
+      readingProgressListMode: 'whitelist',
+      readingProgressBlacklist: [],
+      readingProgressWhitelist: [],
+      useSystemReadingProgressBlacklist: true,
+      useSystemReadingProgressWhitelist: true,
     },
     llm: {
       defaultModel: '',
@@ -331,6 +371,16 @@ export const DEFAULT_CONFIG: UserConfig = {
   general: {
     language: 'en',
     buttonPosition: 'above',
+    showReadingProgressBar: true,
+    readingProgressBarColor: '#60a5fa',
+    autoSaveReadingProgress: true,
+    autoRestoreReadingProgress: true,
+    readingProgressRetentionDays: 30,
+    readingProgressListMode: 'whitelist',
+    readingProgressBlacklist: [],
+    readingProgressWhitelist: [],
+    useSystemReadingProgressBlacklist: true,
+    useSystemReadingProgressWhitelist: true,
   },
   llm: {
     defaultModel: '',

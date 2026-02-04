@@ -4,9 +4,10 @@
  */
 
 import { ExternalLink, Search, Trash2 } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { dictionaryDB, type DictionaryEntry } from '../../core/storage/dictionary-db';
+import { dictionaryService } from '../../core/services/dictionary-service';
+import { type DictionaryEntry } from '../../core/storage/dictionary-db';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { openExternal, PALETTE } from './constants';
@@ -19,12 +20,23 @@ export const DictionaryPage: React.FC<DictionaryPageProps> = ({ t }) => {
   const [dictItems, setDictItems] = useState<DictionaryEntry[]>([]);
   const [q, setQ] = useState('');
   const [dictLoading, setDictLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const loadDictionary = async () => {
-    setDictLoading(true);
-    const list = await dictionaryDB.getAll();
+  const loadDictionary = async (preserveScroll = false) => {
+    const scrollTop = preserveScroll ? containerRef.current?.scrollTop : undefined;
+    if (!preserveScroll) {
+      setDictLoading(true);
+    }
+    const list = await dictionaryService.getAllEntries();
     setDictItems(list);
     setDictLoading(false);
+    if (preserveScroll && scrollTop !== undefined) {
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          containerRef.current.scrollTop = scrollTop;
+        }
+      });
+    }
   };
 
   useEffect(() => {
@@ -35,14 +47,14 @@ export const DictionaryPage: React.FC<DictionaryPageProps> = ({ t }) => {
 
     dictChannel.onmessage = (event) => {
       if (event.data === 'changed') {
-        loadDictionary();
+        loadDictionary(true);
       }
     };
 
     // Also reload when page becomes visible (handles tab switching)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        loadDictionary();
+        loadDictionary(true);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -68,14 +80,14 @@ export const DictionaryPage: React.FC<DictionaryPageProps> = ({ t }) => {
   }, [dictItems, q]);
 
   const removeDict = async (id: string) => {
-    await dictionaryDB.remove(id);
-    await loadDictionary();
+    await dictionaryService.deleteEntry(id);
+    await loadDictionary(true);
   };
 
   const clearAllDict = async () => {
     if (!confirm(t.options?.collections.clearAllConfirm || 'Clear all dictionary entries?')) return;
-    await dictionaryDB.clearAll();
-    await loadDictionary();
+    await dictionaryService.clearAll();
+    await loadDictionary(true);
   };
 
   const exportDictionary = () => {
@@ -118,7 +130,10 @@ export const DictionaryPage: React.FC<DictionaryPageProps> = ({ t }) => {
   };
 
   return (
-    <div style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}>
+    <div
+      ref={containerRef}
+      style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}
+    >
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between rounded-t-lg border-b border-slate-200 bg-slate-50 px-3 py-2">
           <div className="min-w-0">

@@ -184,6 +184,26 @@ export const fr: I18nConfig = {
       buttonPosition: 'Position du Bouton',
       buttonPositionAbove: 'Au-dessus',
       buttonPositionBelow: 'En-dessous',
+      readingProgressTitle: 'Progression de lecture',
+      showReadingProgressBar: 'Afficher la barre de progression',
+      autoSaveReadingProgress: 'Enregistrer automatiquement la progression',
+      autoRestoreReadingProgress: 'Restaurer la dernière position au chargement',
+      readingProgressRetention: 'Conservation de la progression (jours)',
+      readingProgressRetentionDesc: 'La progression plus ancienne sera supprimée automatiquement.',
+      readingProgressBarColor: 'Couleur de la barre de progression',
+      readingProgressBarColorPresets: 'Couleurs prédéfinies',
+      readingProgressBarColorCustom: 'Couleur personnalisée',
+      readingProgressMode: 'Mode de liste de domaines',
+      readingProgressModeBlacklist: 'Liste noire',
+      readingProgressModeWhitelist: 'Liste blanche',
+      readingProgressBlacklist: 'Domaines sur liste noire',
+      readingProgressBlacklistDesc:
+        'Un domaine par ligne. Les valeurs par défaut du système (par ex. x.com) sont également appliquées.',
+      readingProgressWhitelist: 'Domaines sur liste blanche',
+      readingProgressWhitelistDesc:
+        'Un domaine par ligne. La progression ne sera enregistrée ou restaurée que pour ces domaines.',
+      readingProgressUseSystemBlacklist: 'Utiliser la liste noire système',
+      readingProgressUseSystemWhitelist: 'Utiliser la liste blanche système',
     },
     subscription: {
       signIn: 'Se Connecter',
@@ -403,6 +423,8 @@ export const fr: I18nConfig = {
       prompt:
         'Vous êtes un assistant IA utile. Veuillez répondre aux messages de l\'utilisateur de manière conversationnelle. L\'utilisateur a sélectionné ce texte : "{text}".',
     },
+    saveProgress: 'Enregistrer la progression',
+    progressSaved: 'Progression enregistrée',
     share: {
       title: 'Partager',
       description: 'Générer une image de partage',

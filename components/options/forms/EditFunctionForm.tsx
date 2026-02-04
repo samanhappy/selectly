@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { FunctionConfig } from '../../../core/config/llm-config';
 import { ConfigManager, DEFAULT_HIGHLIGHT_COLOR } from '../../../core/config/llm-config';
 import { getActionIcon } from '../../../utils/icon-utils';
+import { COLOR_PRESETS } from '../color-presets';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { parseColorToRgba, rgbaToHex, rgbaToString, type RgbaColor } from './highlight-color-utils';
 import { IconSelector } from './IconSelector';
@@ -43,14 +44,11 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
   const customLabel = i18n.popup?.functions?.labels?.highlightColorCustom || 'Custom color';
   const opacityLabel = i18n.popup?.functions?.labels?.highlightColorOpacity || 'Opacity';
 
-  const presetColors = [
-    { id: 'sun', name: 'Sunshine', color: DEFAULT_HIGHLIGHT_COLOR },
-    { id: 'mint', name: 'Mint', color: 'rgba(16, 185, 129, 0.22)' },
-    { id: 'sky', name: 'Sky', color: 'rgba(56, 189, 248, 0.22)' },
-    { id: 'lavender', name: 'Lavender', color: 'rgba(139, 92, 246, 0.22)' },
-    { id: 'rose', name: 'Rose', color: 'rgba(244, 63, 94, 0.2)' },
-    { id: 'peach', name: 'Peach', color: 'rgba(251, 146, 60, 0.22)' },
-  ];
+  const presetColors = COLOR_PRESETS.map((preset) => ({
+    id: preset.id,
+    name: preset.name,
+    color: preset.highlightColor,
+  }));
 
   const configManager = ConfigManager.getInstance();
   const userConfig = configManager.getConfig();

@@ -73,6 +73,80 @@ export const contentStyles = `
     }
   }
 
+  /* Reading progress bar */
+  .selectly-progress-host {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 1000000;
+    pointer-events: none;
+  }
+
+  .selectly-progress-bar {
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.08);
+  }
+
+  .selectly-progress-bar__fill {
+    width: 0%;
+    height: 100%;
+    background: var(--selectly-progress-color, #60a5fa);
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
+  }
+
+  /* Manual reading progress save button */
+  .selectly-global-actions {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1000000;
+    pointer-events: auto;
+  }
+
+  .selectly-global-action-btn {
+    all: unset;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow:
+      0 6px 14px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .selectly-global-action-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow:
+      0 10px 20px rgba(15, 23, 42, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  .selectly-global-action-btn:active {
+    transform: translateY(0);
+    background: rgba(248, 250, 252, 0.95);
+  }
+
+  .selectly-global-action-btn.is-saved {
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow:
+      0 8px 16px rgba(34, 197, 94, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+
   /* Glass morphism button base styles */
   .selectly-buttons .action-btn {
     all: unset;
@@ -243,6 +317,7 @@ export const contentStyles = `
       gap: 4px !important;
     }
 
+
     .selectly-buttons .action-btn {
       width: 40px !important;
       height: 40px !important;
@@ -299,5 +374,9 @@ export const contentStyles = `
     .selectly-buttons .action-btn.btn-success { color: #22c55e; }
     .selectly-buttons .action-btn.btn-error { color: #ef4444; }
     .selectly-buttons .action-btn.btn-remove { color: #f97316; }
+
+    .selectly-progress-bar {
+      background: rgba(15, 23, 42, 0.4);
+    }
   }
 `;

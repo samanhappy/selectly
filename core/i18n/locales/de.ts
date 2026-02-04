@@ -183,6 +183,26 @@ export const de: I18nConfig = {
       buttonPosition: 'Schaltflächenposition',
       buttonPositionAbove: 'Oben',
       buttonPositionBelow: 'Unten',
+      readingProgressTitle: 'Leseverlauf',
+      showReadingProgressBar: 'Fortschrittsleiste anzeigen',
+      autoSaveReadingProgress: 'Leseverlauf automatisch speichern',
+      autoRestoreReadingProgress: 'Letzte Position beim Laden wiederherstellen',
+      readingProgressRetention: 'Fortschritt aufbewahren (Tage)',
+      readingProgressRetentionDesc: 'Fortschritt, der älter ist, wird automatisch entfernt.',
+      readingProgressBarColor: 'Farbe der Fortschrittsleiste',
+      readingProgressBarColorPresets: 'Voreingestellte Farben',
+      readingProgressBarColorCustom: 'Benutzerdefinierte Farbe',
+      readingProgressMode: 'Domänenlistenmodus',
+      readingProgressModeBlacklist: 'Blacklist',
+      readingProgressModeWhitelist: 'Whitelist',
+      readingProgressBlacklist: 'Gesperrte Domains',
+      readingProgressBlacklistDesc:
+        'Eine Domain pro Zeile. Systemstandards (z.B. x.com) werden ebenfalls angewendet.',
+      readingProgressWhitelist: 'Zugelassene Domains',
+      readingProgressWhitelistDesc:
+        'Eine Domain pro Zeile. Fortschritt wird nur für diese Domains gespeichert oder wiederhergestellt.',
+      readingProgressUseSystemBlacklist: 'System-Blacklist verwenden',
+      readingProgressUseSystemWhitelist: 'System-Whitelist verwenden',
     },
     subscription: {
       signIn: 'Anmelden',
@@ -252,6 +272,8 @@ export const de: I18nConfig = {
     pin: 'Anheften',
     unpin: 'Loslösen',
     addToDictionary: 'Zum Wörterbuch hinzufügen',
+    saveProgress: 'Fortschritt speichern',
+    progressSaved: 'Fortschritt gespeichert',
   },
 
   button: {

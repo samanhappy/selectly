@@ -182,6 +182,27 @@ export const es: I18nConfig = {
       buttonPosition: 'Posición del Botón',
       buttonPositionAbove: 'Arriba',
       buttonPositionBelow: 'Abajo',
+      readingProgressTitle: 'Progreso de lectura',
+      showReadingProgressBar: 'Mostrar barra de progreso',
+      autoSaveReadingProgress: 'Guardar progreso automáticamente',
+      autoRestoreReadingProgress: 'Restaurar última posición al cargar',
+      readingProgressRetention: 'Retención de progreso (días)',
+      readingProgressRetentionDesc:
+        'El progreso anterior a este período se eliminará automáticamente.',
+      readingProgressBarColor: 'Color de la barra de progreso',
+      readingProgressBarColorPresets: 'Colores preestablecidos',
+      readingProgressBarColorCustom: 'Color personalizado',
+      readingProgressMode: 'Modo de lista de dominios',
+      readingProgressModeBlacklist: 'Lista negra',
+      readingProgressModeWhitelist: 'Lista blanca',
+      readingProgressBlacklist: 'Dominios en lista negra',
+      readingProgressBlacklistDesc:
+        'Un dominio por línea. También se aplican los valores predeterminados del sistema (por ejemplo, x.com).',
+      readingProgressWhitelist: 'Dominios en lista blanca',
+      readingProgressWhitelistDesc:
+        'Un dominio por línea. El progreso solo se guardará o restaurará en estos dominios.',
+      readingProgressUseSystemBlacklist: 'Usar lista negra del sistema',
+      readingProgressUseSystemWhitelist: 'Usar lista blanca del sistema',
     },
     subscription: {
       signIn: 'Iniciar Sesión',
@@ -401,6 +422,8 @@ export const es: I18nConfig = {
       prompt:
         'Eres un asistente de IA útil. Por favor, responde a los mensajes del usuario de manera conversacional. El usuario ha seleccionado este texto: "{text}".',
     },
+    saveProgress: 'Guardar progreso',
+    progressSaved: 'Progreso guardado',
     share: {
       title: 'Compartir',
       description: 'Generar imagen para compartir',
