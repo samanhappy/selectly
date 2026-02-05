@@ -123,6 +123,7 @@ export const de: I18nConfig = {
       title: 'Funktionen',
       appearance: 'Erscheinungsbild',
       addCustom: 'Benutzerdefinierte Funktion hinzufügen',
+      addCustomPremium: 'Benutzerdefinierte Premium-Funktion hinzufügen',
       editFunction: 'Funktion bearbeiten',
       functionKey: 'Funktionsschlüssel',
       description: 'Beschreibung',
@@ -168,6 +169,9 @@ export const de: I18nConfig = {
         searchEngineHelp: 'Wählen Sie die Suchmaschine für Suchanfragen',
         highlightColor: 'Hervorhebungsfarbe',
         highlightColorHelp: 'Wählen Sie die Hervorhebungsfarbe für diese Aktion',
+        highlightColorPresets: 'Voreingestellte Farben',
+        highlightColorCustom: 'Benutzerdefinierte Farbe',
+        highlightColorOpacity: 'Deckkraft',
       },
       editTitle: 'Funktion bearbeiten',
       searchEngines: {
@@ -329,6 +333,19 @@ export const de: I18nConfig = {
       delete: 'Löschen',
       visitPage: 'Seite besuchen',
     },
+    general: {
+      dataManagement: 'Datenverwaltung',
+      exportConfig: 'Konfiguration exportieren',
+      exportConfigDesc: 'Alle Einstellungen und Daten als JSON-Datei herunterladen',
+      export: 'Exportieren',
+      exportSuccess: 'Konfiguration erfolgreich exportiert!',
+      exportError: 'Konfigurationsexport fehlgeschlagen. Bitte erneut versuchen.',
+      importConfig: 'Konfiguration importieren',
+      importConfigDesc: 'Einstellungen und Daten aus JSON-Datei wiederherstellen',
+      import: 'Importieren',
+      importSuccess: 'Konfiguration erfolgreich importiert! Die Seite wird neu geladen.',
+      importError: 'Konfigurationsimport fehlgeschlagen',
+    },
   },
 
   collections: {
@@ -424,6 +441,11 @@ export const de: I18nConfig = {
       description: 'Mit KI chatten',
       prompt:
         'Sie sind ein hilfreicher KI-Assistent. Bitte antworten Sie auf Benutzernachrichten in einer gesprächigen Weise. Der Benutzer hat diesen Text ausgewählt: "{text}".',
+    },
+    collect: {
+      title: 'Sammeln',
+      description: 'Ausgewählten Text in Sammlungen speichern',
+      prompt: '{text}',
     },
     share: {
       title: 'Teilen',

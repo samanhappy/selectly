@@ -121,6 +121,7 @@ export const es: I18nConfig = {
       title: 'Funciones',
       appearance: 'Apariencia',
       addCustom: 'Añadir Función Personalizada',
+      addCustomPremium: 'Añadir Función Premium Personalizada',
       editFunction: 'Editar Función',
       functionKey: 'Clave de Función',
       description: 'Descripción',
@@ -167,6 +168,9 @@ export const es: I18nConfig = {
         searchEngineHelp: 'Elige qué motor de búsqueda usar para las consultas',
         highlightColor: 'Color de Resaltado',
         highlightColorHelp: 'Elige el color de resaltado para esta acción',
+        highlightColorPresets: 'Colores preestablecidos',
+        highlightColorCustom: 'Color personalizado',
+        highlightColorOpacity: 'Opacidad',
       },
       editTitle: 'Editar Función',
       searchEngines: {
@@ -271,6 +275,8 @@ export const es: I18nConfig = {
     pin: 'Anclar',
     unpin: 'Desanclar',
     addToDictionary: 'Añadir al Diccionario',
+    saveProgress: 'Guardar progreso',
+    progressSaved: 'Progreso guardado',
   },
 
   button: {
@@ -325,6 +331,19 @@ export const es: I18nConfig = {
       copy: 'Copiar',
       delete: 'Eliminar',
       visitPage: 'Visitar página',
+    },
+    general: {
+      dataManagement: 'Gestión de datos',
+      exportConfig: 'Exportar configuración',
+      exportConfigDesc: 'Descargar todos los ajustes y datos como archivo JSON',
+      export: 'Exportar',
+      exportSuccess: '¡Configuración exportada correctamente!',
+      exportError: 'Error al exportar la configuración. Inténtalo de nuevo.',
+      importConfig: 'Importar configuración',
+      importConfigDesc: 'Restaurar ajustes y datos desde un archivo JSON',
+      import: 'Importar',
+      importSuccess: '¡Configuración importada correctamente! La página se recargará.',
+      importError: 'Error al importar la configuración',
     },
   },
 
@@ -422,8 +441,11 @@ export const es: I18nConfig = {
       prompt:
         'Eres un asistente de IA útil. Por favor, responde a los mensajes del usuario de manera conversacional. El usuario ha seleccionado este texto: "{text}".',
     },
-    saveProgress: 'Guardar progreso',
-    progressSaved: 'Progreso guardado',
+    collect: {
+      title: 'Recopilar',
+      description: 'Guardar texto seleccionado en colecciones',
+      prompt: '{text}',
+    },
     share: {
       title: 'Compartir',
       description: 'Generar imagen para compartir',

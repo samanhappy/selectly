@@ -114,6 +114,7 @@ export const zh: I18nConfig = {
       title: '功能',
       appearance: '外观',
       addCustom: '添加自定义功能',
+      addCustomPremium: '添加高级自定义功能',
       editFunction: '编辑功能',
       functionKey: '功能键',
       description: '描述',
@@ -413,16 +414,16 @@ export const zh: I18nConfig = {
       description: '打开选中链接',
       prompt: '{text}',
     },
-    collect: {
-      title: '收藏',
-      description: '将选中文本保存到收藏',
-      prompt: '{text}',
-    },
     chat: {
       title: '对话',
       description: '与 AI 对话',
       prompt:
         '你是一个有用的 AI 助手。请以对话的方式回应用户的消息。用户选择了这段文字："{text}"。',
+    },
+    collect: {
+      title: '收藏',
+      description: '将选中文本保存到收藏',
+      prompt: '{text}',
     },
     share: {
       title: '分享',

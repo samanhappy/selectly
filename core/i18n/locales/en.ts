@@ -118,6 +118,7 @@ export const en: I18nConfig = {
       title: 'Functions',
       appearance: 'Appearance',
       addCustom: 'Add Custom Function',
+      addCustomPremium: 'Add Premium Custom Function',
       editFunction: 'Edit Function',
       functionKey: 'Function Key',
       description: 'Description',
@@ -428,16 +429,16 @@ export const en: I18nConfig = {
       description: 'Open selected URL',
       prompt: '{text}',
     },
-    collect: {
-      title: 'Collect',
-      description: 'Save selected text to collections',
-      prompt: '{text}',
-    },
     chat: {
       title: 'Chat',
       description: 'Chat with AI',
       prompt:
         'You are a helpful AI assistant. Please respond to user messages in a conversational manner. The user has selected this text: "{text}".',
+    },
+    collect: {
+      title: 'Collect',
+      description: 'Save selected text to collections',
+      prompt: '{text}',
     },
     share: {
       title: 'Share',

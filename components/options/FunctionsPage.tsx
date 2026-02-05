@@ -6,7 +6,11 @@
 import { Blocks, MousePointer, Plus, Settings as SettingsIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
-import type { FunctionConfig, UserConfig } from '../../core/config/llm-config';
+import {
+  getFunctionDisplayFields,
+  type FunctionConfig,
+  type UserConfig,
+} from '../../core/config/llm-config';
 import { getActionIcon as baseGetActionIcon } from '../../utils/icon-utils';
 import { PALETTE } from './constants';
 import { FunctionCard } from './FunctionCard';
@@ -232,7 +236,7 @@ const FunctionList: React.FC<FunctionListProps> = ({
             <FunctionCard
               functionKey={key}
               config={config as any}
-              title={(config as any).title}
+              title={getFunctionDisplayFields(key, config as any, i18nConfig).title}
               modelLabel={i18nConfig.popup.functions.model}
               getIcon={renderActionIcon}
               isSubscribed={isSubscribed}
