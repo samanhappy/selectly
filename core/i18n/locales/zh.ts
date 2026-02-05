@@ -114,6 +114,7 @@ export const zh: I18nConfig = {
       title: '功能',
       appearance: '外观',
       addCustom: '添加自定义功能',
+      addCustomPremium: '添加高级自定义功能',
       editFunction: '编辑功能',
       functionKey: '功能键',
       description: '描述',

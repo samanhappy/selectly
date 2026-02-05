@@ -118,6 +118,7 @@ export const en: I18nConfig = {
       title: 'Functions',
       appearance: 'Appearance',
       addCustom: 'Add Custom Function',
+      addCustomPremium: 'Add Premium Custom Function',
       editFunction: 'Edit Function',
       functionKey: 'Function Key',
       description: 'Description',

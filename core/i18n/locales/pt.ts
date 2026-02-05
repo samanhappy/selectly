@@ -121,6 +121,7 @@ export const pt: I18nConfig = {
       title: 'Funções',
       appearance: 'Aparência',
       addCustom: 'Adicionar Função Personalizada',
+      addCustomPremium: 'Adicionar Função Premium Personalizada',
       editFunction: 'Editar Função',
       functionKey: 'Chave da Função',
       description: 'Descrição',
@@ -166,6 +167,9 @@ export const pt: I18nConfig = {
         searchEngineHelp: 'Escolha qual motor de busca usar para pesquisas',
         highlightColor: 'Cor do Realce',
         highlightColorHelp: 'Escolha a cor de realce para esta ação',
+        highlightColorPresets: 'Cores predefinidas',
+        highlightColorCustom: 'Cor personalizada',
+        highlightColorOpacity: 'Opacidade',
       },
       editTitle: 'Editar Função',
       searchEngines: {
@@ -269,6 +273,8 @@ export const pt: I18nConfig = {
     pin: 'Fixar',
     unpin: 'Desafixar',
     addToDictionary: 'Adicionar ao Dicionário',
+    saveProgress: 'Salvar progresso',
+    progressSaved: 'Progresso salvo',
   },
 
   button: {
@@ -323,6 +329,19 @@ export const pt: I18nConfig = {
       copy: 'Copiar',
       delete: 'Excluir',
       visitPage: 'Visitar página',
+    },
+    general: {
+      dataManagement: 'Gerenciamento de dados',
+      exportConfig: 'Exportar configuração',
+      exportConfigDesc: 'Baixar todas as configurações e dados como arquivo JSON',
+      export: 'Exportar',
+      exportSuccess: 'Configuração exportada com sucesso!',
+      exportError: 'Falha ao exportar a configuração. Tente novamente.',
+      importConfig: 'Importar configuração',
+      importConfigDesc: 'Restaurar configurações e dados de um arquivo JSON',
+      import: 'Importar',
+      importSuccess: 'Configuração importada com sucesso! A página será recarregada.',
+      importError: 'Falha ao importar a configuração',
     },
   },
 

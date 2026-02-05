@@ -117,7 +117,7 @@ export interface I18nConfig {
       title: string;
       appearance: string;
       addCustom: string;
-      addCustomPremium?: string;
+      addCustomPremium: string;
       editFunction: string;
       functionKey: string;
       description: string;
@@ -125,14 +125,14 @@ export interface I18nConfig {
       icon: string;
       model: string;
       enabled: string;
-      premiumRequired?: string;
-      upgradeToUnlock?: string;
+      premiumRequired: string;
+      upgradeToUnlock: string;
       placeholders: {
         functionKey: string;
         description: string;
         prompt: string;
-        displayDomains?: string;
-        autoExecuteDomains?: string;
+        displayDomains: string;
+        autoExecuteDomains: string;
       };
       labels: {
         title: string;
@@ -141,32 +141,32 @@ export interface I18nConfig {
         promptTemplate: string;
         promptHelp: string;
         configuration: string;
-        basicSettings?: string;
-        advancedSettings?: string;
+        basicSettings: string;
+        advancedSettings: string;
         autoExecute: string;
         autoExecuteHelp: string;
         autoCloseButtons: string;
         autoCloseButtonsHelp: string;
-        autoCloseResult?: string;
-        autoCloseResultHelp?: string;
-        collapsed?: string;
-        collapsedHelp?: string;
-        displayDomains?: string;
-        displayDomainsHelp?: string;
-        autoExecuteDomains?: string;
-        autoExecuteDomainsHelp?: string;
-        isPremium?: string;
-        isPremiumHelp?: string;
-        searchEngine?: string;
-        searchEngineHelp?: string;
-        highlightColor?: string;
-        highlightColorHelp?: string;
-        highlightColorPresets?: string;
-        highlightColorCustom?: string;
-        highlightColorOpacity?: string;
+        autoCloseResult: string;
+        autoCloseResultHelp: string;
+        collapsed: string;
+        collapsedHelp: string;
+        displayDomains: string;
+        displayDomainsHelp: string;
+        autoExecuteDomains: string;
+        autoExecuteDomainsHelp: string;
+        isPremium: string;
+        isPremiumHelp: string;
+        searchEngine: string;
+        searchEngineHelp: string;
+        highlightColor: string;
+        highlightColorHelp: string;
+        highlightColorPresets: string;
+        highlightColorCustom: string;
+        highlightColorOpacity: string;
       };
       editTitle: string;
-      searchEngines?: {
+      searchEngines: {
         google: string;
         bing: string;
         baidu: string;
@@ -179,24 +179,24 @@ export interface I18nConfig {
       buttonPosition: string;
       buttonPositionAbove: string;
       buttonPositionBelow: string;
-      readingProgressTitle?: string;
-      showReadingProgressBar?: string;
-      autoSaveReadingProgress?: string;
-      autoRestoreReadingProgress?: string;
-      readingProgressRetention?: string;
-      readingProgressRetentionDesc?: string;
-      readingProgressBarColor?: string;
-      readingProgressBarColorPresets?: string;
-      readingProgressBarColorCustom?: string;
-      readingProgressMode?: string;
-      readingProgressModeBlacklist?: string;
-      readingProgressModeWhitelist?: string;
-      readingProgressBlacklist?: string;
-      readingProgressBlacklistDesc?: string;
-      readingProgressWhitelist?: string;
-      readingProgressWhitelistDesc?: string;
-      readingProgressUseSystemBlacklist?: string;
-      readingProgressUseSystemWhitelist?: string;
+      readingProgressTitle: string;
+      showReadingProgressBar: string;
+      autoSaveReadingProgress: string;
+      autoRestoreReadingProgress: string;
+      readingProgressRetention: string;
+      readingProgressRetentionDesc: string;
+      readingProgressBarColor: string;
+      readingProgressBarColorPresets: string;
+      readingProgressBarColorCustom: string;
+      readingProgressMode: string;
+      readingProgressModeBlacklist: string;
+      readingProgressModeWhitelist: string;
+      readingProgressBlacklist: string;
+      readingProgressBlacklistDesc: string;
+      readingProgressWhitelist: string;
+      readingProgressWhitelistDesc: string;
+      readingProgressUseSystemBlacklist: string;
+      readingProgressUseSystemWhitelist: string;
     };
     subscription: {
       signIn: string;
@@ -241,15 +241,15 @@ export interface I18nConfig {
       paymentError: string;
       subscriptionError: string;
       // Redeem flow
-      redeemEntry?: string;
-      redeemTitle?: string;
-      redeemDesc?: string;
-      redeemPlaceholder?: string;
-      redeemSubmit?: string;
-      redeemSuccess?: string;
-      redeemFailed?: string;
-      redeemError?: string;
-      redeemLifetime?: string;
+      redeemEntry: string;
+      redeemTitle: string;
+      redeemDesc: string;
+      redeemPlaceholder: string;
+      redeemSubmit: string;
+      redeemSuccess: string;
+      redeemFailed: string;
+      redeemError: string;
+      redeemLifetime: string;
     };
   };
 
@@ -265,8 +265,8 @@ export interface I18nConfig {
     pin: string;
     unpin: string;
     addToDictionary: string;
-    saveProgress?: string;
-    progressSaved?: string;
+    saveProgress: string;
+    progressSaved: string;
   };
 
   button: {
@@ -275,14 +275,14 @@ export interface I18nConfig {
   };
 
   // Options page
-  options?: {
+  options: {
     title: string;
     contentCenter: string;
     toggleSidebar: string;
     sidebar: {
       collections: string;
       dictionary: string;
-      highlights?: string;
+      highlights: string;
     };
     collections: {
       title: string;
@@ -308,7 +308,7 @@ export interface I18nConfig {
       csvHeaderHostname: string;
       csvHeaderCreatedAt: string;
     };
-    highlights?: {
+    highlights: {
       title: string;
       groups: string;
       search: string;
@@ -321,7 +321,7 @@ export interface I18nConfig {
       delete: string;
       visitPage: string;
     };
-    general?: {
+    general: {
       dataManagement: string;
       exportConfig: string;
       exportConfigDesc: string;
@@ -337,7 +337,7 @@ export interface I18nConfig {
   };
 
   // Collections page & notifications
-  collections?: {
+  collections: {
     collected: string;
     savedToCollections: string;
   };
@@ -412,7 +412,7 @@ export interface I18nConfig {
       description: string;
       prompt: string;
     };
-    collect?: {
+    collect: {
       title: string;
       description: string;
       prompt: string;
@@ -435,7 +435,7 @@ export interface I18nConfig {
   };
 
   // Time units used in subscription UI
-  time?: {
+  time: {
     month: string;
     months: string;
     year: string;

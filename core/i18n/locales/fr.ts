@@ -122,6 +122,7 @@ export const fr: I18nConfig = {
       title: 'Fonctions',
       appearance: 'Apparence',
       addCustom: 'Ajouter une Fonction Personnalisée',
+      addCustomPremium: 'Ajouter une Fonction Premium Personnalisée',
       editFunction: 'Modifier la Fonction',
       functionKey: 'Clé de Fonction',
       description: 'Description',
@@ -169,6 +170,9 @@ export const fr: I18nConfig = {
         searchEngineHelp: 'Choisissez le moteur de recherche à utiliser',
         highlightColor: 'Couleur de Surlignage',
         highlightColorHelp: 'Choisissez la couleur de surlignage pour cette action',
+        highlightColorPresets: 'Couleurs prédéfinies',
+        highlightColorCustom: 'Couleur personnalisée',
+        highlightColorOpacity: 'Opacité',
       },
       editTitle: 'Modifier la Fonction',
       searchEngines: {
@@ -272,6 +276,8 @@ export const fr: I18nConfig = {
     pin: 'Épingler',
     unpin: 'Désépingler',
     addToDictionary: 'Ajouter au Dictionnaire',
+    saveProgress: 'Enregistrer la progression',
+    progressSaved: 'Progression enregistrée',
   },
 
   button: {
@@ -326,6 +332,19 @@ export const fr: I18nConfig = {
       copy: 'Copier',
       delete: 'Supprimer',
       visitPage: 'Visiter la page',
+    },
+    general: {
+      dataManagement: 'Gestion des données',
+      exportConfig: 'Exporter la configuration',
+      exportConfigDesc: 'Télécharger tous les paramètres et données en fichier JSON',
+      export: 'Exporter',
+      exportSuccess: 'Configuration exportée avec succès !',
+      exportError: "Échec de l'exportation de la configuration. Veuillez réessayer.",
+      importConfig: 'Importer la configuration',
+      importConfigDesc: 'Restaurer les paramètres et données depuis un fichier JSON',
+      import: 'Importer',
+      importSuccess: 'Configuration importée avec succès ! La page va se recharger.',
+      importError: "Échec de l'importation de la configuration",
     },
   },
 

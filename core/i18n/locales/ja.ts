@@ -119,6 +119,7 @@ export const ja: I18nConfig = {
       title: '機能',
       appearance: '外観',
       addCustom: 'カスタム機能を追加',
+      addCustomPremium: 'プレミアムカスタム機能を追加',
       editFunction: '機能を編集',
       functionKey: '機能キー',
       description: '説明',
@@ -165,6 +166,9 @@ export const ja: I18nConfig = {
         searchEngineHelp: '検索クエリに使用する検索エンジンを選択',
         highlightColor: 'ハイライト色',
         highlightColorHelp: 'このアクションのハイライト色を選択',
+        highlightColorPresets: 'プリセット色',
+        highlightColorCustom: 'カスタム色',
+        highlightColorOpacity: '不透明度',
       },
       editTitle: '機能を編集',
       searchEngines: {
@@ -266,6 +270,8 @@ export const ja: I18nConfig = {
     pin: 'ピン留め',
     unpin: 'ピン留めを外す',
     addToDictionary: '辞書に追加',
+    saveProgress: '進捗を保存',
+    progressSaved: '進捗を保存しました',
   },
 
   button: {
@@ -321,6 +327,19 @@ export const ja: I18nConfig = {
       copy: 'コピー',
       delete: '削除',
       visitPage: 'ページを訪問',
+    },
+    general: {
+      dataManagement: 'データ管理',
+      exportConfig: '設定をエクスポート',
+      exportConfigDesc: 'すべての設定とデータをJSONファイルとしてダウンロード',
+      export: 'エクスポート',
+      exportSuccess: '設定のエクスポートに成功しました！',
+      exportError: '設定のエクスポートに失敗しました。もう一度お試しください。',
+      importConfig: '設定をインポート',
+      importConfigDesc: 'JSONファイルから設定とデータを復元',
+      import: 'インポート',
+      importSuccess: '設定のインポートに成功しました！ページを再読み込みします。',
+      importError: '設定のインポートに失敗しました',
     },
   },
 
