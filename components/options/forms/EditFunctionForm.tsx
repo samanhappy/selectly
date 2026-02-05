@@ -2,7 +2,11 @@ import { Trash2 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
 import type { FunctionConfig } from '../../../core/config/llm-config';
-import { ConfigManager, DEFAULT_HIGHLIGHT_COLOR } from '../../../core/config/llm-config';
+import {
+  ConfigManager,
+  DEFAULT_HIGHLIGHT_COLOR,
+  getFunctionDisplayFields,
+} from '../../../core/config/llm-config';
 import { getActionIcon } from '../../../utils/icon-utils';
 import { COLOR_PRESETS } from '../color-presets';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
@@ -54,6 +58,12 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
   const userConfig = configManager.getConfig();
   const enabledProviders = configManager.getEnabledProviders();
 
+  const { title: displayTitle, description: displayDescription } = getFunctionDisplayFields(
+    functionKey,
+    config,
+    i18n
+  );
+
   useEffect(() => {
     setLocalPrompt(config.prompt || '');
   }, [config.prompt]);
@@ -76,7 +86,7 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
             <label className="sl-label">{i18n.popup.functions.labels.title}</label>
             <input
               className="sl-input"
-              value={config.title || ''}
+              value={displayTitle || ''}
               onChange={(e) => onChange('title', e.target.value)}
               placeholder={i18n.popup.functions.title}
               disabled={config.isBuiltIn}
@@ -87,7 +97,7 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
             <label className="sl-label">{i18n.popup.functions.description}</label>
             <input
               className="sl-input"
-              value={config.description || ''}
+              value={displayDescription || ''}
               onChange={(e) => onChange('description', e.target.value)}
               placeholder={i18n.popup.functions.description}
               disabled={config.isBuiltIn}

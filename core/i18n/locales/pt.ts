@@ -420,8 +420,11 @@ export const pt: I18nConfig = {
       prompt:
         'Você é um assistente de IA útil. Por favor, responda às mensagens do usuário de forma conversacional. O usuário selecionou este texto: "{text}".',
     },
-    saveProgress: 'Salvar progresso',
-    progressSaved: 'Progresso salvo',
+    collect: {
+      title: 'Coletar',
+      description: 'Salvar texto selecionado em coleções',
+      prompt: '{text}',
+    },
     share: {
       title: 'Compartilhar',
       description: 'Gerar imagem de compartilhamento',

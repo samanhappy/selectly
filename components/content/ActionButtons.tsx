@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { UserConfig } from '../../core/config/llm-config';
+import { getFunctionDisplayFields, type UserConfig } from '../../core/config/llm-config';
 import { i18n } from '../../core/i18n';
 import { actionService } from '../../core/services/action-service';
 import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
@@ -265,7 +265,8 @@ export const ActionButtons = ({
     }
 
     // Modify title for premium functions when user is not subscribed
-    let buttonTitle = config.title;
+    const { title: localizedTitle } = getFunctionDisplayFields(key, config, i18nConfig);
+    let buttonTitle = localizedTitle;
     // if (config.isPremium && !isSubscribed) {
     //   buttonTitle = `${config.title} (${dailyUsage.remainingCount}/${dailyUsage.dailyLimit})`
     // }

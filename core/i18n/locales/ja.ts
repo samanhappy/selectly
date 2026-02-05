@@ -417,8 +417,11 @@ export const ja: I18nConfig = {
       prompt:
         'あなたは有用なAIアシスタントです。ユーザーのメッセージに会話的に応答してください。ユーザーがこのテキストを選択しました: "{text}"。',
     },
-    saveProgress: '進捗を保存',
-    progressSaved: '進捗を保存しました',
+    collect: {
+      title: '収集',
+      description: '選択したテキストをコレクションに保存',
+      prompt: '{text}',
+    },
     share: {
       title: '共有',
       description: '共有画像を生成',

@@ -425,6 +425,11 @@ export const de: I18nConfig = {
       prompt:
         'Sie sind ein hilfreicher KI-Assistent. Bitte antworten Sie auf Benutzernachrichten in einer gesprächigen Weise. Der Benutzer hat diesen Text ausgewählt: "{text}".',
     },
+    collect: {
+      title: 'Sammeln',
+      description: 'Ausgewählten Text in Sammlungen speichern',
+      prompt: '{text}',
+    },
     share: {
       title: 'Teilen',
       description: 'Share-Bild generieren',

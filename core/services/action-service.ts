@@ -1,4 +1,4 @@
-import type { FunctionConfig } from '../config/llm-config';
+import { getFunctionDisplayFields, type FunctionConfig } from '../config/llm-config';
 import { i18n } from '../i18n';
 import { imageGeneratorService } from './image-generator-service';
 import { LLMService, processText } from './llm-service';
@@ -117,8 +117,9 @@ export class ActionService {
       return;
     }
 
-    // Show streaming result window
-    selectlyInstance.showStreamingResult(config.title, x, y, minWidth, maxWidth, actionKey);
+    // Show streaming result window (use localized title for built-in functions)
+    const { title } = getFunctionDisplayFields(actionKey, config, i18n.getConfig());
+    selectlyInstance.showStreamingResult(title, x, y, minWidth, maxWidth, actionKey);
 
     try {
       // Prepare translation variables for smart language detection
@@ -247,8 +248,9 @@ export class ActionService {
       return;
     }
 
-    // Show dialogue streaming result window
-    selectlyInstance.showDialogueResult(config.description, x, y, selectedText, config);
+    // Show dialogue streaming result window (use localized description for built-in functions)
+    const { description } = getFunctionDisplayFields('chat', config, i18n.getConfig());
+    selectlyInstance.showDialogueResult(description, x, y, selectedText, config);
   }
 
   private async handleSearch(text: string): Promise<void> {

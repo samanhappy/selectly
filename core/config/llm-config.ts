@@ -1,5 +1,5 @@
 import { i18n } from '../i18n';
-import type { SupportedLanguage } from '../i18n/types';
+import type { I18nConfig, SupportedLanguage } from '../i18n/types';
 import { secureStorage } from '../storage/secure-storage';
 
 export interface LLMProvider {
@@ -60,6 +60,41 @@ export interface UserConfig {
   functions: Record<string, FunctionConfig>;
   functionOrder?: string[];
 }
+
+const BUILT_IN_FUNCTION_KEYS = new Set([
+  'translate',
+  'polish',
+  'explain',
+  'correct',
+  'copy',
+  'collect',
+  'search',
+  'open',
+  'chat',
+  'share',
+  'highlight',
+]);
+
+export const getFunctionDisplayFields = (
+  functionKey: string,
+  config: FunctionConfig,
+  i18nConfig: I18nConfig = i18n.getConfig()
+): { title: string; description: string } => {
+  const localeEntry = (i18nConfig?.defaultFunctions as Record<string, any>)?.[functionKey];
+  const isBuiltIn = config?.isBuiltIn ?? BUILT_IN_FUNCTION_KEYS.has(functionKey);
+
+  if (isBuiltIn && localeEntry) {
+    return {
+      title: localeEntry.title || config?.title || functionKey,
+      description: localeEntry.description || config?.description || '',
+    };
+  }
+
+  return {
+    title: config?.title || functionKey,
+    description: config?.description || '',
+  };
+};
 
 export const DEFAULT_HIGHLIGHT_COLOR = 'rgba(255, 204, 0, 0.24)';
 
