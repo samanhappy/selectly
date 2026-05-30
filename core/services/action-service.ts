@@ -144,7 +144,8 @@ export class ActionService {
             updateFn(chunk, model, false);
           }
         },
-        config.model
+        config.model,
+        config.thinkingMode
       );
 
       // Mark as complete

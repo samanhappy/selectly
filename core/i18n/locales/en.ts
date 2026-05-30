@@ -144,6 +144,12 @@ export const en: I18nConfig = {
         configuration: 'Configuration',
         basicSettings: 'Basic Settings',
         advancedSettings: 'Advanced Settings',
+        thinkingMode: 'Thinking Mode',
+        thinkingModeAuto: 'Auto (follow model default)',
+        thinkingModeEnabled: 'Enabled',
+        thinkingModeDisabled: 'Disabled',
+        thinkingModeHelp:
+          'Availability depends on the model and provider. Unsupported models ignore this setting.',
         autoExecute: 'Auto Execute',
         autoExecuteHelp: 'Run this function automatically when text is selected',
         autoCloseButtons: 'Auto Close Buttons',

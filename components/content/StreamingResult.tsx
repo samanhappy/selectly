@@ -5,8 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { i18n } from '../../core/i18n';
 import { getActionIcon } from '../../utils/icon-utils';
 
-import 'prismjs/themes/prism.css';
-
 interface StreamingResultProps {
   x: number;
   y: number;
@@ -66,22 +64,9 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
               </p>
             ),
           },
-          // Custom code block styling with Prism classes
+          // Fenced code blocks are styled inside the streaming Shadow DOM.
           pre: {
-            component: ({ children, ...props }: any) => (
-              <pre
-                style={{
-                  background: 'rgba(0, 0, 0, 0.05)',
-                  padding: '12px',
-                  borderRadius: '6px',
-                  overflow: 'auto',
-                  margin: '12px 0',
-                }}
-                {...props}
-              >
-                {children}
-              </pre>
-            ),
+            component: ({ children, ...props }: any) => <pre {...props}>{children}</pre>,
           },
           code: {
             component: ({ className, children, ...props }: any) => {

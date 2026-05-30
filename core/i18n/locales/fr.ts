@@ -148,6 +148,12 @@ export const fr: I18nConfig = {
         configuration: 'Configuration',
         basicSettings: 'Paramètres de Base',
         advancedSettings: 'Paramètres Avancés',
+        thinkingMode: 'Mode de réflexion',
+        thinkingModeAuto: 'Automatique (suivre la valeur par défaut du modèle)',
+        thinkingModeEnabled: 'Activé',
+        thinkingModeDisabled: 'Désactivé',
+        thinkingModeHelp:
+          'La disponibilité dépend du modèle et du fournisseur. Les modèles non compatibles ignorent ce réglage.',
         autoExecute: 'Exécution Automatique',
         autoExecuteHelp: 'Exécuter cette fonction automatiquement lors de la sélection de texte',
         autoCloseButtons: 'Fermer Automatiquement les Boutons',

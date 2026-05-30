@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Selectly content CSS isolation test</title>
+    <style>
+      body {
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+      }
+
+      code.language-cpp {
+        display: block;
+        padding: 16px;
+        border-radius: 8px;
+        color: #f8fafc;
+        background: #172033;
+        font-family: 'Courier New', monospace;
+        font-size: 17px;
+        line-height: 1.75;
+        text-shadow: none;
+        white-space: pre-wrap;
+      }
+
+      button {
+        margin-right: 8px;
+        padding: 8px 12px;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Selectly content CSS isolation test</h1>
+    <p>
+      Disable the extension, reload, and save the baseline. Enable the extension, reload, then
+      compare. The computed styles should remain unchanged.
+    </p>
+
+    <code class="language-cpp"
+      >#include &lt;iostream&gt; int main() { std::cout &lt;&lt; "Host page styles stay intact."
+      &lt;&lt; std::endl; }</code
+    >
+
+    <p>
+      <button id="save-baseline" type="button">Save baseline</button>
+      <button id="compare" type="button">Compare with baseline</button>
+    </p>
+    <pre id="result">No baseline saved yet.</pre>
+
+    <script>
+      const STORAGE_KEY = 'selectly-content-css-isolation-baseline';
+      const properties = [
+        'backgroundColor',
+        'color',
+        'fontFamily',
+        'fontSize',
+        'lineHeight',
+        'textShadow',
+        'whiteSpace',
+      ];
+
+      const readStyles = () => {
+        const styles = getComputedStyle(document.querySelector('code.language-cpp'));
+        return Object.fromEntries(properties.map((property) => [property, styles[property]]));
+      };
+
+      const showResult = (message, styles) => {
+        document.querySelector('#result').textContent =
+          `${message}\n\n${JSON.stringify(styles, null, 2)}`;
+      };
+
+      document.querySelector('#save-baseline').addEventListener('click', () => {
+        const styles = readStyles();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(styles));
+        showResult('Baseline saved.', styles);
+      });
+
+      document.querySelector('#compare').addEventListener('click', () => {
+        const baseline = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        const current = readStyles();
+        if (!baseline) {
+          showResult('No baseline saved. Disable the extension and save one first.', current);
+          return;
+        }
+
+        const differences = Object.fromEntries(
+          properties
+            .filter((property) => baseline[property] !== current[property])
+            .map((property) => [
+              property,
+              { baseline: baseline[property], current: current[property] },
+            ])
+        );
+
+        showResult(
+          Object.keys(differences).length === 0
+            ? 'PASS: host page computed styles are unchanged.'
+            : `FAIL: host page computed styles changed.\n${JSON.stringify(differences, null, 2)}`,
+          current
+        );
+      });
+    </script>
+  </body>
+</html>

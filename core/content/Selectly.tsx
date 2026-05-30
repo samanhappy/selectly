@@ -17,6 +17,7 @@ import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
 import { contentStyles } from './content-styles';
+import { streamingStyles } from './streaming-styles';
 
 /**
  * Main content script logic
@@ -1937,6 +1938,10 @@ export class Selectly {
     styleEl.textContent = this.styleContent;
     shadow.appendChild(styleEl);
 
+    const streamingStyleEl = document.createElement('style');
+    streamingStyleEl.textContent = streamingStyles;
+    shadow.appendChild(streamingStyleEl);
+
     const streamingContainer = document.createElement('div');
     shadow.appendChild(streamingContainer);
 
@@ -2147,7 +2152,8 @@ export class Selectly {
             updateFn(chunk, model, false, false, false);
           }
         },
-        config.model
+        config.model,
+        config.thinkingMode
       );
 
       conversationContext.push({ role: 'assistant', content: assistantResponse });

@@ -2,19 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prism.js theme overrides for markdown code blocks */
-:not(pre) > code[class*="language-"],
-pre[class*="language-"] {
-  background: rgba(0, 0, 0, 0.05) !important;
-  font-size: 0.85em !important;
-  line-height: 1.5 !important;
-}
-
-code[class*="language-"],
-pre[class*="language-"] {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace !important;
-}
-
 /* Selectly Popup Light Theme Enhancements */
 .selectly-popup {
 	/* Design Tokens */
