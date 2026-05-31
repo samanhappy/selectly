@@ -146,10 +146,15 @@ function getRangeContextElement(range: Range): Element | undefined {
 }
 
 export function createPointAnchor(point: Point, contextElement?: Element | null): FloatingAnchor {
+  const rect = () => createRect(point.x, point.y, 0, 0);
   return {
     contextElement: contextElement || undefined,
     pointer: point,
-    getBoundingClientRect: () => createRect(point.x, point.y, 0, 0),
+    getBoundingClientRect: rect,
+    getClientRects: () => {
+      const r = rect();
+      return [r] as unknown as DOMRectList;
+    },
   };
 }
 
