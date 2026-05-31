@@ -1,18 +1,21 @@
 {
   "name": "selectly",
   "displayName": "__MSG_extensionName__",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "__MSG_extensionDescription__",
   "author": "samanhappy@gmail.com",
   "scripts": {
     "dev": "plasmo dev",
-    "build": "plasmo build",
+    "build": "plasmo build && pnpm verify:content-css",
     "package": "plasmo package",
+    "test": "vitest run",
+    "verify:content-css": "node scripts/verify-content-css.js",
     "generate-keys": "node scripts/generate-keys.js",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json,md}\""
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.7.6",
     "@lukeed/uuid": "^2.0.1",
     "clsx": "^2.1.1",
     "dexie": "^4.0.8",
@@ -22,7 +25,6 @@
     "markdown-to-jsx": "^7.7.13",
     "openai": "^5.16.0",
     "plasmo": "0.90.5",
-    "prismjs": "^1.30.0",
     "puro": "0.3.4",
     "qrcode": "^1.5.4",
     "react": "18.2.0",
@@ -41,7 +43,8 @@
     "postcss": "^8.5.6",
     "prettier": "3.2.4",
     "tailwindcss": "^3.4.17",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "vitest": "^2.1.9"
   },
   "manifest": {
     "default_locale": "en",

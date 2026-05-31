@@ -145,6 +145,12 @@ export const ja: I18nConfig = {
         configuration: '設定',
         basicSettings: '基本設定',
         advancedSettings: '詳細設定',
+        thinkingMode: '思考モード',
+        thinkingModeAuto: '自動（モデルのデフォルトに従う）',
+        thinkingModeEnabled: '有効',
+        thinkingModeDisabled: '無効',
+        thinkingModeHelp:
+          '利用可否はモデルとプロバイダーによって異なります。互換性のないリクエストはエラーになる場合があります。',
         autoExecute: '自動実行',
         autoExecuteHelp: 'テキスト選択時にこの機能を自動実行します',
         autoCloseButtons: 'ボタンを自動的に閉じる',

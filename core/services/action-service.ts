@@ -81,37 +81,11 @@ export class ActionService {
       return; // Cannot display any result, return directly
     }
 
-    // Calculate result window position (near selected text)
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
-    const rect = range?.getBoundingClientRect();
-
-    let x = 100,
-      y = 100,
-      minWidth = 0,
-      maxWidth = 0;
-    if (rect) {
-      x = rect.left;
-      y = rect.bottom + 10;
-      minWidth = rect.width;
-      maxWidth = rect.width;
-
-      // Prevent going beyond screen
-      if (x + 300 > window.innerWidth) {
-        x = window.innerWidth - 320;
-      }
-      if (y + 200 > window.innerHeight) {
-        y = rect.top - 210;
-      }
-    }
-
     // Handle LLM functions
     if (!config.prompt) {
       selectlyInstance.showErrorResult(
         i18n.t('errors.configError'),
         `${i18n.t('errors.missingPromptConfig')}: ${actionKey}`,
-        x,
-        y,
         actionKey
       );
       return;
@@ -119,7 +93,7 @@ export class ActionService {
 
     // Show streaming result window (use localized title for built-in functions)
     const { title } = getFunctionDisplayFields(actionKey, config, i18n.getConfig());
-    selectlyInstance.showStreamingResult(title, x, y, minWidth, maxWidth, actionKey);
+    selectlyInstance.showStreamingResult(title, actionKey);
 
     try {
       // Prepare translation variables for smart language detection
@@ -144,7 +118,8 @@ export class ActionService {
             updateFn(chunk, model, false);
           }
         },
-        config.model
+        config.model,
+        config.thinkingMode
       );
 
       // Mark as complete
@@ -205,44 +180,10 @@ export class ActionService {
       return;
     }
 
-    // Calculate result window position (near selected text)
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
-    const rect = range?.getBoundingClientRect();
-
-    let x = 100,
-      y = 100; // Default position
-    if (rect) {
-      x = rect.left;
-      y = rect.bottom + 10;
-
-      // Prevent going beyond screen
-      if (x + 300 > window.innerWidth) {
-        x = window.innerWidth - 320;
-      }
-      if (y + 200 > window.innerHeight) {
-        y = rect.top - 210;
-      }
-    }
-
-    // Check LLM configuration
-    // if (!this.llmService.isConfigured()) {
-    //   selectlyInstance.showErrorResult(
-    //     i18n.t("errors.llmNotConfigured"),
-    //     i18n.t("errors.pleaseConfigureApiKey"),
-    //     x,
-    //     y,
-    //     "chat"
-    //   )
-    //   return
-    // }
-
     if (!config.prompt) {
       selectlyInstance.showErrorResult(
         i18n.t('errors.configError'),
         `${i18n.t('errors.missingPromptConfig')}: chat`,
-        x,
-        y,
         'chat'
       );
       return;
@@ -250,7 +191,7 @@ export class ActionService {
 
     // Show dialogue streaming result window (use localized description for built-in functions)
     const { description } = getFunctionDisplayFields('chat', config, i18n.getConfig());
-    selectlyInstance.showDialogueResult(description, x, y, selectedText, config);
+    selectlyInstance.showDialogueResult(description, selectedText, config);
   }
 
   private async handleSearch(text: string): Promise<void> {

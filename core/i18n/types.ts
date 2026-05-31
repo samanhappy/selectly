@@ -143,6 +143,11 @@ export interface I18nConfig {
         configuration: string;
         basicSettings: string;
         advancedSettings: string;
+        thinkingMode: string;
+        thinkingModeAuto: string;
+        thinkingModeEnabled: string;
+        thinkingModeDisabled: string;
+        thinkingModeHelp: string;
         autoExecute: string;
         autoExecuteHelp: string;
         autoCloseButtons: string;

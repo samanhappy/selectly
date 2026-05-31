@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Selectly keyboard selection test</title>
+    <style>
+      body {
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 0 20px;
+        font-family: Arial, sans-serif;
+        line-height: 1.5;
+      }
+
+      textarea,
+      pre {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 120px;
+        padding: 12px;
+      }
+
+      pre {
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Selectly keyboard selection test</h1>
+    <p id="page-text">
+      Focus this page and press Command+A or Ctrl+A. Selectly should show its action buttons.
+    </p>
+    <textarea id="editor">Focus this textarea and press Command+A or Ctrl+A.</textarea>
+    <p><button id="clear-log" type="button">Clear event log</button></p>
+    <pre id="event-log">No events yet.</pre>
+
+    <script>
+      const events = [];
+      const editor = document.querySelector('#editor');
+      const log = document.querySelector('#event-log');
+
+      const snapshot = () => ({
+        activeElement: document.activeElement?.tagName || null,
+        documentSelection: window.getSelection()?.toString() || '',
+        editorSelection: [editor.selectionStart, editor.selectionEnd],
+        hasSelectlyButtons: Boolean(document.querySelector('#selectly-buttons-host')),
+        events: [...events],
+      });
+
+      const render = () => {
+        log.textContent = JSON.stringify(snapshot(), null, 2);
+      };
+
+      const record = (event) => {
+        events.push({
+          type: event.type,
+          key: event.key || null,
+          metaKey: Boolean(event.metaKey),
+          ctrlKey: Boolean(event.ctrlKey),
+          target: event.target?.tagName || null,
+        });
+        render();
+      };
+
+      ['keydown', 'keyup', 'selectionchange', 'select'].forEach((type) => {
+        document.addEventListener(type, record, true);
+      });
+
+      document.querySelector('#clear-log').addEventListener('click', () => {
+        events.length = 0;
+        render();
+      });
+
+      window.selectionTest = { snapshot };
+    </script>
+  </body>
+</html>

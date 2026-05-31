@@ -1,6 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { getFunctionDisplayFields, type UserConfig } from '../../core/config/llm-config';
+import {
+  getPreferredPlacement,
+  observeAnchoredPosition,
+  type FloatingAnchor,
+  type FloatingPosition,
+} from '../../core/content/floating-position';
 import { i18n } from '../../core/i18n';
 import { actionService } from '../../core/services/action-service';
 import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
@@ -9,8 +15,8 @@ import { isValidUrl } from '../../utils/url-utils';
 
 interface ActionButtonsProps {
   selectedText: string;
-  x: number;
-  y: number;
+  anchor: FloatingAnchor;
+  buttonPosition: 'above' | 'below';
   onClose: () => void;
   onSelectionUpdate?: (newSelectedText: string) => void;
   userConfig: UserConfig;
@@ -22,8 +28,8 @@ interface ActionButtonsProps {
  */
 export const ActionButtons = ({
   selectedText,
-  x,
-  y,
+  anchor,
+  buttonPosition,
   onClose,
   onSelectionUpdate,
   userConfig,
@@ -49,6 +55,20 @@ export const ActionButtons = ({
 
   // Track click timers to distinguish single vs double clicks
   const clickTimersRef = useRef<Map<string, number>>(new Map());
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<FloatingPosition | null>(null);
+
+  useLayoutEffect(() => {
+    const floatingElement = containerRef.current;
+    if (!floatingElement) return;
+
+    return observeAnchoredPosition({
+      anchor,
+      floatingElement,
+      placement: getPreferredPlacement(buttonPosition),
+      onPosition: setPosition,
+    });
+  }, [anchor, buttonPosition]);
 
   // Initialize internationalization
   useEffect(() => {
@@ -112,7 +132,11 @@ export const ActionButtons = ({
   useEffect(() => {
     const handleSelectionChange = () => {
       const selection = window.getSelection();
-      const newSelectedText = selection?.toString().trim() || '';
+      const selectlyInstance = (window as any).selectlyInstance;
+      const newSelectedText =
+        selectlyInstance && typeof selectlyInstance.getCurrentSelectedText === 'function'
+          ? selectlyInstance.getCurrentSelectedText()
+          : selection?.toString().trim() || '';
       console.log('Selection changed:', { newSelectedText, previous: selectedText });
       if (newSelectedText === '') {
         onClose();
@@ -188,12 +212,15 @@ export const ActionButtons = ({
     }
 
     // Use current actual selected text instead of potentially stale prop
-    const currentSelection = window.getSelection();
-    const currentSelectedText = currentSelection?.toString().trim() || selectedText;
-
     // Update cached selection state before executing action so that
     // restoreFocusSelection() will restore the current selection, not the original one
     const selectlyInstance = (window as any).selectlyInstance;
+    const currentSelection = window.getSelection();
+    const currentSelectedText =
+      selectlyInstance && typeof selectlyInstance.getCurrentSelectedText === 'function'
+        ? selectlyInstance.getCurrentSelectedText() || selectedText
+        : currentSelection?.toString().trim() || selectedText;
+
     if (selectlyInstance && typeof selectlyInstance.updateCachedSelection === 'function') {
       selectlyInstance.updateCachedSelection();
     }
@@ -302,6 +329,7 @@ export const ActionButtons = ({
 
   return (
     <div
+      ref={containerRef}
       className="selectly-buttons"
       onMouseDown={(e) => {
         // Prevent focus from moving away from editable element
@@ -313,8 +341,9 @@ export const ActionButtons = ({
       onClick={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
-        left: `${x}px`,
-        top: `${y}px`,
+        left: `${position?.x || 0}px`,
+        top: `${position?.y || 0}px`,
+        visibility: position ? 'visible' : 'hidden',
         zIndex: 10000,
         display: 'flex',
         gap: '3px',

@@ -71,6 +71,7 @@ const OptionsPage: React.FC = () => {
       isPremium: true,
       requiresAI: true,
       isBuiltIn: false,
+      thinkingMode: 'auto' as const,
     },
   });
 
@@ -304,6 +305,7 @@ const OptionsPage: React.FC = () => {
         isPremium: true,
         requiresAI: true,
         isBuiltIn: false,
+        thinkingMode: 'auto' as const,
       },
     });
     closeDrawer();

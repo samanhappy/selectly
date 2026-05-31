@@ -1,6 +1,10 @@
 import { i18n } from '../i18n';
 import type { I18nConfig, SupportedLanguage } from '../i18n/types';
 import { secureStorage } from '../storage/secure-storage';
+import { parseModelString, resolveModelString } from './model-resolution';
+import { resolveFunctionThinkingMode, type ThinkingMode } from './thinking-mode';
+
+export type { ThinkingMode } from './thinking-mode';
 
 export interface LLMProvider {
   id: string;
@@ -33,7 +37,9 @@ export interface FunctionConfig {
   enabled: boolean;
   displayDomains?: string[];
   isBuiltIn?: boolean;
+  isPremium?: boolean;
   requiresAI?: boolean;
+  thinkingMode?: ThinkingMode;
   targetLanguage?: string;
   searchEngine?: 'google' | 'bing' | 'baidu';
   highlightColor?: string;
@@ -237,6 +243,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
+        thinkingMode: 'disabled',
       },
       polish: {
         title: config.defaultFunctions.polish.title,
@@ -253,6 +260,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
+        thinkingMode: 'disabled',
       },
       explain: {
         title: config.defaultFunctions.explain.title,
@@ -269,6 +277,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
+        thinkingMode: 'enabled',
       },
       correct: {
         title: config.defaultFunctions.correct.title,
@@ -285,6 +294,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
+        thinkingMode: 'disabled',
       },
       copy: {
         title: config.defaultFunctions.copy.title,
@@ -367,6 +377,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
+        thinkingMode: 'enabled',
       },
       share: {
         title: config.defaultFunctions.share.title,
@@ -624,7 +635,16 @@ export class ConfigManager {
       Object.entries(mergedFunctions).map(([key, fn]) => {
         const isBuiltIn = fn.isBuiltIn ?? builtInKeys.includes(key);
         const requiresAI = fn.requiresAI ?? !nonAIKeys.includes(key);
-        return [key, { ...fn, isBuiltIn, requiresAI }];
+        const thinkingMode = resolveFunctionThinkingMode(key, isBuiltIn, fn.thinkingMode);
+        return [
+          key,
+          {
+            ...fn,
+            isBuiltIn,
+            requiresAI,
+            ...(requiresAI ? { thinkingMode } : {}),
+          },
+        ];
       })
     );
 
@@ -646,10 +666,7 @@ export class ConfigManager {
    * Resolves "default" to the system default model
    */
   resolveModel(functionModel: string): string {
-    if (functionModel === 'default') {
-      return this.config.llm.defaultModel;
-    }
-    return functionModel;
+    return resolveModelString(functionModel, this.config.llm.defaultModel);
   }
 
   /**
@@ -657,20 +674,7 @@ export class ConfigManager {
    * Format: "providerId/modelName"
    */
   parseModel(modelString: string): { providerId: string; modelName: string } {
-    if (!modelString || modelString === 'default') {
-      return { providerId: 'cloud', modelName: 'default' };
-    }
-
-    const parts = modelString.split('/');
-    if (parts.length === 1) {
-      throw new Error(
-        `Invalid model format: ${modelString}. Expected format: "providerId/modelName"`
-      );
-    }
-    return {
-      providerId: parts[0],
-      modelName: parts.slice(1).join('/'),
-    };
+    return parseModelString(modelString);
   }
 
   /**

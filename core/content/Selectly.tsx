@@ -17,6 +17,14 @@ import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
 import { contentStyles } from './content-styles';
+import {
+  createSelectionAnchor,
+  translatePointToDocument,
+  type FloatingAnchor,
+} from './floating-position';
+import { observeKeyboardSelection, type KeyboardSelection } from './keyboard-selection';
+import { streamingStyles } from './streaming-styles';
+import { getTextControlSelectedText } from './text-control-selection';
 
 /**
  * Main content script logic
@@ -66,6 +74,7 @@ export class Selectly {
   private inputSelectionEnd: number | null = null;
   private contentEditableRange: Range | null = null;
   private lastMousePosition: { x: number; y: number } | null = null;
+  private currentAnchor: FloatingAnchor | null = null;
   // iframe support
   private trackedIframes: WeakSet<HTMLIFrameElement> = new WeakSet();
   private iframeObserver: MutationObserver | null = null;
@@ -713,7 +722,7 @@ export class Selectly {
 
   private getSelectionContext(): { selectedText: string; sentence: string } {
     try {
-      const sel = window.getSelection();
+      const sel = this.currentSelection || window.getSelection();
       const selectedText = (sel?.toString() || '').trim();
       if (!sel || sel.rangeCount === 0 || !selectedText) {
         return { selectedText: '', sentence: '' };
@@ -781,6 +790,8 @@ export class Selectly {
 
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
     document.addEventListener('touchend', this.handleTextSelection.bind(this));
+    document.addEventListener('scroll', this.handleFloatingScroll, true);
+    observeKeyboardSelection(document, this.handleKeyboardSelection);
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -794,6 +805,10 @@ export class Selectly {
     // Monitor and attach listeners to iframes
     this.setupIframeMonitoring();
   }
+
+  private handleFloatingScroll = () => {
+    this.hideButtons();
+  };
 
   private isDomainMatched(domains: string[], url: string, hostname: string): boolean {
     return domains.some((domain) => {
@@ -1429,7 +1444,8 @@ export class Selectly {
 
     setTimeout(async () => {
       // Get selection from the appropriate document context
-      const doc = (event.target as HTMLElement)?.ownerDocument || document;
+      const target = event.target as HTMLElement;
+      const doc = target?.ownerDocument || document;
       const selection = doc.getSelection();
 
       console.log('[Selectly] Selection event triggered');
@@ -1447,7 +1463,8 @@ export class Selectly {
       });
 
       // Use robust text extraction with multiple fallback strategies
-      const selectedText = await this.extractSelectedText(selection);
+      const selectedText =
+        getTextControlSelectedText(target) || (await this.extractSelectedText(selection));
       console.log(
         '[Selectly] Final extracted text:',
         selectedText
@@ -1456,15 +1473,7 @@ export class Selectly {
       );
 
       if (selectedText && selectedText.length > 0) {
-        const target = event.target as HTMLElement;
-        if (this.shouldIgnoreElement(target)) {
-          return;
-        }
-
-        this.currentSelection = selection;
-        this.currentTarget = target;
-        this.cacheCurrentSelection();
-        this.showButtons(selectedText, event);
+        this.showSelectionButtons(target, selection, selectedText);
       } else {
         this.hideButtons();
         if (this.streamingHost) {
@@ -1475,6 +1484,34 @@ export class Selectly {
         }
       }
     }, 100);
+  }
+
+  private handleKeyboardSelection = ({ target, selectedText }: KeyboardSelection) => {
+    if (!selectedText) {
+      if (this.currentTarget === target) {
+        this.hideButtons();
+      }
+      return;
+    }
+
+    this.lastMousePosition = null;
+    this.showSelectionButtons(target, target.ownerDocument.getSelection(), selectedText);
+  };
+
+  private showSelectionButtons(
+    target: HTMLElement,
+    selection: Selection | null,
+    selectedText: string
+  ) {
+    if (this.shouldIgnoreElement(target)) {
+      return;
+    }
+
+    this.currentSelection = selection;
+    this.currentTarget = target;
+    this.cacheCurrentSelection();
+    this.captureCurrentAnchor();
+    this.showButtons(selectedText);
   }
 
   private shouldIgnoreElement(element: HTMLElement): boolean {
@@ -1516,6 +1553,37 @@ export class Selectly {
     return false;
   }
 
+  public getCurrentSelectedText(): string {
+    const textControlSelection = getTextControlSelectedText(this.currentTarget);
+    if (textControlSelection) {
+      return textControlSelection;
+    }
+
+    return (this.currentSelection || window.getSelection())?.toString().trim() || '';
+  }
+
+  private captureCurrentAnchor() {
+    let range: Range | null = null;
+    if (this.currentSelection && this.currentSelection.rangeCount > 0) {
+      range = this.currentSelection.getRangeAt(0).cloneRange();
+    }
+
+    this.currentAnchor = createSelectionAnchor({
+      range,
+      target: this.currentTarget,
+      pointer: this.lastMousePosition,
+      targetDocument: document,
+    });
+  }
+
+  private getCurrentAnchor(): FloatingAnchor {
+    if (!this.currentAnchor) {
+      this.captureCurrentAnchor();
+    }
+
+    return this.currentAnchor as FloatingAnchor;
+  }
+
   private cacheCurrentSelection() {
     try {
       if (!this.currentTarget) return;
@@ -1524,7 +1592,7 @@ export class Selectly {
         this.inputSelectionStart = input.selectionStart;
         this.inputSelectionEnd = input.selectionEnd;
       } else if (this.isEditableElement(this.currentTarget)) {
-        const sel = window.getSelection();
+        const sel = this.currentSelection || this.currentTarget.ownerDocument.getSelection();
         if (sel && sel.rangeCount > 0) {
           this.contentEditableRange = sel.getRangeAt(0).cloneRange();
         }
@@ -1542,7 +1610,7 @@ export class Selectly {
         const end = this.inputSelectionEnd ?? input.selectionEnd ?? start;
         input.setSelectionRange(start, end);
       } else if (this.isEditableElement(this.currentTarget)) {
-        const sel = window.getSelection();
+        const sel = this.currentTarget.ownerDocument.getSelection();
         if (sel) {
           sel.removeAllRanges();
           if (this.contentEditableRange) {
@@ -1558,6 +1626,7 @@ export class Selectly {
     // Update the cached selection to current selection state
     // This ensures restoreFocusSelection() will restore the current selection, not the original one
     this.cacheCurrentSelection();
+    this.captureCurrentAnchor();
   }
 
   private replaceSelectedText(newText: string) {
@@ -1686,144 +1755,25 @@ export class Selectly {
     return checkElement(target);
   }
 
-  private calculateButtonPosition(): { x: number; y: number } | null {
-    let rect: DOMRect | null = null;
-
-    // Try to use current selection
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const currentRect = range.getBoundingClientRect();
-
-      // Check if current selection rect is valid
-      if (currentRect.width > 0 || currentRect.height > 0) {
-        rect = currentRect;
-      }
-    }
-
-    // If it's an input field, try calculating based on input position
-    if (
-      !rect &&
-      this.currentTarget &&
-      (this.currentTarget.tagName === 'INPUT' || this.currentTarget.tagName === 'TEXTAREA')
-    ) {
-      const inputRect = this.currentTarget.getBoundingClientRect();
-      if (inputRect.width > 0 || inputRect.height > 0) {
-        rect = inputRect;
-      }
-    }
-
-    // If selection rect is invalid, use last mouse position
-    if (!rect && this.lastMousePosition) {
-      const mouseX = this.lastMousePosition.x;
-      const mouseY = this.lastMousePosition.y;
-
-      // Calculate button dimensions
-      const enabledFunctions = Object.values(this.userConfig.functions).filter((f) => f.enabled);
-      const buttonWidth = enabledFunctions.length * 32 + 8;
-      const buttonHeight = 32;
-      const buttonPosition = this.userConfig.general?.buttonPosition || 'above';
-
-      // Use mouse position as reference
-      let x = mouseX; // Left-aligned
-      let y: number;
-
-      // Determine vertical position based on configured button position
-      if (buttonPosition === 'below') {
-        y = mouseY + 15; // 在鼠标下方
-      } else {
-        y = mouseY - buttonHeight - 15; // Above mouse
-      }
-
-      // Handle boundaries
-      if (x + buttonWidth > window.innerWidth) {
-        x = window.innerWidth - buttonWidth - 10;
-      }
-      if (x < 10) {
-        x = 10;
-      }
-
-      // Handle Y boundary and switch position if needed
-      if (buttonPosition === 'above' && y < 10) {
-        y = mouseY + 15; // 切换到鼠标下方
-      } else if (buttonPosition === 'below' && y + buttonHeight > window.innerHeight) {
-        y = mouseY - buttonHeight - 15; // 切换到鼠标上方
-      }
-
-      return { x, y };
-    }
-
-    // If all methods fail, return null
-    if (!rect || (rect.width === 0 && rect.height === 0)) {
-      console.warn(
-        '[Selectly] No valid selection rect or mouse position found, skipping button positioning'
-      );
-      return null;
-    }
-
-    // Calculate button width and height
-    const enabledFunctions = Object.values(this.userConfig.functions).filter((f) => f.enabled);
-    const buttonWidth = enabledFunctions.length * 32 + 8;
-    const buttonHeight = 32;
-    const buttonPosition = this.userConfig.general?.buttonPosition || 'above';
-
-    // Use left edge of selected text rect as X coordinate reference (left-aligned)
-    let x = rect.left;
-    if (this.lastMousePosition) {
-      x = this.lastMousePosition.x;
-      if (x > rect.right) {
-        x = rect.right;
-      } else if (x < rect.left) {
-        x = rect.left;
-      }
-    }
-
-    // Vertical position: closer to selected text
-    let y: number;
-    if (buttonPosition === 'below') {
-      y = rect.bottom + 10; // 在选中文字正下方，只留10px间距
-    } else {
-      y = rect.top - buttonHeight - 10; // 在选中文字正上方，只留10px间距
-    }
-
-    // Handle X boundary (ensure button doesn't exceed left/right screen edges)
-    if (x + buttonWidth > window.innerWidth) {
-      x = window.innerWidth - buttonWidth - 10;
-    }
-    if (x < 10) {
-      x = 10;
-    }
-
-    // Handle Y boundary (screen top/bottom edges, switch to opposite position if needed)
-    if (buttonPosition === 'above' && y < 10) {
-      y = rect.bottom + 10; // 切换到下方
-    } else if (buttonPosition === 'below' && y + buttonHeight > window.innerHeight) {
-      y = rect.top - buttonHeight - 10; // 切换到上方
-    }
-
-    return { x, y };
+  private getButtonPositionPreference(): 'above' | 'below' {
+    return this.userConfig.general?.buttonPosition || 'above';
   }
 
   private handleSelectionUpdate = (newSelectedText: string) => {
     // Update current selection and target element
-    const selection = window.getSelection();
+    const selection = this.currentTarget?.ownerDocument.getSelection() || window.getSelection();
     if (selection) {
       this.currentSelection = selection;
     }
-
-    // Use unified position calculation method
-    const position = this.calculateButtonPosition();
-    if (!position) {
-      return;
-    }
+    this.captureCurrentAnchor();
 
     // Re-render button component with new selected text and calculated position
     if (this.root && this.isShowingButtons) {
       this.root.render(
         <ActionButtons
           selectedText={newSelectedText}
-          x={position.x}
-          y={position.y}
+          anchor={this.getCurrentAnchor()}
+          buttonPosition={this.getButtonPositionPreference()}
           onClose={() => this.hideButtons()}
           onSelectionUpdate={this.handleSelectionUpdate}
           userConfig={this.userConfig}
@@ -1832,7 +1782,7 @@ export class Selectly {
     }
   };
 
-  private showButtons(selectedText: string, event: MouseEvent | TouchEvent) {
+  private showButtons(selectedText: string) {
     this.hideButtons();
 
     const host = window.location.hostname.toLowerCase();
@@ -1852,12 +1802,6 @@ export class Selectly {
         config.enabled && config.autoExecute && domainMatch(config.autoExecuteDomains)
     );
 
-    // Use unified position calculation method based on window.getSelection()
-    const position = this.calculateButtonPosition();
-    if (!position) {
-      return;
-    }
-
     this.buttonsHost = document.createElement('div');
     this.buttonsHost.id = 'selectly-buttons-host';
     const shadow = this.buttonsHost.attachShadow({ mode: 'open' });
@@ -1874,8 +1818,8 @@ export class Selectly {
     this.root.render(
       <ActionButtons
         selectedText={selectedText}
-        x={position.x}
-        y={position.y}
+        anchor={this.getCurrentAnchor()}
+        buttonPosition={this.getButtonPositionPreference()}
         onClose={() => this.hideButtons()}
         onSelectionUpdate={this.handleSelectionUpdate}
         userConfig={this.userConfig}
@@ -1937,6 +1881,10 @@ export class Selectly {
     styleEl.textContent = this.styleContent;
     shadow.appendChild(styleEl);
 
+    const streamingStyleEl = document.createElement('style');
+    streamingStyleEl.textContent = streamingStyles;
+    shadow.appendChild(streamingStyleEl);
+
     const streamingContainer = document.createElement('div');
     shadow.appendChild(streamingContainer);
 
@@ -1983,11 +1931,6 @@ export class Selectly {
 
       if (isActiveInstance) {
         this.streamingRoot = null;
-        this.currentSelection = null;
-        this.currentTarget = null;
-        this.inputSelectionStart = null;
-        this.inputSelectionEnd = null;
-        this.contentEditableRange = null;
         delete globalAny.updateStreamingResult;
         delete globalAny.appendToConversation;
         delete globalAny.updateStreamingMeta;
@@ -2033,14 +1976,7 @@ export class Selectly {
     };
   }
 
-  showStreamingResult(
-    title: string,
-    x: number,
-    y: number,
-    minWidth: number,
-    maxWidth: number,
-    actionKey?: string
-  ) {
+  showStreamingResult(title: string, actionKey?: string) {
     this.hideStreamingResult();
     const { selectedText: ctxSelectedText, sentence: ctxSentence } = this.getSelectionContext();
 
@@ -2051,10 +1987,7 @@ export class Selectly {
     root.render(
       <StreamingResult
         title={title}
-        x={x}
-        y={y}
-        minWidth={minWidth}
-        maxWidth={maxWidth}
+        anchor={this.getCurrentAnchor()}
         actionKey={actionKey}
         selectedText={ctxSelectedText}
         selectedSentence={ctxSentence}
@@ -2074,7 +2007,7 @@ export class Selectly {
     );
   }
 
-  showDialogueResult(title: string, x: number, y: number, selectedText: string, config: any) {
+  showDialogueResult(title: string, selectedText: string, config: any) {
     this.hideStreamingResult();
     const canPaste = this.currentTarget ? this.isEditableElement(this.currentTarget) : false;
     const shouldAutoFocus = !(this.currentTarget && canPaste);
@@ -2094,10 +2027,7 @@ export class Selectly {
     root.render(
       <StreamingResult
         title={title}
-        x={x}
-        y={y}
-        minWidth={420}
-        maxWidth={600}
+        anchor={this.getCurrentAnchor()}
         actionKey="chat"
         canPaste={canPaste}
         isDialogue={true}
@@ -2147,7 +2077,8 @@ export class Selectly {
             updateFn(chunk, model, false, false, false);
           }
         },
-        config.model
+        config.model,
+        config.thinkingMode
       );
 
       conversationContext.push({ role: 'assistant', content: assistantResponse });
@@ -2164,10 +2095,8 @@ export class Selectly {
     }
   }
 
-  showErrorResult(title: string, message: string, x?: number, y?: number, actionKey?: string) {
+  showErrorResult(title: string, message: string, actionKey?: string) {
     this.hideStreamingResult();
-    const defaultX = x || 100;
-    const defaultY = y || 100;
 
     const canPaste = false;
     const { root, setPinned, cleanup } = this.mountStreamingHost(actionKey);
@@ -2175,8 +2104,7 @@ export class Selectly {
     root.render(
       <StreamingResult
         title={title}
-        x={defaultX}
-        y={defaultY}
+        anchor={this.getCurrentAnchor()}
         canPaste={canPaste}
         onPinChange={setPinned}
         onClose={() => cleanup(true)}
@@ -2296,6 +2224,8 @@ export class Selectly {
         const boundHandler = this.handleTextSelection.bind(this);
         iframeDoc.addEventListener('mouseup', boundHandler);
         iframeDoc.addEventListener('touchend', boundHandler);
+        iframeDoc.addEventListener('scroll', this.handleFloatingScroll, true);
+        observeKeyboardSelection(iframeDoc, this.handleKeyboardSelection);
 
         console.debug('[Selectly] Attached listeners to iframe:', iframe.src || 'about:blank');
         return true;
@@ -2347,23 +2277,7 @@ export class Selectly {
 
       // If selection is in an iframe, calculate offset
       if (doc !== document) {
-        // Find the iframe element that contains this document
-        const iframes = Array.from(document.querySelectorAll('iframe'));
-        const containingIframe = iframes.find((iframe) => {
-          try {
-            return iframe.contentDocument === doc || iframe.contentWindow?.document === doc;
-          } catch {
-            return false;
-          }
-        });
-
-        if (containingIframe) {
-          const iframeRect = containingIframe.getBoundingClientRect();
-          return {
-            x: clientX + iframeRect.left + window.scrollX,
-            y: clientY + iframeRect.top + window.scrollY,
-          };
-        }
+        return translatePointToDocument({ x: clientX, y: clientY }, doc, document);
       }
 
       // Not in iframe or couldn't find iframe - use direct coordinates

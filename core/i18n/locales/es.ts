@@ -147,6 +147,12 @@ export const es: I18nConfig = {
         configuration: 'Configuración',
         basicSettings: 'Configuración Básica',
         advancedSettings: 'Configuración Avanzada',
+        thinkingMode: 'Modo de razonamiento',
+        thinkingModeAuto: 'Automático (usar valor predeterminado del modelo)',
+        thinkingModeEnabled: 'Activado',
+        thinkingModeDisabled: 'Desactivado',
+        thinkingModeHelp:
+          'La disponibilidad depende del modelo y del proveedor. Las solicitudes incompatibles pueden devolver un error.',
         autoExecute: 'Ejecutar Automáticamente',
         autoExecuteHelp: 'Ejecutar esta función automáticamente cuando se seleccione texto',
         autoCloseButtons: 'Cerrar Botones Automáticamente',

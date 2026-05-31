@@ -2,9 +2,10 @@ import OpenAI from 'openai';
 
 import { authService } from '~core/auth/auth-service';
 
-import type { LLMConfig, LLMProvider } from '../config/llm-config';
+import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { i18n, t } from '../i18n';
+import { buildThinkingModeRequestBody } from './thinking-mode-adapter';
 
 export class LLMService {
   private static instance: LLMService;
@@ -83,9 +84,13 @@ export class LLMService {
     return { client, modelName, providerId };
   }
 
-  async chat(prompt: string, model?: string): Promise<string> {
+  async chat(prompt: string, model?: string, thinkingMode?: ThinkingMode): Promise<string> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
-    const { client, modelName } = this.parseModelAndGetClient(modelToUse);
+    const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
+    const thinkingModeRequestBody = buildThinkingModeRequestBody({
+      providerId,
+      thinkingMode,
+    });
     console.log('Using model:', modelName);
 
     try {
@@ -100,6 +105,7 @@ export class LLMService {
           ],
           temperature: 0.7,
           max_tokens: 1000,
+          ...thinkingModeRequestBody,
         },
         { timeout: 10000 }
       );
@@ -138,10 +144,15 @@ export class LLMService {
   async chatStream(
     messagesOrPrompt: string | Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
     onChunk: (chunk: string, model: string) => void,
-    model?: string
+    model?: string,
+    thinkingMode?: ThinkingMode
   ): Promise<void> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
-    const { client, modelName } = this.parseModelAndGetClient(modelToUse);
+    const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
+    const thinkingModeRequestBody = buildThinkingModeRequestBody({
+      providerId,
+      thinkingMode,
+    });
     console.log('Using model:', modelName);
 
     try {
@@ -157,6 +168,7 @@ export class LLMService {
           temperature: 0.7,
           max_tokens: 1000,
           stream: true,
+          ...thinkingModeRequestBody,
         },
         { timeout: 10000 }
       );

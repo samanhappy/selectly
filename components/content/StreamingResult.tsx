@@ -1,17 +1,18 @@
 import { BookmarkPlus, ClipboardPaste, Copy, GripVertical, Info, Pin, Send, X } from 'lucide-react';
 import Markdown from 'markdown-to-jsx';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import {
+  clampFloatingPosition,
+  computeAnchoredPosition,
+  type FloatingAnchor,
+  type FloatingPosition,
+} from '../../core/content/floating-position';
 import { i18n } from '../../core/i18n';
 import { getActionIcon } from '../../utils/icon-utils';
 
-import 'prismjs/themes/prism.css';
-
 interface StreamingResultProps {
-  x: number;
-  y: number;
-  minWidth?: number;
-  maxWidth?: number;
+  anchor: FloatingAnchor;
   title: string;
   actionKey?: string;
   onClose: () => void;
@@ -66,22 +67,9 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
               </p>
             ),
           },
-          // Custom code block styling with Prism classes
+          // Fenced code blocks are styled inside the streaming Shadow DOM.
           pre: {
-            component: ({ children, ...props }: any) => (
-              <pre
-                style={{
-                  background: 'rgba(0, 0, 0, 0.05)',
-                  padding: '12px',
-                  borderRadius: '6px',
-                  overflow: 'auto',
-                  margin: '12px 0',
-                }}
-                {...props}
-              >
-                {children}
-              </pre>
-            ),
+            component: ({ children, ...props }: any) => <pre {...props}>{children}</pre>,
           },
           code: {
             component: ({ className, children, ...props }: any) => {
@@ -199,10 +187,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
  * Shows LLM response with real-time streaming and copy/paste functionality
  */
 export const StreamingResult = ({
-  x,
-  y,
-  minWidth,
-  maxWidth,
+  anchor,
   title,
   actionKey,
   onClose,
@@ -237,13 +222,71 @@ export const StreamingResult = ({
   const timerRef = useRef<number | null>(null);
 
   // Dragging state
-  const [position, setPosition] = useState({ x, y });
+  const [position, setPosition] = useState<FloatingPosition | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasBeenDragged, setHasBeenDragged] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const clampPosition = useCallback((nextPosition?: FloatingPosition) => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    setPosition((currentPosition) => {
+      const sourcePosition = nextPosition || currentPosition;
+      if (!sourcePosition) return currentPosition;
+
+      const next = clampFloatingPosition(sourcePosition, element.getBoundingClientRect(), {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+
+      if (currentPosition && next.x === currentPosition.x && next.y === currentPosition.y) {
+        return currentPosition;
+      }
+
+      return next;
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    let active = true;
+    void computeAnchoredPosition(anchor, element, 'bottom-start')
+      .then((nextPosition) => {
+        if (!active) return;
+        clampPosition(nextPosition);
+      })
+      .catch(() => {
+        if (!active) return;
+        clampPosition({ x: 100, y: 100 });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [anchor, clampPosition]);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const handleResize = () => clampPosition();
+    window.addEventListener('resize', handleResize);
+
+    const resizeObserver =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(handleResize);
+    resizeObserver?.observe(element);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      resizeObserver?.disconnect();
+    };
+  }, [clampPosition]);
 
   // Initialize conversation with selected text if in dialogue mode
   useEffect(() => {
@@ -333,6 +376,7 @@ export const StreamingResult = ({
     const isMessageBubble = isDialogue && target.closest('.sl-message-bubble');
     if (isInteractive || isMessageBubble) return;
     // Start dragging for any other area (expanded draggable region)
+    if (!position) return;
     setIsDragging(true);
     setHasBeenDragged(true);
     setDragStart({
@@ -347,14 +391,15 @@ export const StreamingResult = ({
       const newX = e.clientX - dragStart.x;
       const newY = e.clientY - dragStart.y;
 
-      // Keep within viewport bounds
-      const maxX = window.innerWidth - 420; // component width
-      const maxY = window.innerHeight - 100; // minimum space from bottom
+      const element = containerRef.current;
+      if (!element) return;
 
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY)),
-      });
+      setPosition(
+        clampFloatingPosition({ x: newX, y: newY }, element.getBoundingClientRect(), {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        })
+      );
     }
   };
 
@@ -374,11 +419,6 @@ export const StreamingResult = ({
       };
     }
   }, [isDragging, dragStart]);
-
-  // Update position when props change
-  useEffect(() => {
-    setPosition({ x, y });
-  }, [x, y]);
 
   // Expose methods for external calls
   useEffect(() => {
@@ -584,23 +624,23 @@ export const StreamingResult = ({
       onClick={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: `${position?.x || 0}px`,
+        top: `${position?.y || 0}px`,
+        visibility: position ? 'visible' : 'hidden',
         zIndex: 10002,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(16px)',
         border: '1px solid rgba(0, 0, 0, 0.1)',
         borderRadius: '16px',
-        minWidth: minWidth > 300 ? `${minWidth}px` : '300px',
-        maxWidth: maxWidth > 420 ? `${maxWidth}px` : '420px',
-        maxHeight: isDialogue ? '500px' : '420px',
+        width: isDialogue ? '480px' : '420px',
+        minWidth: 'min(300px, calc(100vw - 20px))',
+        maxWidth: 'calc(100vw - 20px)',
+        maxHeight: isDialogue ? 'min(500px, calc(100vh - 20px))' : 'min(420px, calc(100vh - 20px))',
         minHeight: isDialogue ? 'auto' : 'auto',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: `
-          0 8px 32px rgba(0, 0, 0, 0.15),
-          inset 0 1px 0 rgba(255, 255, 255, 0.8),
-          0 2px 8px rgba(0, 0, 0, 0.1)
+          0 12px 32px -8px rgba(0, 0, 0, 0.18)
         `,
         animation:
           isDragging || hasBeenDragged
@@ -759,7 +799,7 @@ export const StreamingResult = ({
           wordBreak: 'break-word',
           overflowY: 'auto',
           maxHeight: isDialogue ? '280px' : '320px',
-          background: 'rgba(248, 250, 252, 0.5)',
+          // background: 'rgba(248, 250, 252, 0.5)',
           flex: isDialogue ? 1 : 'none',
         }}
       >
@@ -966,7 +1006,7 @@ export const StreamingResult = ({
           justifyContent: 'space-between',
           gap: '8px',
           padding: '1px 12px',
-          background: 'rgba(255, 255, 255, 0.8)',
+          // background: 'rgba(255, 255, 255, 0.8)',
           borderRadius: isDialogue ? '0 0 16px 16px' : '0 0 16px 16px',
         }}
       >
