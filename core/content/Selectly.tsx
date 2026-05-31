@@ -22,12 +22,9 @@ import {
   translatePointToDocument,
   type FloatingAnchor,
 } from './floating-position';
+import { observeKeyboardSelection, type KeyboardSelection } from './keyboard-selection';
 import { streamingStyles } from './streaming-styles';
-import {
-  getTextControlSelectedText,
-  observeTextControlKeyboardSelection,
-  type TextControlSelection,
-} from './text-control-selection';
+import { getTextControlSelectedText } from './text-control-selection';
 
 /**
  * Main content script logic
@@ -794,7 +791,7 @@ export class Selectly {
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
     document.addEventListener('touchend', this.handleTextSelection.bind(this));
     document.addEventListener('scroll', this.handleFloatingScroll, true);
-    observeTextControlKeyboardSelection(document, this.handleTextControlKeyboardSelection);
+    observeKeyboardSelection(document, this.handleKeyboardSelection);
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -1489,7 +1486,7 @@ export class Selectly {
     }, 100);
   }
 
-  private handleTextControlKeyboardSelection = ({ target, selectedText }: TextControlSelection) => {
+  private handleKeyboardSelection = ({ target, selectedText }: KeyboardSelection) => {
     if (!selectedText) {
       if (this.currentTarget === target) {
         this.hideButtons();
@@ -2228,7 +2225,7 @@ export class Selectly {
         iframeDoc.addEventListener('mouseup', boundHandler);
         iframeDoc.addEventListener('touchend', boundHandler);
         iframeDoc.addEventListener('scroll', this.handleFloatingScroll, true);
-        observeTextControlKeyboardSelection(iframeDoc, this.handleTextControlKeyboardSelection);
+        observeKeyboardSelection(iframeDoc, this.handleKeyboardSelection);
 
         console.debug('[Selectly] Attached listeners to iframe:', iframe.src || 'about:blank');
         return true;

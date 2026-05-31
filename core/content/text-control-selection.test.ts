@@ -1,19 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { observeTextControlKeyboardSelection } from './text-control-selection';
+import { getTextControlSelectedText, isTextControlElement } from './text-control-selection';
 
-describe('observeTextControlKeyboardSelection', () => {
-  it('reports textarea selections created by macOS Command+A', () => {
-    let listener: ((event: KeyboardEvent) => void) | undefined;
-    const source = {
-      addEventListener: (_type: 'keyup', next: (event: KeyboardEvent) => void) => {
-        listener = next;
-      },
-      removeEventListener: vi.fn(),
-    };
-    const onSelectionChange = vi.fn();
-
-    const cleanup = observeTextControlKeyboardSelection(source, onSelectionChange);
+describe('getTextControlSelectedText', () => {
+  it('reads a textarea native selection', () => {
     const value = 'selected with keyboard';
     const textarea = {
       tagName: 'TEXTAREA',
@@ -22,68 +12,10 @@ describe('observeTextControlKeyboardSelection', () => {
       selectionEnd: value.length,
     } as HTMLTextAreaElement;
 
-    listener?.({ key: 'a', metaKey: true, target: textarea } as unknown as KeyboardEvent);
-
-    expect(onSelectionChange).toHaveBeenCalledWith({
-      target: textarea,
-      selectedText: value,
-    });
-
-    cleanup();
-    expect(source.removeEventListener).toHaveBeenCalledWith('keyup', listener);
+    expect(getTextControlSelectedText(textarea)).toBe(value);
   });
 
-  it('reports textarea selections created by Ctrl+A', () => {
-    let listener: ((event: KeyboardEvent) => void) | undefined;
-    const source = {
-      addEventListener: (_type: 'keyup', next: (event: KeyboardEvent) => void) => {
-        listener = next;
-      },
-      removeEventListener: vi.fn(),
-    };
-    const onSelectionChange = vi.fn();
-    const value = 'selected with keyboard';
-    const textarea = {
-      tagName: 'TEXTAREA',
-      value,
-      selectionStart: 0,
-      selectionEnd: value.length,
-    } as HTMLTextAreaElement;
-
-    observeTextControlKeyboardSelection(source, onSelectionChange);
-    listener?.({ key: 'a', ctrlKey: true, target: textarea } as unknown as KeyboardEvent);
-
-    expect(onSelectionChange).toHaveBeenCalledWith({
-      target: textarea,
-      selectedText: value,
-    });
-  });
-
-  it('ignores keyboard events outside text controls', () => {
-    let listener: ((event: KeyboardEvent) => void) | undefined;
-    const source = {
-      addEventListener: (_type: 'keyup', next: (event: KeyboardEvent) => void) => {
-        listener = next;
-      },
-      removeEventListener: vi.fn(),
-    };
-    const onSelectionChange = vi.fn();
-
-    observeTextControlKeyboardSelection(source, onSelectionChange);
-    listener?.({ target: { tagName: 'DIV' } } as unknown as KeyboardEvent);
-
-    expect(onSelectionChange).not.toHaveBeenCalled();
-  });
-
-  it('reports a collapsed text-control selection as empty', () => {
-    let listener: ((event: KeyboardEvent) => void) | undefined;
-    const source = {
-      addEventListener: (_type: 'keyup', next: (event: KeyboardEvent) => void) => {
-        listener = next;
-      },
-      removeEventListener: vi.fn(),
-    };
-    const onSelectionChange = vi.fn();
+  it('returns empty text for a collapsed selection', () => {
     const textarea = {
       tagName: 'TEXTAREA',
       value: 'text',
@@ -91,12 +23,18 @@ describe('observeTextControlKeyboardSelection', () => {
       selectionEnd: 2,
     } as HTMLTextAreaElement;
 
-    observeTextControlKeyboardSelection(source, onSelectionChange);
-    listener?.({ target: textarea } as unknown as KeyboardEvent);
+    expect(getTextControlSelectedText(textarea)).toBe('');
+  });
 
-    expect(onSelectionChange).toHaveBeenCalledWith({
-      target: textarea,
-      selectedText: '',
-    });
+  it('returns empty text outside text controls', () => {
+    expect(getTextControlSelectedText({ tagName: 'DIV' } as HTMLElement)).toBe('');
+  });
+});
+
+describe('isTextControlElement', () => {
+  it('recognizes native text controls', () => {
+    expect(isTextControlElement({ tagName: 'INPUT' } as HTMLInputElement)).toBe(true);
+    expect(isTextControlElement({ tagName: 'TEXTAREA' } as HTMLTextAreaElement)).toBe(true);
+    expect(isTextControlElement({ tagName: 'DIV' } as HTMLElement)).toBe(false);
   });
 });
