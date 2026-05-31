@@ -15,6 +15,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json,md}\""
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.7.6",
     "@lukeed/uuid": "^2.0.1",
     "clsx": "^2.1.1",
     "dexie": "^4.0.8",

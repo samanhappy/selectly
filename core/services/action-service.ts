@@ -6,17 +6,6 @@ import { LLMService, processText } from './llm-service';
 // IndexedDB writes must happen in extension context to ensure options page can read them.
 // We'll send a message to background to persist collected items.
 
-interface ResultPosition {
-  x: number;
-  y: number;
-  minWidth: number;
-  maxWidth: number;
-}
-
-interface SelectlyPositionBridge {
-  getResultPosition?: () => ResultPosition;
-}
-
 export class ActionService {
   private static instance: ActionService;
   private llmService = LLMService.getInstance();
@@ -47,19 +36,6 @@ export class ActionService {
     };
 
     return languageNames[userLanguage] || 'English';
-  }
-
-  private getResultPosition(selectlyInstance: SelectlyPositionBridge): ResultPosition {
-    if (typeof selectlyInstance.getResultPosition === 'function') {
-      return selectlyInstance.getResultPosition();
-    }
-
-    return {
-      x: 100,
-      y: 100,
-      minWidth: 0,
-      maxWidth: 0,
-    };
   }
 
   async executeAction(
@@ -105,15 +81,11 @@ export class ActionService {
       return; // Cannot display any result, return directly
     }
 
-    const { x, y, minWidth, maxWidth } = this.getResultPosition(selectlyInstance);
-
     // Handle LLM functions
     if (!config.prompt) {
       selectlyInstance.showErrorResult(
         i18n.t('errors.configError'),
         `${i18n.t('errors.missingPromptConfig')}: ${actionKey}`,
-        x,
-        y,
         actionKey
       );
       return;
@@ -121,7 +93,7 @@ export class ActionService {
 
     // Show streaming result window (use localized title for built-in functions)
     const { title } = getFunctionDisplayFields(actionKey, config, i18n.getConfig());
-    selectlyInstance.showStreamingResult(title, x, y, minWidth, maxWidth, actionKey);
+    selectlyInstance.showStreamingResult(title, actionKey);
 
     try {
       // Prepare translation variables for smart language detection
@@ -208,26 +180,10 @@ export class ActionService {
       return;
     }
 
-    const { x, y } = this.getResultPosition(selectlyInstance);
-
-    // Check LLM configuration
-    // if (!this.llmService.isConfigured()) {
-    //   selectlyInstance.showErrorResult(
-    //     i18n.t("errors.llmNotConfigured"),
-    //     i18n.t("errors.pleaseConfigureApiKey"),
-    //     x,
-    //     y,
-    //     "chat"
-    //   )
-    //   return
-    // }
-
     if (!config.prompt) {
       selectlyInstance.showErrorResult(
         i18n.t('errors.configError'),
         `${i18n.t('errors.missingPromptConfig')}: chat`,
-        x,
-        y,
         'chat'
       );
       return;
@@ -235,7 +191,7 @@ export class ActionService {
 
     // Show dialogue streaming result window (use localized description for built-in functions)
     const { description } = getFunctionDisplayFields('chat', config, i18n.getConfig());
-    selectlyInstance.showDialogueResult(description, x, y, selectedText, config);
+    selectlyInstance.showDialogueResult(description, selectedText, config);
   }
 
   private async handleSearch(text: string): Promise<void> {
