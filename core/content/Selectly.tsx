@@ -17,6 +17,7 @@ import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
 import { contentStyles } from './content-styles';
+import { calculateResultPosition, isVisibleRect, type ResultPosition } from './result-position';
 import { streamingStyles } from './streaming-styles';
 
 /**
@@ -1685,6 +1686,48 @@ export class Selectly {
     };
 
     return checkElement(target);
+  }
+
+  public getResultPosition(): ResultPosition {
+    let selectionRect: DOMRect | null = null;
+    const ranges: Range[] = [];
+    const isTextControl =
+      this.currentTarget &&
+      (this.currentTarget.tagName === 'INPUT' || this.currentTarget.tagName === 'TEXTAREA');
+
+    if (!isTextControl) {
+      if (this.contentEditableRange) {
+        ranges.push(this.contentEditableRange);
+      }
+
+      const selection = this.currentSelection || window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        ranges.push(selection.getRangeAt(0));
+      }
+    }
+
+    for (const range of ranges) {
+      const rect = range.getBoundingClientRect();
+      if (isVisibleRect(rect)) {
+        selectionRect = rect;
+        break;
+      }
+    }
+
+    const fallbackRect =
+      this.currentTarget && this.isEditableElement(this.currentTarget)
+        ? this.currentTarget.getBoundingClientRect()
+        : null;
+
+    return calculateResultPosition({
+      selectionRect,
+      fallbackRect,
+      pointer: this.lastMousePosition,
+      viewport: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
+    });
   }
 
   private calculateButtonPosition(): { x: number; y: number } | null {

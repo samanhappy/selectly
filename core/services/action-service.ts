@@ -6,6 +6,17 @@ import { LLMService, processText } from './llm-service';
 // IndexedDB writes must happen in extension context to ensure options page can read them.
 // We'll send a message to background to persist collected items.
 
+interface ResultPosition {
+  x: number;
+  y: number;
+  minWidth: number;
+  maxWidth: number;
+}
+
+interface SelectlyPositionBridge {
+  getResultPosition?: () => ResultPosition;
+}
+
 export class ActionService {
   private static instance: ActionService;
   private llmService = LLMService.getInstance();
@@ -36,6 +47,19 @@ export class ActionService {
     };
 
     return languageNames[userLanguage] || 'English';
+  }
+
+  private getResultPosition(selectlyInstance: SelectlyPositionBridge): ResultPosition {
+    if (typeof selectlyInstance.getResultPosition === 'function') {
+      return selectlyInstance.getResultPosition();
+    }
+
+    return {
+      x: 100,
+      y: 100,
+      minWidth: 0,
+      maxWidth: 0,
+    };
   }
 
   async executeAction(
@@ -81,29 +105,7 @@ export class ActionService {
       return; // Cannot display any result, return directly
     }
 
-    // Calculate result window position (near selected text)
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
-    const rect = range?.getBoundingClientRect();
-
-    let x = 100,
-      y = 100,
-      minWidth = 0,
-      maxWidth = 0;
-    if (rect) {
-      x = rect.left;
-      y = rect.bottom + 10;
-      minWidth = rect.width;
-      maxWidth = rect.width;
-
-      // Prevent going beyond screen
-      if (x + 300 > window.innerWidth) {
-        x = window.innerWidth - 320;
-      }
-      if (y + 200 > window.innerHeight) {
-        y = rect.top - 210;
-      }
-    }
+    const { x, y, minWidth, maxWidth } = this.getResultPosition(selectlyInstance);
 
     // Handle LLM functions
     if (!config.prompt) {
@@ -206,25 +208,7 @@ export class ActionService {
       return;
     }
 
-    // Calculate result window position (near selected text)
-    const selection = window.getSelection();
-    const range = selection?.getRangeAt(0);
-    const rect = range?.getBoundingClientRect();
-
-    let x = 100,
-      y = 100; // Default position
-    if (rect) {
-      x = rect.left;
-      y = rect.bottom + 10;
-
-      // Prevent going beyond screen
-      if (x + 300 > window.innerWidth) {
-        x = window.innerWidth - 320;
-      }
-      if (y + 200 > window.innerHeight) {
-        y = rect.top - 210;
-      }
-    }
+    const { x, y } = this.getResultPosition(selectlyInstance);
 
     // Check LLM configuration
     // if (!this.llmService.isConfigured()) {
