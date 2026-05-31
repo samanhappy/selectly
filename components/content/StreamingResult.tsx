@@ -640,9 +640,7 @@ export const StreamingResult = ({
         display: 'flex',
         flexDirection: 'column',
         boxShadow: `
-          0 8px 32px rgba(0, 0, 0, 0.15),
-          inset 0 1px 0 rgba(255, 255, 255, 0.8),
-          0 2px 8px rgba(0, 0, 0, 0.1)
+          0 12px 32px -8px rgba(0, 0, 0, 0.18)
         `,
         animation:
           isDragging || hasBeenDragged
@@ -801,7 +799,7 @@ export const StreamingResult = ({
           wordBreak: 'break-word',
           overflowY: 'auto',
           maxHeight: isDialogue ? '280px' : '320px',
-          background: 'rgba(248, 250, 252, 0.5)',
+          // background: 'rgba(248, 250, 252, 0.5)',
           flex: isDialogue ? 1 : 'none',
         }}
       >
@@ -1008,7 +1006,7 @@ export const StreamingResult = ({
           justifyContent: 'space-between',
           gap: '8px',
           padding: '1px 12px',
-          background: 'rgba(255, 255, 255, 0.8)',
+          // background: 'rgba(255, 255, 255, 0.8)',
           borderRadius: isDialogue ? '0 0 16px 16px' : '0 0 16px 16px',
         }}
       >

@@ -23,6 +23,11 @@ import {
   type FloatingAnchor,
 } from './floating-position';
 import { streamingStyles } from './streaming-styles';
+import {
+  getTextControlSelectedText,
+  observeTextControlKeyboardSelection,
+  type TextControlSelection,
+} from './text-control-selection';
 
 /**
  * Main content script logic
@@ -789,6 +794,7 @@ export class Selectly {
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
     document.addEventListener('touchend', this.handleTextSelection.bind(this));
     document.addEventListener('scroll', this.handleFloatingScroll, true);
+    observeTextControlKeyboardSelection(document, this.handleTextControlKeyboardSelection);
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -1461,7 +1467,7 @@ export class Selectly {
 
       // Use robust text extraction with multiple fallback strategies
       const selectedText =
-        this.getTextControlSelection(target) || (await this.extractSelectedText(selection));
+        getTextControlSelectedText(target) || (await this.extractSelectedText(selection));
       console.log(
         '[Selectly] Final extracted text:',
         selectedText
@@ -1470,15 +1476,7 @@ export class Selectly {
       );
 
       if (selectedText && selectedText.length > 0) {
-        if (this.shouldIgnoreElement(target)) {
-          return;
-        }
-
-        this.currentSelection = selection;
-        this.currentTarget = target;
-        this.cacheCurrentSelection();
-        this.captureCurrentAnchor();
-        this.showButtons(selectedText);
+        this.showSelectionButtons(target, selection, selectedText);
       } else {
         this.hideButtons();
         if (this.streamingHost) {
@@ -1489,6 +1487,34 @@ export class Selectly {
         }
       }
     }, 100);
+  }
+
+  private handleTextControlKeyboardSelection = ({ target, selectedText }: TextControlSelection) => {
+    if (!selectedText) {
+      if (this.currentTarget === target) {
+        this.hideButtons();
+      }
+      return;
+    }
+
+    this.lastMousePosition = null;
+    this.showSelectionButtons(target, target.ownerDocument.getSelection(), selectedText);
+  };
+
+  private showSelectionButtons(
+    target: HTMLElement,
+    selection: Selection | null,
+    selectedText: string
+  ) {
+    if (this.shouldIgnoreElement(target)) {
+      return;
+    }
+
+    this.currentSelection = selection;
+    this.currentTarget = target;
+    this.cacheCurrentSelection();
+    this.captureCurrentAnchor();
+    this.showButtons(selectedText);
   }
 
   private shouldIgnoreElement(element: HTMLElement): boolean {
@@ -1530,19 +1556,8 @@ export class Selectly {
     return false;
   }
 
-  private getTextControlSelection(element: HTMLElement | null): string {
-    if (!element || (element.tagName !== 'INPUT' && element.tagName !== 'TEXTAREA')) {
-      return '';
-    }
-
-    const input = element as HTMLInputElement | HTMLTextAreaElement;
-    const start = input.selectionStart ?? 0;
-    const end = input.selectionEnd ?? start;
-    return input.value.substring(start, end).trim();
-  }
-
   public getCurrentSelectedText(): string {
-    const textControlSelection = this.getTextControlSelection(this.currentTarget);
+    const textControlSelection = getTextControlSelectedText(this.currentTarget);
     if (textControlSelection) {
       return textControlSelection;
     }
@@ -2213,6 +2228,7 @@ export class Selectly {
         iframeDoc.addEventListener('mouseup', boundHandler);
         iframeDoc.addEventListener('touchend', boundHandler);
         iframeDoc.addEventListener('scroll', this.handleFloatingScroll, true);
+        observeTextControlKeyboardSelection(iframeDoc, this.handleTextControlKeyboardSelection);
 
         console.debug('[Selectly] Attached listeners to iframe:', iframe.src || 'about:blank');
         return true;
