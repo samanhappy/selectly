@@ -8,7 +8,6 @@ describe('buildThinkingModeRequestBody', () => {
     expect(
       buildThinkingModeRequestBody({
         providerId: 'deepseek',
-        modelName: 'deepseek-chat',
         thinkingMode: 'auto',
       })
     ).toEqual({});
@@ -18,14 +17,12 @@ describe('buildThinkingModeRequestBody', () => {
     expect(
       buildThinkingModeRequestBody({
         providerId: 'deepseek',
-        modelName: 'deepseek-chat',
         thinkingMode: 'enabled',
       })
     ).toEqual({ thinking: { type: 'enabled' } });
     expect(
       buildThinkingModeRequestBody({
         providerId: 'deepseek',
-        modelName: 'deepseek-chat',
         thinkingMode: 'disabled',
       })
     ).toEqual({ thinking: { type: 'disabled' } });
@@ -35,62 +32,54 @@ describe('buildThinkingModeRequestBody', () => {
     expect(
       buildThinkingModeRequestBody({
         providerId: 'openrouter',
-        modelName: 'deepseek/deepseek-r1',
         thinkingMode: 'enabled',
       })
     ).toEqual({ reasoning: { enabled: true, exclude: true } });
     expect(
       buildThinkingModeRequestBody({
         providerId: 'openrouter',
-        modelName: 'deepseek/deepseek-r1',
         thinkingMode: 'disabled',
       })
     ).toEqual({ reasoning: { effort: 'none' } });
   });
 
-  it('maps SiliconFlow modes only for models on the official allowlist', () => {
+  it('maps SiliconFlow modes without maintaining a model allowlist', () => {
     expect(
       buildThinkingModeRequestBody({
         providerId: 'siliconflow',
-        modelName: 'deepseek-ai/DeepSeek-V3.2',
         thinkingMode: 'enabled',
       })
     ).toEqual({ enable_thinking: true });
     expect(
       buildThinkingModeRequestBody({
         providerId: 'siliconflow',
-        modelName: 'deepseek-ai/DeepSeek-V3.2',
         thinkingMode: 'disabled',
       })
     ).toEqual({ enable_thinking: false });
-    expect(
-      buildThinkingModeRequestBody({
-        providerId: 'siliconflow',
-        modelName: 'deepseek-ai/unsupported-model',
-        thinkingMode: 'enabled',
-      })
-    ).toEqual({});
   });
 
-  it('silently ignores providers without a first-party adapter', () => {
-    for (const providerId of ['openai', 'anthropic', 'custom-provider']) {
+  it('uses the OpenAI standard for providers without a first-party adapter', () => {
+    for (const providerId of ['openai', 'anthropic', 'cloud', 'custom-provider']) {
       expect(
         buildThinkingModeRequestBody({
           providerId,
-          modelName: 'any-model',
           thinkingMode: 'enabled',
         })
-      ).toEqual({});
+      ).toEqual({ reasoning_effort: 'medium' });
+      expect(
+        buildThinkingModeRequestBody({
+          providerId,
+          thinkingMode: 'disabled',
+        })
+      ).toEqual({ reasoning_effort: 'none' });
     }
   });
 
   it('applies an adapter after resolving a default model', () => {
     const resolvedModel = resolveModelString('default', 'deepseek/deepseek-chat');
-    const { providerId, modelName } = parseModelString(resolvedModel);
+    const { providerId } = parseModelString(resolvedModel);
 
-    expect(
-      buildThinkingModeRequestBody({ providerId, modelName, thinkingMode: 'disabled' })
-    ).toEqual({
+    expect(buildThinkingModeRequestBody({ providerId, thinkingMode: 'disabled' })).toEqual({
       thinking: { type: 'disabled' },
     });
   });

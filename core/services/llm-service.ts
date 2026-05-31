@@ -89,7 +89,6 @@ export class LLMService {
     const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
     const thinkingModeRequestBody = buildThinkingModeRequestBody({
       providerId,
-      modelName,
       thinkingMode,
     });
     console.log('Using model:', modelName);
@@ -152,7 +151,6 @@ export class LLMService {
     const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
     const thinkingModeRequestBody = buildThinkingModeRequestBody({
       providerId,
-      modelName,
       thinkingMode,
     });
     console.log('Using model:', modelName);

@@ -150,7 +150,7 @@ export const ja: I18nConfig = {
         thinkingModeEnabled: '有効',
         thinkingModeDisabled: '無効',
         thinkingModeHelp:
-          '利用可否はモデルとプロバイダーによって異なります。未対応モデルではこの設定は無視されます。',
+          '利用可否はモデルとプロバイダーによって異なります。互換性のないリクエストはエラーになる場合があります。',
         autoExecute: '自動実行',
         autoExecuteHelp: 'テキスト選択時にこの機能を自動実行します',
         autoCloseButtons: 'ボタンを自動的に閉じる',

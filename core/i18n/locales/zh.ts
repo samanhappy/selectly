@@ -144,7 +144,7 @@ export const zh: I18nConfig = {
         thinkingModeAuto: '自动（遵循模型默认行为）',
         thinkingModeEnabled: '开启',
         thinkingModeDisabled: '关闭',
-        thinkingModeHelp: '是否生效取决于模型与提供商支持。不支持的模型会忽略此设置。',
+        thinkingModeHelp: '是否生效取决于模型与提供商支持。不兼容的请求可能会返回错误。',
         autoExecute: '自动执行',
         autoExecuteHelp: '选中文本时自动执行此功能',
         autoCloseButtons: '自动关闭按钮',

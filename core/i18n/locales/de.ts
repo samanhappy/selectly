@@ -154,7 +154,7 @@ export const de: I18nConfig = {
         thinkingModeEnabled: 'Aktiviert',
         thinkingModeDisabled: 'Deaktiviert',
         thinkingModeHelp:
-          'Die Verfügbarkeit hängt von Modell und Anbieter ab. Nicht unterstützte Modelle ignorieren diese Einstellung.',
+          'Die Verfügbarkeit hängt von Modell und Anbieter ab. Inkompatible Anfragen können einen Fehler zurückgeben.',
         autoExecute: 'Automatisch ausführen',
         autoExecuteHelp: 'Diese Funktion automatisch bei Textauswahl ausführen',
         autoCloseButtons: 'Schaltflächen automatisch schließen',

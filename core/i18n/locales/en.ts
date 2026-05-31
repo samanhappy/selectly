@@ -149,7 +149,7 @@ export const en: I18nConfig = {
         thinkingModeEnabled: 'Enabled',
         thinkingModeDisabled: 'Disabled',
         thinkingModeHelp:
-          'Availability depends on the model and provider. Unsupported models ignore this setting.',
+          'Availability depends on the model and provider. Incompatible requests may return an error.',
         autoExecute: 'Auto Execute',
         autoExecuteHelp: 'Run this function automatically when text is selected',
         autoCloseButtons: 'Auto Close Buttons',

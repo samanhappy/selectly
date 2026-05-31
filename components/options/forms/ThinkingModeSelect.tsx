@@ -1,10 +1,11 @@
 import React from 'react';
 
 import type { ThinkingMode } from '../../../core/config/llm-config';
+import type { I18nConfig } from '../../../core/i18n/types';
 
 interface ThinkingModeSelectProps {
   value?: ThinkingMode;
-  i18n: any;
+  i18n: I18nConfig;
   onChange: (thinkingMode: ThinkingMode) => void;
 }
 

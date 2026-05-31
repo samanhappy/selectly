@@ -153,7 +153,7 @@ export const fr: I18nConfig = {
         thinkingModeEnabled: 'Activé',
         thinkingModeDisabled: 'Désactivé',
         thinkingModeHelp:
-          'La disponibilité dépend du modèle et du fournisseur. Les modèles non compatibles ignorent ce réglage.',
+          'La disponibilité dépend du modèle et du fournisseur. Les requêtes incompatibles peuvent renvoyer une erreur.',
         autoExecute: 'Exécution Automatique',
         autoExecuteHelp: 'Exécuter cette fonction automatiquement lors de la sélection de texte',
         autoCloseButtons: 'Fermer Automatiquement les Boutons',
