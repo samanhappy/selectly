@@ -3,6 +3,9 @@ import Dexie from 'dexie';
 import type { Table } from 'dexie';
 
 import { authService } from '~core/auth/auth-service';
+import { createLogger, mask } from '../../utils/logger';
+
+const logger = createLogger('CollectDB');
 
 export interface CollectedItem {
   id?: string;
@@ -68,7 +71,7 @@ class CollectDB extends Dexie {
             };
             await this.items.add(newItem);
           }
-          console.log(`Migrated ${oldItems.length} items to new UUID-based database`);
+          logger.info(`Migrated ${oldItems.length} items to new UUID-based database`);
         }
       }
 
@@ -78,7 +81,7 @@ class CollectDB extends Dexie {
       await Dexie.delete('selectly-collect-db');
     } catch (error) {
       // Old database doesn't exist or migration already completed
-      console.log('No old database to migrate or migration already completed');
+      logger.info('No old database to migrate or migration already completed');
     }
   }
 
@@ -128,7 +131,7 @@ class CollectDB extends Dexie {
   async getAll() {
     await authService.initialize();
     const user_id = authService.getState()?.user?.uuid;
-    console.log('CollectDB.getAll user_id:', user_id);
+    logger.debug('getAll user_id:', mask(user_id));
     return this.items
       .filter((item) => !item.deleted_at && (!user_id || !item.user_id || item.user_id === user_id))
       .sortBy('created_at')

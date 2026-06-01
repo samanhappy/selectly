@@ -4,6 +4,9 @@
  */
 
 import { AdvancedCrypto } from './crypto';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('SecureStorage');
 
 interface StorageData {
   [key: string]: any;
@@ -225,7 +228,7 @@ class SecureStorageManager {
         }
       }
     } catch (error) {
-      console.warn('Failed to cleanup existing chunks:', error);
+      logger.warn('Failed to cleanup existing chunks:', error);
     }
   }
 
@@ -233,7 +236,6 @@ class SecureStorageManager {
    * Store encrypted data in Chrome storage
    */
   async set(data: StorageData): Promise<void> {
-    // console.log("Storing data securely:", data)
     try {
       const encryptedData: Record<string, EncryptedData> = {};
 
@@ -286,7 +288,7 @@ class SecureStorageManager {
         await chrome.storage.sync.set(encryptedData);
       }
     } catch (error) {
-      console.error('Failed to encrypt and store data:', error);
+      logger.error('Failed to encrypt and store data:', error);
       throw error;
     }
   }
@@ -345,7 +347,7 @@ class SecureStorageManager {
             decryptedData[realKey] = encryptedValue;
           }
         } catch (error) {
-          console.warn(`Failed to decrypt data for key ${obfuscatedKey}:`, error);
+          logger.warn(`Failed to decrypt data for key ${obfuscatedKey}:`, error);
           // Skip corrupted data
         }
       }
@@ -363,7 +365,7 @@ class SecureStorageManager {
         for (const chunkKey of chunkKeys) {
           const chunkValue = (chunkSource as any)[chunkKey];
           if (!chunkValue || !this.isEncryptedData(chunkValue)) {
-            console.warn(`Missing chunk data for key ${chunkKey}`);
+            logger.warn(`Missing chunk data for key ${chunkKey}`);
             failed = true;
             break;
           }
@@ -372,7 +374,7 @@ class SecureStorageManager {
             const decryptedChunk = this.decrypt(chunkValue.d, chunkValue.m, (chunkValue as any).v);
             combined += decryptedChunk;
           } catch (error) {
-            console.warn(`Failed to decrypt chunk data for key ${chunkKey}:`, error);
+            logger.warn(`Failed to decrypt chunk data for key ${chunkKey}:`, error);
             failed = true;
             break;
           }
@@ -382,14 +384,14 @@ class SecureStorageManager {
           try {
             decryptedData[realKey] = JSON.parse(combined);
           } catch (error) {
-            console.warn(`Failed to parse chunked data for key ${realKey}:`, error);
+            logger.warn(`Failed to parse chunked data for key ${realKey}:`, error);
           }
         }
       }
 
       return decryptedData;
     } catch (error) {
-      console.error('Failed to retrieve and decrypt data:', error);
+      logger.error('Failed to retrieve and decrypt data:', error);
       return {};
     }
   }
@@ -435,13 +437,13 @@ class SecureStorageManager {
             }
           }
         } catch (error) {
-          console.warn('Failed to resolve chunk keys for removal:', error);
+          logger.warn('Failed to resolve chunk keys for removal:', error);
         }
       }
 
       await chrome.storage.sync.remove(Array.from(keysToRemove));
     } catch (error) {
-      console.error('Failed to remove data:', error);
+      logger.error('Failed to remove data:', error);
       throw error;
     }
   }
@@ -455,7 +457,7 @@ class SecureStorageManager {
         await chrome.storage.sync.clear();
       }
     } catch (error) {
-      console.error('Failed to clear storage:', error);
+      logger.error('Failed to clear storage:', error);
       throw error;
     }
   }
@@ -526,7 +528,7 @@ class SecureStorageManager {
 
               realChanges[realKey] = { oldValue, newValue };
             } catch (error) {
-              console.warn(`Failed to decrypt change data for key ${obfuscatedKey}:`, error);
+              logger.warn(`Failed to decrypt change data for key ${obfuscatedKey}:`, error);
             }
           }
 
@@ -550,7 +552,7 @@ class SecureStorageManager {
       };
       return JSON.stringify(exportData, null, 2);
     } catch (error) {
-      console.error('Failed to export data:', error);
+      logger.error('Failed to export data:', error);
       throw new Error('Failed to export configuration data');
     }
   }
@@ -575,9 +577,9 @@ class SecureStorageManager {
       // Import the data (will be encrypted by set method)
       await this.set(importData.data);
 
-      console.log('Configuration data imported successfully');
+      logger.info('Configuration data imported successfully');
     } catch (error) {
-      console.error('Failed to import data:', error);
+      logger.error('Failed to import data:', error);
       if (error instanceof SyntaxError) {
         throw new Error('Invalid JSON format in import file');
       }

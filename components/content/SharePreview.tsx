@@ -3,6 +3,9 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { i18n } from '../../core/i18n';
 import { imageGeneratorService } from '../../core/services/image-generator-service';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('SharePreview');
 
 interface SharePreviewProps {
   imageBlob: Blob;
@@ -223,7 +226,7 @@ export const SharePreview: React.FC<SharePreviewProps> = ({
       }
       throw new Error('execCommand copy failed');
     } catch (error) {
-      console.error('Failed to copy image to clipboard:', error);
+      logger.error('Failed to copy image to clipboard:', error);
       setCopyStatus('error');
     }
   };
@@ -234,7 +237,7 @@ export const SharePreview: React.FC<SharePreviewProps> = ({
       const filename = `selectly-share-${timestamp}.png`;
       await imageGeneratorService.downloadImage(imageBlob, filename);
     } catch (error) {
-      console.error('Failed to download image:', error);
+      logger.error('Failed to download image:', error);
     }
   };
 

@@ -214,6 +214,8 @@ export const fr: I18nConfig = {
         'Un domaine par ligne. La progression ne sera enregistrée ou restaurée que pour ces domaines.',
       readingProgressUseSystemBlacklist: 'Utiliser la liste noire système',
       readingProgressUseSystemWhitelist: 'Utiliser la liste blanche système',
+      debugEnabled: 'Activer le journal de débogage',
+      debugEnabledDesc: 'Afficher les journaux détaillés dans DevTools pour le dépannage',
     },
     subscription: {
       signIn: 'Se Connecter',

@@ -5,7 +5,10 @@ import { authService } from '~core/auth/auth-service';
 import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { i18n, t } from '../i18n';
+import { createLogger } from '../../utils/logger';
 import { buildThinkingModeRequestBody } from './thinking-mode-adapter';
+
+const logger = createLogger('LLM');
 
 export class LLMService {
   private static instance: LLMService;
@@ -27,7 +30,7 @@ export class LLMService {
    * Configure the service with the latest config
    */
   async configure(config: LLMConfig): Promise<void> {
-    console.log('Configuring LLMService with config:', config);
+    logger.info('Configuring LLMService with config:', config);
     // Clear existing clients
     this.clients.clear();
 
@@ -47,7 +50,7 @@ export class LLMService {
 
     // await authService.initialize();
     const token = await authService.getAccessToken();
-    console.log('Configuring LLMService with token:', token ? '***' : 'no token');
+    logger.info('Configuring LLMService with token:', token ? '***' : 'no token');
     this.clients.set(
       'cloud',
       new OpenAI({
@@ -91,7 +94,7 @@ export class LLMService {
       providerId,
       thinkingMode,
     });
-    console.log('Using model:', modelName);
+    logger.debug('Using model:', modelName);
 
     try {
       const response = await client.chat.completions.create(
@@ -117,7 +120,7 @@ export class LLMService {
 
       return content.trim();
     } catch (error: any) {
-      console.error('LLM service error:', error);
+      logger.error('LLM service error:', error);
 
       // Provide friendlier error message
       if (error.status === 401) {
@@ -153,7 +156,7 @@ export class LLMService {
       providerId,
       thinkingMode,
     });
-    console.log('Using model:', modelName);
+    logger.debug('Using model:', modelName);
 
     try {
       const messages =
@@ -174,7 +177,6 @@ export class LLMService {
       );
 
       for await (const chunk of stream) {
-        // console.log("Received chunk:", chunk)
         const model = chunk.model;
         const content = chunk.choices[0]?.delta?.content;
         if (content) {
@@ -182,7 +184,7 @@ export class LLMService {
         }
       }
     } catch (error: any) {
-      console.error('LLM stream service error:', error);
+      logger.error('LLM stream service error:', error);
 
       // Provide friendlier error message
       if (error.status === 401) {
@@ -227,7 +229,7 @@ export class LLMService {
 
       return true;
     } catch (error) {
-      console.error(`Provider test failed for ${provider.name}:`, error);
+      logger.error(`Provider test failed for ${provider.name}:`, error);
       return false;
     }
   }
@@ -266,7 +268,7 @@ export const testConnection = async (config: LLMConfig): Promise<boolean> => {
     );
     return true;
   } catch (error) {
-    console.error('Connection test failed:', error);
+    logger.error('Connection test failed:', error);
     return false;
   }
 };

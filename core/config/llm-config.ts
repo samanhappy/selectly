@@ -1,10 +1,13 @@
 import { i18n } from '../i18n';
 import type { I18nConfig, SupportedLanguage } from '../i18n/types';
 import { secureStorage } from '../storage/secure-storage';
+import { createLogger, setLogLevel } from '../../utils/logger';
 import { parseModelString, resolveModelString } from './model-resolution';
 import { resolveFunctionThinkingMode, type ThinkingMode } from './thinking-mode';
 
 export type { ThinkingMode } from './thinking-mode';
+
+const logger = createLogger('ConfigManager');
 
 export interface LLMProvider {
   id: string;
@@ -58,6 +61,7 @@ export interface GeneralConfig {
   readingProgressWhitelist?: string[];
   useSystemReadingProgressBlacklist?: boolean;
   useSystemReadingProgressWhitelist?: boolean;
+  debugEnabled?: boolean;
 }
 
 export interface UserConfig {
@@ -205,6 +209,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       readingProgressWhitelist: [],
       useSystemReadingProgressBlacklist: true,
       useSystemReadingProgressWhitelist: true,
+      debugEnabled: false,
     },
     llm: {
       defaultModel: '',
@@ -427,6 +432,7 @@ export const DEFAULT_CONFIG: UserConfig = {
     readingProgressWhitelist: [],
     useSystemReadingProgressBlacklist: true,
     useSystemReadingProgressWhitelist: true,
+    debugEnabled: false,
   },
   llm: {
     defaultModel: '',
@@ -464,7 +470,7 @@ export class ConfigManager {
         this.config = await getDefaultConfig();
       }
     } catch (error) {
-      console.warn('Failed to load config:', error);
+      logger.warn('Failed to load config:', error);
       this.config = await getDefaultConfig();
     }
 
@@ -472,23 +478,45 @@ export class ConfigManager {
       await i18n.setLanguage(this.config.general.language);
     }
 
+    // Apply debug log level from config
+    setLogLevel(this.config.general?.debugEnabled ? 'debug' : (process.env.NODE_ENV === 'production' ? 'warn' : 'debug'))
+
+    // Listen for config changes from other contexts
+    this.startListening();
+
     return this.config;
   }
 
   async saveConfig(newConfig: Partial<UserConfig>): Promise<void> {
     this.config = this.mergeConfig(this.config, newConfig, true);
-    // console.log("Saving config:", this.config)
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
         await secureStorage.set({ userConfig: this.config });
       }
+      // Apply debug log level from config
+      setLogLevel(this.config.general?.debugEnabled ? 'debug' : (process.env.NODE_ENV === 'production' ? 'warn' : 'debug'))
     } catch (error) {
-      console.error('Failed to save config:', error);
+      logger.error('Failed to save config:', error);
     }
   }
 
   getConfig(): UserConfig {
     return this.config;
+  }
+
+  /**
+   * Start listening for storage changes to react to config updates from other contexts
+   */
+  private startListening(): void {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      secureStorage.onChanged((changes) => {
+        if (changes.userConfig?.newValue) {
+          const newConfig = changes.userConfig.newValue as UserConfig;
+          this.config = newConfig;
+          setLogLevel(newConfig.general?.debugEnabled ? 'debug' : (process.env.NODE_ENV === 'production' ? 'warn' : 'debug'))
+        }
+      });
+    }
   }
 
   /**
@@ -501,7 +529,7 @@ export class ConfigManager {
       typeof oldConfig.llm.baseURL === 'string' &&
       typeof oldConfig.llm.apiKey === 'string'
     ) {
-      console.log('[ConfigManager] Migrating old config format to new provider-based format');
+      logger.info('Migrating old config format to new provider-based format');
 
       const migratedConfig = { ...oldConfig };
 
@@ -570,7 +598,7 @@ export class ConfigManager {
         });
       }
 
-      console.log('[ConfigManager] Migration completed');
+      logger.info('Migration completed');
       return migratedConfig;
     }
 
@@ -578,7 +606,6 @@ export class ConfigManager {
   }
 
   private mergeConfig(old: UserConfig, override: any, forceReplace?: boolean): UserConfig {
-    // console.log("Merging config:", { old, override, forceReplace })
     // Merge functions first
     const mergedFunctions: Record<string, FunctionConfig> = mergeFunction(
       old,

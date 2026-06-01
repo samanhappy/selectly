@@ -5,6 +5,9 @@
 
 import { AuthService } from '../auth/auth-service';
 import type { CollectedItem } from '../storage/collect-db';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('CollectSync');
 
 export interface BatchUploadRequest {
   items: CollectedItem[];
@@ -83,7 +86,7 @@ class CollectSyncAPI {
 
       return await response.json();
     } catch (error) {
-      console.error('Batch upload error:', error);
+      logger.error('Batch upload error:', error);
       throw error;
     }
   }
@@ -113,7 +116,7 @@ class CollectSyncAPI {
 
       return await response.json();
     } catch (error) {
-      console.error('Incremental fetch error:', error);
+      logger.error('Incremental fetch error:', error);
       throw error;
     }
   }
@@ -145,7 +148,7 @@ class CollectSyncAPI {
 
       return await response.json();
     } catch (error) {
-      console.error('Delete item error:', error);
+      logger.error('Delete item error:', error);
       throw error;
     }
   }

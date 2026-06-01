@@ -5,6 +5,9 @@
 
 import { AdvancedCrypto } from './crypto';
 import { secureStorage } from './secure-storage';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('StorageMigration');
 
 interface LegacyData {
   userConfig?: any;
@@ -32,13 +35,13 @@ export class StorageMigration {
         return;
       }
 
-      console.log('[StorageMigration] Checking for legacy data...');
+      logger.info('Checking for legacy data...');
 
       // Get all data from legacy storage
       const legacyData = await chrome.storage.sync.get();
 
       if (!legacyData || Object.keys(legacyData).length === 0) {
-        console.log('[StorageMigration] No legacy data found');
+        logger.info('No legacy data found');
         return;
       }
 
@@ -53,11 +56,11 @@ export class StorageMigration {
       const foundLegacyKeys = legacyKeys.filter((key) => key in legacyData);
 
       if (foundLegacyKeys.length === 0) {
-        console.log('[StorageMigration] No known legacy keys found');
+        logger.info('No known legacy keys found');
         return;
       }
 
-      console.log('[StorageMigration] Found legacy data for keys:', foundLegacyKeys);
+      logger.info('Found legacy data for keys:', foundLegacyKeys);
 
       // Check if data is already encrypted (has our obfuscated key format)
       const obfuscatedKeys = [
@@ -70,7 +73,7 @@ export class StorageMigration {
       const hasEncryptedData = obfuscatedKeys.some((key) => key in legacyData);
 
       if (hasEncryptedData) {
-        console.log('[StorageMigration] Encrypted data already exists, skipping migration');
+        logger.info('Encrypted data already exists, skipping migration');
         return;
       }
 
@@ -84,17 +87,17 @@ export class StorageMigration {
       });
 
       if (Object.keys(dataToMigrate).length > 0) {
-        console.log('[StorageMigration] Migrating data to secure storage...');
+        logger.info('Migrating data to secure storage...');
         await secureStorage.set(dataToMigrate);
 
         // Remove legacy data after successful migration
-        console.log('[StorageMigration] Removing legacy data...');
+        logger.info('Removing legacy data...');
         await chrome.storage.sync.remove(foundLegacyKeys);
 
-        console.log('[StorageMigration] Migration completed successfully');
+        logger.info('Migration completed successfully');
       }
     } catch (error) {
-      console.error('[StorageMigration] Migration failed:', error);
+      logger.error('Migration failed:', error);
       // Don't throw error - let the app continue with default config
     }
   }
@@ -122,7 +125,7 @@ export class StorageMigration {
 
       return legacyKeys.length > 0 && !hasEncryptedData;
     } catch (error) {
-      console.error('[StorageMigration] Error checking migration status:', error);
+      logger.error('Error checking migration status:', error);
       return false;
     }
   }
@@ -133,7 +136,7 @@ export class StorageMigration {
   static async clearAllStorage(): Promise<void> {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       await chrome.storage.sync.clear();
-      console.log('[StorageMigration] All storage cleared');
+      logger.info('All storage cleared');
     }
   }
 }

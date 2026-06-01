@@ -22,8 +22,11 @@ import { useI18n } from '../../core/i18n/hooks/useI18n';
 import { redeemSubscriptionCode, type RedeemCodeResponse } from '../../core/premium-api-v2';
 import { collectService } from '../../core/services/collect-service';
 import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
+import { createLogger } from '../../utils/logger';
 import { PremiumCrown } from '../shared/PremiumCrown';
 import { Drawer } from './Drawer';
+
+const logger = createLogger('SubscriptionManager');
 
 interface Props {
   palette: any;
@@ -76,7 +79,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
 
     // Subscribe to auth changes - single source of truth
     const unsubscribeAuth = authService.subscribe((newAuthState) => {
-      console.log('Auth state changed:', newAuthState);
+      logger.debug('Auth state changed:', newAuthState);
       setAuthState(newAuthState);
 
       // Clear error when auth state changes (e.g., after successful login)
@@ -87,7 +90,6 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
 
     // Subscribe to subscription changes
     const unsubscribeSubscription = subscriptionService.subscribe((subState) => {
-      // console.log('Subscription state changed:', subState)
       setSubscriptionStatus(subState.status);
     });
 
@@ -110,7 +112,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
       collectService.sync();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign in failed';
-      console.error('Sign in error:', message);
+      logger.error('Sign in error:', message);
       setError(message);
     } finally {
       setIsLoading(false);
@@ -127,7 +129,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
       // Auth state and subscription state will be updated via subscriptions
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sign out failed';
-      console.error('Sign out error:', message);
+      logger.error('Sign out error:', message);
       setError(message);
     } finally {
       setIsLoading(false);
@@ -144,7 +146,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
       await subscriptionService.refresh({ force: true, reason: 'manual-refresh' });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Refresh failed';
-      console.error('Refresh error:', message);
+      logger.error('Refresh error:', message);
       setError(message);
     } finally {
       setIsRefreshingSubscription(false);
@@ -163,7 +165,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
         return;
       }
     } catch (err) {
-      console.error('Subscription error:', err);
+      logger.error('Subscription error:', err);
       setError('Subscription failed. Please try again.');
     }
   };

@@ -208,6 +208,8 @@ export const en: I18nConfig = {
         'One domain per line. Progress will only be saved or restored for these domains.',
       readingProgressUseSystemBlacklist: 'Use system blacklist',
       readingProgressUseSystemWhitelist: 'Use system whitelist',
+      debugEnabled: 'Enable debug logging',
+      debugEnabledDesc: 'Show detailed logs in DevTools for troubleshooting',
     },
     subscription: {
       signIn: 'Sign In',

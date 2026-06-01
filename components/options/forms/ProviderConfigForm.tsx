@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 
 import type { LLMProvider } from '../../../core/config/llm-config';
 import { LLMService } from '../../../core/services/llm-service';
+import { createLogger } from '../../../utils/logger';
+
+const logger = createLogger('ProviderConfigForm');
 
 interface ProviderConfigFormProps {
   provider: LLMProvider;
@@ -59,7 +62,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
       const success = await llmService.testProvider(testProvider);
       setTestResult(success ? 'success' : 'error');
     } catch (error) {
-      console.error('Provider test failed:', error);
+      logger.error('Provider test failed:', error);
       setTestResult('error');
     } finally {
       setTesting(false);
@@ -99,7 +102,7 @@ export const ProviderConfigForm: React.FC<ProviderConfigFormProps> = ({
         onUpdate(updatedProvider);
         onClose();
       } catch (error) {
-        console.error('Provider test failed:', error);
+        logger.error('Provider test failed:', error);
         setTestResult('error');
       } finally {
         setTesting(false);

@@ -211,6 +211,8 @@ export const pt: I18nConfig = {
         'Um domínio por linha. O progresso só será salvo ou restaurado nesses domínios.',
       readingProgressUseSystemBlacklist: 'Usar lista negra do sistema',
       readingProgressUseSystemWhitelist: 'Usar lista branca do sistema',
+      debugEnabled: 'Ativar registro de depuração',
+      debugEnabledDesc: 'Mostrar logs detalhados no DevTools para solução de problemas',
     },
     subscription: {
       signIn: 'Entrar',

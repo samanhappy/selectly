@@ -16,6 +16,7 @@ import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
+import { createLogger } from '../../utils/logger';
 import { contentStyles } from './content-styles';
 import {
   createSelectionAnchor,
@@ -67,6 +68,7 @@ export class Selectly {
   private userConfig: UserConfig = DEFAULT_CONFIG;
   private configManager = ConfigManager.getInstance();
   private llmService = LLMService.getInstance();
+  private logger = createLogger('Selectly');
   private styleContent = '';
   private currentSelection: Selection | null = null;
   private currentTarget: HTMLElement | null = null;
@@ -390,14 +392,14 @@ export class Selectly {
    */
   private extractTextFromRange(range: Range): string {
     try {
-      console.debug('[Selectly] extractTextFromRange - attempting multiple methods');
+      this.logger.debug('extractTextFromRange - attempting multiple methods');
 
       // Method 1: Try cloneContents and get textContent
       const fragment = range.cloneContents();
       const tempDiv = document.createElement('div');
       tempDiv.appendChild(fragment);
       const fragmentText = tempDiv.textContent || tempDiv.innerText || '';
-      console.debug('[Selectly] Method 1 (cloneContents):', {
+      this.logger.debug('Method 1 (cloneContents):', {
         length: fragmentText.length,
         text: fragmentText.substring(0, 50),
       });
@@ -407,7 +409,7 @@ export class Selectly {
 
       // Method 2: Get text from common ancestor if it's a text node
       const container = range.commonAncestorContainer;
-      console.debug('[Selectly] Method 2 (common ancestor):', {
+      this.logger.debug('Method 2 (common ancestor):', {
         nodeType: container.nodeType,
         nodeName: container.nodeName,
         isTextNode: container.nodeType === Node.TEXT_NODE,
@@ -416,7 +418,7 @@ export class Selectly {
       if (container.nodeType === Node.TEXT_NODE) {
         const textContent = container.textContent || '';
         const extracted = textContent.substring(range.startOffset, range.endOffset).trim();
-        console.debug('[Selectly] Method 2 extracted:', {
+        this.logger.debug('Method 2 extracted:', {
           length: extracted.length,
           text: extracted.substring(0, 50),
         });
@@ -426,7 +428,7 @@ export class Selectly {
       }
 
       // Method 3: Walk through the range and collect text nodes
-      console.debug('[Selectly] Method 3 (TreeWalker): starting traversal');
+      this.logger.debug('Method 3 (TreeWalker): starting traversal');
       const walker = document.createTreeWalker(
         range.commonAncestorContainer,
         NodeFilter.SHOW_TEXT,
@@ -447,14 +449,14 @@ export class Selectly {
           const text = node.textContent || '';
           collectedText += text;
           nodeCount++;
-          console.debug('[Selectly] Method 3 - collected node:', {
+          this.logger.debug('Method 3 - collected node:', {
             nodeCount,
             textLength: text.length,
             text: text.substring(0, 30),
           });
         }
       }
-      console.debug('[Selectly] Method 3 total:', {
+      this.logger.debug('Method 3 total:', {
         nodeCount,
         totalLength: collectedText.length,
         text: collectedText.substring(0, 50),
@@ -465,14 +467,14 @@ export class Selectly {
       }
 
       // Method 4: Try to get all text content from range boundaries
-      console.debug('[Selectly] Method 4 (range boundaries): attempting');
+      this.logger.debug('Method 4 (range boundaries): attempting');
       const startContainer = range.startContainer;
       const endContainer = range.endContainer;
 
       if (startContainer === endContainer) {
         const text = startContainer.textContent || '';
         const extracted = text.substring(range.startOffset, range.endOffset).trim();
-        console.debug('[Selectly] Method 4 (same container):', {
+        this.logger.debug('Method 4 (same container):', {
           length: extracted.length,
           text: extracted.substring(0, 50),
         });
@@ -481,10 +483,10 @@ export class Selectly {
         }
       }
 
-      console.debug('[Selectly] extractTextFromRange - all methods failed');
+      this.logger.debug('extractTextFromRange - all methods failed');
       return '';
     } catch (e) {
-      console.warn('[Selectly] Error extracting text from range:', e);
+      this.logger.warn('Error extracting text from range:', e);
       return '';
     }
   }
@@ -566,7 +568,7 @@ export class Selectly {
 
       return extractedText.trim();
     } catch (e) {
-      console.warn('[Selectly] Error in extractTextFromRangeAggressive:', e);
+      this.logger.warn('Error in extractTextFromRangeAggressive:', e);
       return '';
     }
   }
@@ -577,12 +579,12 @@ export class Selectly {
    */
   private async extractSelectedText(selection: Selection | null): Promise<string> {
     if (!selection) {
-      console.debug('[Selectly] No selection object provided');
+      this.logger.debug('No selection object provided');
       return '';
     }
 
     // Log selection details for debugging
-    console.debug('[Selectly] Selection details:', {
+    this.logger.debug('Selection details:', {
       type: selection.type,
       rangeCount: selection.rangeCount,
       isCollapsed: selection.isCollapsed,
@@ -596,18 +598,18 @@ export class Selectly {
       // Strategy 1: Standard selection.toString() (most common)
       const standardText = selection.toString().trim();
       if (standardText) {
-        console.debug(
-          '[Selectly] ✓ Strategy 1: Extracted via selection.toString()',
+        this.logger.debug(
+          'Strategy 1: Extracted via selection.toString()',
           standardText.substring(0, 50)
         );
         return standardText;
       }
-      console.debug('[Selectly] ✗ Strategy 1: selection.toString() returned empty');
+      this.logger.debug('Strategy 1: selection.toString() returned empty');
 
       // Strategy 2: Extract from Range if available
       if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        console.debug('[Selectly] Range info:', {
+        this.logger.debug('Range info:', {
           collapsed: range.collapsed,
           startContainer: range.startContainer.nodeName,
           endContainer: range.endContainer.nodeName,
@@ -617,15 +619,15 @@ export class Selectly {
 
         const rangeText = this.extractTextFromRange(range);
         if (rangeText) {
-          console.debug(
-            '[Selectly] ✓ Strategy 2: Extracted via Range traversal',
+          this.logger.debug(
+            'Strategy 2: Extracted via Range traversal',
             rangeText.substring(0, 50)
           );
           return rangeText;
         }
-        console.debug('[Selectly] ✗ Strategy 2: Range traversal returned empty');
+        this.logger.debug('Strategy 2: Range traversal returned empty');
       } else {
-        console.debug('[Selectly] ✗ Strategy 2: No ranges available');
+        this.logger.debug('Strategy 2: No ranges available');
       }
 
       // Strategy 3: Try to get text from the anchor and focus nodes
@@ -633,7 +635,7 @@ export class Selectly {
         const anchorText = selection.anchorNode.textContent || '';
         const focusText = selection.focusNode.textContent || '';
 
-        console.debug('[Selectly] Anchor/Focus text lengths:', {
+        this.logger.debug('Anchor/Focus text lengths:', {
           anchor: anchorText.length,
           focus: focusText.length,
           sameNode: selection.anchorNode === selection.focusNode,
@@ -645,13 +647,13 @@ export class Selectly {
           const end = Math.max(selection.anchorOffset, selection.focusOffset);
           const extractedText = anchorText.substring(start, end).trim();
           if (extractedText) {
-            console.debug(
-              '[Selectly] ✓ Strategy 3: Extracted via anchor/focus nodes',
+            this.logger.debug(
+              'Strategy 3: Extracted via anchor/focus nodes',
               extractedText.substring(0, 50)
             );
             return extractedText;
           }
-          console.debug('[Selectly] ✗ Strategy 3: Anchor/focus substring empty', {
+          this.logger.debug('Strategy 3: Anchor/focus substring empty', {
             start,
             end,
             textLength: anchorText.length,
@@ -665,8 +667,8 @@ export class Selectly {
           if (anchorText) {
             const fromAnchor = anchorText.substring(anchorOffset).trim();
             if (fromAnchor) {
-              console.debug(
-                '[Selectly] ✓ Strategy 3: Extracted from anchor node',
+              this.logger.debug(
+                'Strategy 3: Extracted from anchor node',
                 fromAnchor.substring(0, 50)
               );
               return fromAnchor;
@@ -677,17 +679,17 @@ export class Selectly {
           if (focusText) {
             const fromFocus = focusText.substring(0, focusOffset).trim();
             if (fromFocus) {
-              console.debug(
-                '[Selectly] ✓ Strategy 3: Extracted from focus node',
+              this.logger.debug(
+                'Strategy 3: Extracted from focus node',
                 fromFocus.substring(0, 50)
               );
               return fromFocus;
             }
           }
-          console.debug('[Selectly] ✗ Strategy 3: Different nodes extraction failed');
+          this.logger.debug('Strategy 3: Different nodes extraction failed');
         }
       } else {
-        console.debug('[Selectly] ✗ Strategy 3: No anchor or focus nodes');
+        this.logger.debug('Strategy 3: No anchor or focus nodes');
       }
 
       // Strategy 4: Check for INPUT/TEXTAREA with selection
@@ -699,23 +701,23 @@ export class Selectly {
           const end = input.selectionEnd || 0;
           const inputText = input.value.substring(start, end).trim();
           if (inputText) {
-            console.debug(
-              '[Selectly] ✓ Strategy 4: Extracted from input element',
+            this.logger.debug(
+              'Strategy 4: Extracted from input element',
               inputText.substring(0, 50)
             );
             return inputText;
           }
-          console.debug('[Selectly] ✗ Strategy 4: Input element selection empty');
+          this.logger.debug('Strategy 4: Input element selection empty');
         }
       }
 
-      console.warn(
-        '[Selectly] ❌ All text extraction strategies failed. Selection object:',
-        selection
+      this.logger.warn(
+        'All text extraction strategies failed. Selection type:',
+        selection?.type
       );
       return '';
     } catch (e) {
-      console.error('[Selectly] Error in extractSelectedText:', e);
+      this.logger.error('Error in extractSelectedText:', e);
       return '';
     }
   }
@@ -880,7 +882,7 @@ export class Selectly {
     });
 
     if (!res?.success) {
-      console.warn('[Selectly] Failed to persist highlight:', res?.error);
+      this.logger.warn('Failed to persist highlight:', res?.error);
       return;
     }
 
@@ -937,7 +939,7 @@ export class Selectly {
         }
       }
     } catch (e) {
-      console.warn('[Selectly] Failed to restore highlights:', e);
+      this.logger.warn('Failed to restore highlights:', e);
     }
   }
 
@@ -945,7 +947,7 @@ export class Selectly {
     try {
       this.userConfig = await this.configManager.loadConfig();
     } catch (error) {
-      console.warn('Failed to load config:', error);
+      this.logger.warn('Failed to load config:', error);
       this.userConfig = DEFAULT_CONFIG;
     }
   }
@@ -1072,7 +1074,7 @@ export class Selectly {
     const hasScroll = this.hasVerticalScroll();
 
     if (this.progressHost) {
-      console.debug('[Selectly][reading-progress] apply config', {
+      this.logger.debug('[reading-progress] apply config', {
         showProgressBar,
         hasScroll,
       });
@@ -1126,7 +1128,7 @@ export class Selectly {
     const scrollTop = scrollEl?.scrollTop ?? (docEl.scrollTop || body.scrollTop || 0);
     const scrollHeight = scrollEl?.scrollHeight ?? Math.max(docEl.scrollHeight, body.scrollHeight);
     const clientHeight = scrollEl?.clientHeight ?? (docEl.clientHeight || window.innerHeight);
-    console.debug('[Selectly][reading-progress] scroll metrics', {
+    this.logger.debug('[reading-progress] scroll metrics', {
       scrollTop,
       scrollHeight,
       clientHeight,
@@ -1141,7 +1143,7 @@ export class Selectly {
     const maxScroll = scrollHeight - clientHeight;
     const minScrollablePx = Math.max(64, Math.round(clientHeight * 0.12));
     if (maxScroll <= 1) {
-      console.debug('[Selectly][reading-progress] no vertical scroll: height check', {
+      this.logger.debug('[reading-progress] no vertical scroll: height check', {
         scrollHeight,
         clientHeight,
         maxScroll,
@@ -1171,7 +1173,7 @@ export class Selectly {
       const scrollOverflow = scrollEl ? window.getComputedStyle(scrollEl).overflowY : '';
       const blocked = ['hidden', 'clip'];
       if (blocked.includes(scrollOverflow)) {
-        console.debug('[Selectly][reading-progress] no vertical scroll: scrollEl overflow', {
+        this.logger.debug('[reading-progress] no vertical scroll: scrollEl overflow', {
           scrollOverflow,
           scrollEl: scrollEl?.tagName,
         });
@@ -1181,7 +1183,7 @@ export class Selectly {
         return false;
       }
       if (blocked.includes(docOverflow) && blocked.includes(bodyOverflow)) {
-        console.debug('[Selectly][reading-progress] no vertical scroll: doc/body overflow', {
+        this.logger.debug('[reading-progress] no vertical scroll: doc/body overflow', {
           docOverflow,
           bodyOverflow,
         });
@@ -1194,7 +1196,7 @@ export class Selectly {
       // fallback to height check only
     }
 
-    console.debug('[Selectly][reading-progress] vertical scroll available');
+    this.logger.debug('[reading-progress] vertical scroll available');
     this.lastHasVerticalScroll = true;
     this.lastScrollCheckKey = key;
     this.lastScrollCheckAt = now;
@@ -1207,7 +1209,7 @@ export class Selectly {
     if (!showProgressBar) return;
     if (!this.hasVerticalScroll()) {
       if (this.progressHost) this.progressHost.style.display = 'none';
-      console.debug('[Selectly][reading-progress] hide progress bar: no vertical scroll');
+      this.logger.debug('[reading-progress] hide progress bar: no vertical scroll');
       this.updateGlobalActionBar();
       return;
     }
@@ -1215,7 +1217,7 @@ export class Selectly {
     const { scrollTop, scrollHeight, clientHeight } = this.getScrollMetrics();
     const maxScroll = Math.max(1, scrollHeight - clientHeight);
     const progress = Math.max(0, Math.min(1, scrollTop / maxScroll));
-    console.debug('[Selectly][reading-progress] update progress bar', {
+    this.logger.debug('[reading-progress] update progress bar', {
       scrollTop,
       scrollHeight,
       clientHeight,
@@ -1419,7 +1421,7 @@ export class Selectly {
   }
 
   private handleTextSelection(event: MouseEvent | TouchEvent) {
-    console.log('Text selection event:', event);
+    this.logger.debug('Text selection event:', event.type);
     if (this.isEventFromOurComponents(event)) {
       return;
     }
@@ -1448,13 +1450,13 @@ export class Selectly {
       const doc = target?.ownerDocument || document;
       const selection = doc.getSelection();
 
-      console.log('[Selectly] Selection event triggered');
-      console.log('[Selectly] Event target:', {
+      this.logger.info('Selection event triggered');
+      this.logger.debug('Event target:', {
         tagName: (event.target as HTMLElement)?.tagName,
         className: (event.target as HTMLElement)?.className,
         id: (event.target as HTMLElement)?.id,
       });
-      console.log('[Selectly] Selection object:', {
+      this.logger.debug('Selection object:', {
         exists: !!selection,
         type: selection?.type,
         rangeCount: selection?.rangeCount,
@@ -1465,8 +1467,8 @@ export class Selectly {
       // Use robust text extraction with multiple fallback strategies
       const selectedText =
         getTextControlSelectedText(target) || (await this.extractSelectedText(selection));
-      console.log(
-        '[Selectly] Final extracted text:',
+      this.logger.info(
+        'Final extracted text:',
         selectedText
           ? `"${selectedText.substring(0, 100)}${selectedText.length > 100 ? '...' : ''}"`
           : '(empty)'
@@ -1631,7 +1633,7 @@ export class Selectly {
 
   private replaceSelectedText(newText: string) {
     if (!this.currentSelection || !this.currentTarget) {
-      console.warn('[Selectly] No current selection to replace');
+      this.logger.warn('No current selection to replace');
       return;
     }
 
@@ -1667,7 +1669,7 @@ export class Selectly {
         }
       }
     } catch (error) {
-      console.error('[Selectly] Error replacing text:', error);
+      this.logger.error('Error replacing text:', error);
     }
   }
 
@@ -2227,13 +2229,13 @@ export class Selectly {
         iframeDoc.addEventListener('scroll', this.handleFloatingScroll, true);
         observeKeyboardSelection(iframeDoc, this.handleKeyboardSelection);
 
-        console.debug('[Selectly] Attached listeners to iframe:', iframe.src || 'about:blank');
+        this.logger.debug('Attached listeners to iframe:', iframe.src || 'about:blank');
         return true;
       } catch (e) {
         // Cross-origin access denied - content script will be injected by Chrome
         // due to "all_frames: true" in manifest
-        console.debug(
-          '[Selectly] Cross-origin iframe detected (content script will handle):',
+        this.logger.debug(
+          'Cross-origin iframe detected (content script will handle):',
           iframe.src
         );
         this.trackedIframes.add(iframe); // Mark as processed to avoid retries
@@ -2283,7 +2285,7 @@ export class Selectly {
       // Not in iframe or couldn't find iframe - use direct coordinates
       return { x: clientX, y: clientY };
     } catch (e) {
-      console.warn('[Selectly] Error calculating absolute position:', e);
+      this.logger.warn('Error calculating absolute position:', e);
       return null;
     }
   }

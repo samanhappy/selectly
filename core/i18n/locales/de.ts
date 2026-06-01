@@ -213,6 +213,8 @@ export const de: I18nConfig = {
         'Eine Domain pro Zeile. Fortschritt wird nur für diese Domains gespeichert oder wiederhergestellt.',
       readingProgressUseSystemBlacklist: 'System-Blacklist verwenden',
       readingProgressUseSystemWhitelist: 'System-Whitelist verwenden',
+      debugEnabled: 'Debug-Protokollierung aktivieren',
+      debugEnabledDesc: 'Detaillierte Logs in DevTools zur Fehlerbehebung anzeigen',
     },
     subscription: {
       signIn: 'Anmelden',

@@ -13,6 +13,9 @@ import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
 import { StorageMigration } from './core/storage/migration';
 import { secureStorage } from './core/storage/secure-storage';
+import { createLogger } from './utils/logger';
+
+const logger = createLogger('Background');
 
 // Initialize extension on installation
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -32,31 +35,31 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     subscriptionService.enableAutoRefresh();
     await subscriptionService.refreshOnceAtStartup();
 
-    console.log('Selectly extension installed successfully!');
+    logger.info('Extension installed successfully');
   } else if (details.reason === 'update') {
     // Migrate databases from old schema to UUID-based schema on update
     try {
       await collectDB.migrateFromOldDatabase();
       await dictionaryDB.migrateFromOldDatabase();
-      console.log('Database migration to UUID completed after update');
+      logger.info('Database migration to UUID completed after update');
     } catch (error) {
-      console.warn('Database migration failed:', error);
+      logger.warn('Database migration failed:', error);
     }
   }
 });
 
 // Run migration on startup to handle existing users
 chrome.runtime.onStartup.addListener(async () => {
-  console.log('Selectly extension starting up...');
+  logger.info('Extension starting up');
   await StorageMigration.migrateIfNeeded();
 
   // Migrate databases from old schema to UUID-based schema
   try {
     await collectDB.migrateFromOldDatabase();
     await dictionaryDB.migrateFromOldDatabase();
-    console.log('Database migration to UUID completed');
+    logger.info('Database migration to UUID completed');
   } catch (error) {
-    console.warn('Database migration failed:', error);
+    logger.warn('Database migration failed:', error);
   }
 
   const subscriptionService = SubscriptionServiceV2.getInstance();
@@ -68,33 +71,33 @@ chrome.runtime.onStartup.addListener(async () => {
   try {
     await collectSyncService.initialize();
     void collectSyncService.sync();
-    console.log('Collect sync service initialized and sync triggered');
+    logger.info('Collect sync service initialized and sync triggered');
   } catch (error) {
-    console.warn('Collect sync service initialization failed:', error);
+    logger.warn('Collect sync service initialization failed:', error);
   }
 
   // Initialize and trigger highlight sync once
   try {
     await highlightSyncService.initialize();
     void highlightSyncService.sync();
-    console.log('Highlight sync service initialized and sync triggered');
+    logger.info('Highlight sync service initialized and sync triggered');
   } catch (error) {
-    console.warn('Highlight sync service initialization failed:', error);
+    logger.warn('Highlight sync service initialization failed:', error);
   }
 
   // Initialize and trigger dictionary sync once
   try {
     await dictionarySyncService.initialize();
     void dictionarySyncService.sync();
-    console.log('Dictionary sync service initialized and sync triggered');
+    logger.info('Dictionary sync service initialized and sync triggered');
   } catch (error) {
-    console.warn('Dictionary sync service initialization failed:', error);
+    logger.warn('Dictionary sync service initialization failed:', error);
   }
 });
 
 // Also run migration when extension is enabled/reloaded
 (async () => {
-  console.log('Selectly extension loaded...');
+  logger.info('Extension loaded');
   await StorageMigration.migrateIfNeeded();
 
   // Initialize auth service once at startup to avoid repeated init calls from polling UIs
@@ -102,7 +105,7 @@ chrome.runtime.onStartup.addListener(async () => {
     await authService.initialize();
   } catch (e) {
     // Non-fatal; continue startup
-    console.warn('Auth service init at startup failed (non-fatal):', e);
+    logger.warn('Auth service init at startup failed (non-fatal):', e);
   }
   // In case onStartup is not triggered in some scenarios, ensure single startup refresh guarded internally
   const subscriptionService = SubscriptionServiceV2.getInstance();
@@ -114,27 +117,27 @@ chrome.runtime.onStartup.addListener(async () => {
   try {
     await collectSyncService.initialize();
     void collectSyncService.sync();
-    console.log('Collect sync service initialized and sync triggered on load');
+    logger.info('Collect sync service initialized and sync triggered on load');
   } catch (error) {
-    console.warn('Collect sync service initialization failed on load:', error);
+    logger.warn('Collect sync service initialization failed on load:', error);
   }
 
   // Initialize and trigger highlight sync once
   try {
     await highlightSyncService.initialize();
     void highlightSyncService.sync();
-    console.log('Highlight sync service initialized and sync triggered on load');
+    logger.info('Highlight sync service initialized and sync triggered on load');
   } catch (error) {
-    console.warn('Highlight sync service initialization failed on load:', error);
+    logger.warn('Highlight sync service initialization failed on load:', error);
   }
 
   // Initialize and trigger dictionary sync once
   try {
     await dictionarySyncService.initialize();
     void dictionarySyncService.sync();
-    console.log('Dictionary sync service initialized and sync triggered on load');
+    logger.info('Dictionary sync service initialized and sync triggered on load');
   } catch (error) {
-    console.warn('Dictionary sync service initialization failed on load:', error);
+    logger.warn('Dictionary sync service initialization failed on load:', error);
   }
 })();
 
@@ -150,13 +153,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // Handle authentication request from popup
       (async () => {
         try {
-          console.log('Background: Received authentication request');
+          logger.info('Received authentication request');
           await authService.initialize();
           await authService.signIn();
-          console.log('Background: Authentication completed successfully');
+          logger.info('Authentication completed successfully');
           sendResponse({ success: true });
         } catch (error) {
-          console.error('Background: Authentication failed:', error);
+          logger.error('Authentication failed:', error);
           sendResponse({
             success: false,
             error: error instanceof Error ? error.message : 'Authentication failed',
@@ -170,12 +173,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       // Handle sign out request from popup
       (async () => {
         try {
-          console.log('Background: Received sign out request');
+          logger.info('Received sign out request');
           await authService.signOut();
-          console.log('Background: Sign out completed successfully');
+          logger.info('Sign out completed successfully');
           sendResponse({ success: true });
         } catch (error) {
-          console.error('Background: Sign out failed:', error);
+          logger.error('Sign out failed:', error);
           sendResponse({
             success: false,
             error: error instanceof Error ? error.message : 'Sign out failed',
@@ -201,7 +204,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             },
           });
         } catch (error) {
-          console.error('Background: Failed to get auth state:', error);
+          logger.error('Failed to get auth state:', error);
           sendResponse({
             success: false,
             error: error instanceof Error ? error.message : 'Failed to get auth state',
@@ -235,7 +238,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
           sendResponse({ success: true });
         } catch (err: any) {
-          console.error('Failed to save collect item:', err);
+          logger.error('Failed to save collect item:', err);
           sendResponse({
             success: false,
             error: err?.message || 'Unknown error',
@@ -277,7 +280,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           } as any);
           sendResponse({ success: true, id });
         } catch (err: any) {
-          console.error('Failed to save highlight:', err);
+          logger.error('Failed to save highlight:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
@@ -295,7 +298,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           const items = await highlightService.getItemsByUrl(url);
           sendResponse({ success: true, items });
         } catch (err: any) {
-          console.error('Failed to load highlights:', err);
+          logger.error('Failed to load highlights:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error', items: [] });
         }
       })();
@@ -312,7 +315,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           await highlightService.deleteItem(id);
           sendResponse({ success: true });
         } catch (err: any) {
-          console.error('Failed to delete highlight:', err);
+          logger.error('Failed to delete highlight:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
@@ -345,7 +348,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
           sendResponse({ success: true });
         } catch (err: any) {
-          console.error('Failed to save dictionary entry:', err);
+          logger.error('Failed to save dictionary entry:', err);
           sendResponse({
             success: false,
             error: err?.message || 'Unknown error',
@@ -366,7 +369,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           const record = await readingProgressService.getProgress(url, maxAgeMs);
           sendResponse({ success: true, record });
         } catch (err: any) {
-          console.error('Failed to get reading progress:', err);
+          logger.error('Failed to get reading progress:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
@@ -390,7 +393,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           );
           sendResponse({ success: true });
         } catch (err: any) {
-          console.error('Failed to save reading progress:', err);
+          logger.error('Failed to save reading progress:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
@@ -407,7 +410,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           await readingProgressService.deleteProgress(url, { local: true, sync: true });
           sendResponse({ success: true });
         } catch (err: any) {
-          console.error('Failed to delete reading progress:', err);
+          logger.error('Failed to delete reading progress:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
         }
       })();
@@ -427,7 +430,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
         })
         .catch((error) => {
-          console.error('Failed to get config:', error);
+          logger.error('Failed to get config:', error);
           sendResponse({
             userConfig: DEFAULT_CONFIG,
           });

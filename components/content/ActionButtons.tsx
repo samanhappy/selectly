@@ -11,7 +11,10 @@ import { i18n } from '../../core/i18n';
 import { actionService } from '../../core/services/action-service';
 import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
 import { getActionIcon, isValidIconKey } from '../../utils/icon-utils';
+import { createLogger } from '../../utils/logger';
 import { isValidUrl } from '../../utils/url-utils';
+
+const logger = createLogger('ActionButtons');
 
 interface ActionButtonsProps {
   selectedText: string;
@@ -137,7 +140,7 @@ export const ActionButtons = ({
         selectlyInstance && typeof selectlyInstance.getCurrentSelectedText === 'function'
           ? selectlyInstance.getCurrentSelectedText()
           : selection?.toString().trim() || '';
-      console.log('Selection changed:', { newSelectedText, previous: selectedText });
+      logger.debug('Selection changed:', { newSelectedText, previous: selectedText });
       if (newSelectedText === '') {
         onClose();
       } else if (newSelectedText !== selectedText) {
@@ -163,7 +166,7 @@ export const ActionButtons = ({
       const isActive = await subscriptionService.isSubscriptionActive();
       setIsSubscribed(isActive);
     } catch (error) {
-      console.error('Failed to check subscription status:', error);
+      logger.error('Failed to check subscription status:', error);
       setIsSubscribed(false);
     }
   };
@@ -201,7 +204,7 @@ export const ActionButtons = ({
     event: React.MouseEvent,
     keepButtonsOpen: boolean
   ) => {
-    console.log(`Action triggered: ${actionKey}, keepButtonsOpen: ${keepButtonsOpen}`);
+    logger.debug(`Action triggered: ${actionKey}, keepButtonsOpen: ${keepButtonsOpen}`);
     // Prevent event bubbling to avoid triggering text selection handling
     event.preventDefault();
     event.stopPropagation();
@@ -233,7 +236,7 @@ export const ActionButtons = ({
       //   await updateDailyUsage()
       // }
     } catch (error) {
-      console.error(`Error performing ${actionKey}:`, error);
+      logger.error(`Error performing ${actionKey}:`, error);
     }
 
     // Only close buttons if autoCloseButtons is enabled (default to true for backward compatibility)
@@ -287,7 +290,7 @@ export const ActionButtons = ({
     }
 
     if (!IconComponent) {
-      console.warn(`[ActionButtons] IconComponent is undefined for key: ${key}`);
+      logger.warn(`IconComponent is undefined for key: ${key}`);
       return;
     }
 

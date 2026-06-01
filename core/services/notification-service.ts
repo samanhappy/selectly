@@ -1,4 +1,7 @@
 import { i18n } from '../i18n';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('Notification');
 
 export interface NotificationOptions {
   title: string;
@@ -142,7 +145,7 @@ export class NotificationService {
             copyBtn.textContent = i18n.t('common.copy');
           }, 1000);
         } catch (error) {
-          console.error('Copy failed:', error);
+          logger.error('Copy failed:', error);
         }
       });
     }

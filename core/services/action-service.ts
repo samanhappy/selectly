@@ -1,7 +1,10 @@
 import { getFunctionDisplayFields, type FunctionConfig } from '../config/llm-config';
 import { i18n } from '../i18n';
+import { createLogger } from '../../utils/logger';
 import { imageGeneratorService } from './image-generator-service';
 import { LLMService, processText } from './llm-service';
+
+const logger = createLogger('Action');
 
 // IndexedDB writes must happen in extension context to ensure options page can read them.
 // We'll send a message to background to persist collected items.
@@ -43,7 +46,7 @@ export class ActionService {
     selectedText: string,
     config: FunctionConfig
   ): Promise<void> {
-    console.log(`[ActionService] Executing action: ${actionKey}`);
+    logger.info(`Executing action: ${actionKey}`);
 
     // Handle non-LLM functions
     if (actionKey === 'search') {
@@ -165,7 +168,7 @@ export class ActionService {
         selectlyInstance.notifyCollectSuccess();
       }
     } catch (e) {
-      console.error('Failed to collect:', e);
+      logger.error('Failed to collect:', e);
       const selectlyInstance = (window as any).selectlyInstance;
       if (selectlyInstance && selectlyInstance.notifyCollectError) {
         selectlyInstance.notifyCollectError();
@@ -261,7 +264,7 @@ export class ActionService {
         selectlyInstance.restoreFocusSelection();
       }
     } catch (error) {
-      console.warn('Clipboard API failed, trying no-blur fallbacks');
+      logger.warn('Clipboard API failed, trying no-blur fallbacks');
 
       // We must avoid blurring complex editors (e.g., DIV-based editors that toggle editability on blur).
       // Strategy:
@@ -292,7 +295,7 @@ export class ActionService {
           return;
         }
       } catch (e1) {
-        console.warn('Copy-event interception failed', e1);
+        logger.warn('Copy-event interception failed', e1);
         // proceed to next fallback
       }
 
@@ -335,7 +338,7 @@ export class ActionService {
           }
         }
       } catch (e2) {
-        console.warn('Range-based copy failed', e2);
+        logger.warn('Range-based copy failed', e2);
         if (selectlyInstance && selectlyInstance.notifyCopyError) {
           selectlyInstance.notifyCopyError();
         }
@@ -407,7 +410,7 @@ export class ActionService {
         selectlyInstance.restoreFocusSelection();
       }
     } catch (error) {
-      console.error('Share failed:', error);
+      logger.error('Share failed:', error);
 
       // Notify error
       const selectlyInstance = (window as any).selectlyInstance;
@@ -425,7 +428,7 @@ export class ActionService {
       }
       await selectlyInstance.applyHighlight(selectedText, config);
     } catch (error) {
-      console.error('Highlight failed:', error);
+      logger.error('Highlight failed:', error);
     }
   }
 }

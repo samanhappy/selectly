@@ -44,6 +44,10 @@ import {
   Zap,
 } from 'lucide-react';
 
+import { createLogger } from './logger';
+
+const logger = createLogger('IconUtils');
+
 /**
  * Icon mapping utilities for action buttons and popup UI
  */
@@ -144,7 +148,7 @@ export const getActionIcon = (actionKey: string) => {
   const icon = iconMap[actionKey] || iconMap.default;
 
   if (!icon) {
-    console.warn(`[getActionIcon] Icon not found for key: ${actionKey}, falling back to Sparkles`);
+    logger.warn(`Icon not found for key: ${actionKey}, falling back to Sparkles`);
     return Sparkles;
   }
   return icon;
