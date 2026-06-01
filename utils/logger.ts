@@ -42,7 +42,7 @@ export const getLogLevel = (): LogLevel => currentLevel
 /**
  * Mask a sensitive string value, showing only the first `show` characters
  */
-export const mask = (value: string, show = 4): string =>
+export const mask = (value: string | null | undefined, show = 4): string =>
   value ? value.slice(0, show) + '***' : '(empty)'
 
 /**
