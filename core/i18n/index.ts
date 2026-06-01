@@ -7,6 +7,9 @@ import { ja } from './locales/ja';
 import { pt } from './locales/pt';
 import { zh } from './locales/zh';
 import type { I18nConfig, SupportedLanguage } from './types';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('I18nManager');
 
 const locales: Record<SupportedLanguage, I18nConfig> = {
   en,
@@ -46,7 +49,7 @@ export class I18nManager {
       }
       this.config = locales[this.currentLanguage];
     } catch (error) {
-      console.warn('Failed to initialize i18n:', error);
+      logger.warn('Failed to initialize i18n:', error);
       this.config = en;
     }
   }
@@ -91,7 +94,7 @@ export class I18nManager {
         await secureStorage.set({ userLanguage: language });
       }
     } catch (error) {
-      console.error('Failed to save language preference:', error);
+      logger.error('Failed to save language preference:', error);
     }
   }
 
@@ -111,7 +114,7 @@ export class I18nManager {
       if (current && typeof current === 'object' && key in current) {
         current = current[key];
       } else {
-        console.warn(`Translation key not found: ${path}`);
+        logger.warn(`Translation key not found: ${path}`);
         return path;
       }
     }

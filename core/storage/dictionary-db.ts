@@ -2,6 +2,9 @@ import { v4 as uuidv4 } from '@lukeed/uuid';
 import Dexie, { type Table } from 'dexie';
 
 import { authService } from '~core/auth/auth-service';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('DictionaryDB');
 
 export interface DictionaryEntry {
   id?: string;
@@ -79,7 +82,7 @@ class DictionaryDB extends Dexie {
             };
             await this.entries.add(newEntry);
           }
-          console.log(`Migrated ${oldEntries.length} entries to new UUID-based database`);
+          logger.info(`Migrated ${oldEntries.length} entries to new UUID-based database`);
         }
       }
 
@@ -89,7 +92,7 @@ class DictionaryDB extends Dexie {
       await Dexie.delete('selectly-dictionary-db');
     } catch (error) {
       // Old database doesn't exist or migration already completed
-      console.log('No old database to migrate or migration already completed');
+      logger.info('No old database to migrate or migration already completed');
     }
   }
 

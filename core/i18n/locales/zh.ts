@@ -200,6 +200,8 @@ export const zh: I18nConfig = {
       readingProgressWhitelistDesc: '每行一个域名。仅在这些网站保存/恢复阅读进度。',
       readingProgressUseSystemBlacklist: '使用系统黑名单',
       readingProgressUseSystemWhitelist: '使用系统白名单',
+      debugEnabled: '启用调试日志',
+      debugEnabledDesc: '在开发者工具中显示详细日志，用于排查问题',
     },
     subscription: {
       signIn: '登录',

@@ -8,7 +8,10 @@ import React from 'react';
 
 import type { GeneralConfig, UserConfig } from '../../core/config/llm-config';
 import { secureStorage } from '../../core/storage/secure-storage';
+import { createLogger } from '../../utils/logger';
 import { COLOR_PRESETS } from './color-presets';
+
+const logger = createLogger('GeneralPage');
 import { PALETTE } from './constants';
 import {
   parseColorToRgba,
@@ -52,7 +55,7 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
       URL.revokeObjectURL(url);
       alert(t.options?.general?.exportSuccess || 'Configuration exported successfully!');
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error('Export failed:', error);
       alert(t.options?.general?.exportError || 'Failed to export configuration. Please try again.');
     }
   };
@@ -76,7 +79,7 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
         await onReload();
         window.location.reload();
       } catch (error) {
-        console.error('Import failed:', error);
+        logger.error('Import failed:', error);
         alert(
           `${t.options?.general?.importError || 'Failed to import configuration'}: ${(error as Error).message}`
         );
@@ -289,6 +292,35 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+      <div className="sl-card" style={{ marginTop: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+            {t.popup?.general?.debugEnabled || 'Debug Logging'}
+          </h3>
+        </div>
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div
+            className="sl-fn-card"
+            style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}
+          >
+            <label className="sl-switch-row" style={{ margin: 0 }}>
+              <input
+                className="sl-checkbox"
+                type="checkbox"
+                checked={userConfig.general?.debugEnabled === true}
+                onChange={(e) => onChange('debugEnabled', e.target.checked)}
+              />
+              <span className="sl-switch-text">
+                {t.popup?.general?.debugEnabled || 'Enable debug logging'}
+              </span>
+            </label>
+            <div style={{ fontSize: 11, color: '#64748b' }}>
+              {t.popup?.general?.debugEnabledDesc ||
+                'Show detailed logs in DevTools for troubleshooting'}
+            </div>
           </div>
         </div>
       </div>

@@ -4,6 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { LLMProvider } from '../../../core/config/llm-config';
 import type { ModelInfo } from '../../../core/services/model-service';
 import { modelService } from '../../../core/services/model-service';
+import { createLogger } from '../../../utils/logger';
+
+const logger = createLogger('EnhancedModelSelector');
 
 interface EnhancedModelSelectorProps {
   selectedModel: string; // Format: "providerId/modelName" or "default"
@@ -66,7 +69,7 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
         onChange(selectedModel);
       }
     } catch (error) {
-      console.error('Failed to load models:', error);
+      logger.error('Failed to load models:', error);
     } finally {
       setLoading(false);
     }

@@ -10,6 +10,9 @@ import {
 } from '../../core/content/floating-position';
 import { i18n } from '../../core/i18n';
 import { getActionIcon } from '../../utils/icon-utils';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('StreamingResult');
 
 interface StreamingResultProps {
   anchor: FloatingAnchor;
@@ -429,7 +432,7 @@ export const StreamingResult = ({
       error: boolean = false,
       isNewMessage: boolean = false
     ) => {
-      console.log('[StreamingResult] updateStreamingResult', {
+      logger.debug('updateStreamingResult', {
         chunk,
         model,
         complete,
@@ -579,7 +582,7 @@ export const StreamingResult = ({
       setDicStatus('success');
       // setTimeout(() => setDicStatus('idle'), 3000)
     } catch (e) {
-      console.error('Add to dictionary failed', e);
+      logger.error('Add to dictionary failed', e);
       setDicStatus('error');
       setTimeout(() => setDicStatus('idle'), 3000);
     }
@@ -727,8 +730,8 @@ export const StreamingResult = ({
                 const IconComponent = getActionIcon(actionKey);
                 // Safety check for IconComponent
                 if (!IconComponent) {
-                  console.warn(
-                    `[StreamingResult] IconComponent is undefined for actionKey: ${actionKey}`
+                  logger.warn(
+                    `IconComponent is undefined for actionKey: ${actionKey}`
                   );
                   return <Info size={14} />;
                 }

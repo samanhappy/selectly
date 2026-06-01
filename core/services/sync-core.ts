@@ -1,4 +1,7 @@
 import { secureStorage } from '../storage/secure-storage';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('SyncCore');
 
 export type SyncOperation = 'create' | 'update' | 'delete';
 
@@ -68,7 +71,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
     }
 
     this.initialized = true;
-    console.log(
+    logger.info(
       `[${this.adapter.name}] Initialized with lastSyncTime:`,
       this.syncState.lastSyncTime
     );
@@ -77,11 +80,11 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   startPeriodicSync(): void {
     if (this.syncInterval) return;
 
-    console.log(`[${this.adapter.name}] Starting periodic sync every`, this.intervalMs, 'ms');
-    this.sync().catch(console.error);
+    logger.info(`[${this.adapter.name}] Starting periodic sync every`, this.intervalMs, 'ms');
+    this.sync().catch((err) => logger.error(`[${this.adapter.name}] Periodic sync error:`, err));
 
     this.syncInterval = setInterval(() => {
-      this.sync().catch(console.error);
+      this.sync().catch((err) => logger.error(`[${this.adapter.name}] Periodic sync error:`, err));
     }, this.intervalMs);
   }
 
@@ -89,7 +92,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = undefined;
-      console.log(`[${this.adapter.name}] Stopped periodic sync`);
+      logger.info(`[${this.adapter.name}] Stopped periodic sync`);
     }
   }
 
@@ -98,12 +101,12 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
     if (!isEnabled) return;
 
     if (this.syncState.syncing) {
-      console.log(`[${this.adapter.name}] Sync already in progress, skipping`);
+      logger.debug(`[${this.adapter.name}] Sync already in progress, skipping`);
       return;
     }
 
     this.syncState.syncing = true;
-    console.log(`[${this.adapter.name}] Starting sync...`);
+    logger.info(`[${this.adapter.name}] Starting sync...`);
 
     try {
       await this.uploadLocalChanges();
@@ -113,9 +116,9 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
       this.syncState.lastError = undefined;
       await this.saveSyncState();
 
-      console.log(`[${this.adapter.name}] Sync completed successfully`);
+      logger.info(`[${this.adapter.name}] Sync completed successfully`);
     } catch (error) {
-      console.error(`[${this.adapter.name}] Sync failed:`, error);
+      logger.error(`[${this.adapter.name}] Sync failed:`, error);
       this.syncState.lastError = error instanceof Error ? error.message : String(error);
       await this.saveSyncState();
     } finally {
@@ -128,12 +131,12 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
     if (!isEnabled) return;
 
     if (this.syncState.syncing) {
-      console.log(`[${this.adapter.name}] Sync already in progress, skipping`);
+      logger.debug(`[${this.adapter.name}] Sync already in progress, skipping`);
       return;
     }
 
     this.syncState.syncing = true;
-    console.log(`[${this.adapter.name}] Starting full sync...`);
+    logger.info(`[${this.adapter.name}] Starting full sync...`);
 
     try {
       const response = this.adapter.fetchAll
@@ -150,9 +153,9 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
       this.syncState.lastError = undefined;
       await this.saveSyncState();
 
-      console.log(`[${this.adapter.name}] Full sync completed`);
+      logger.info(`[${this.adapter.name}] Full sync completed`);
     } catch (error) {
-      console.error(`[${this.adapter.name}] Full sync failed:`, error);
+      logger.error(`[${this.adapter.name}] Full sync failed:`, error);
       this.syncState.lastError = error instanceof Error ? error.message : String(error);
       await this.saveSyncState();
       throw error;
@@ -163,7 +166,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
 
   async queueForSync(itemId: string, operation: SyncOperation): Promise<void> {
     await this.adapter.enqueue(itemId, operation);
-    console.log(`[${this.adapter.name}] Queued ${operation} for item: ${itemId}`);
+    logger.debug(`[${this.adapter.name}] Queued ${operation} for item: ${itemId}`);
   }
 
   getSyncStatus(): SyncState {
@@ -190,11 +193,11 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   private async uploadLocalChanges(): Promise<void> {
     const queue = await this.adapter.getQueue();
     if (queue.length === 0) {
-      console.log(`[${this.adapter.name}] No local changes to upload`);
+      logger.debug(`[${this.adapter.name}] No local changes to upload`);
       return;
     }
 
-    console.log(`[${this.adapter.name}] Uploading ${queue.length} local changes`);
+    logger.info(`[${this.adapter.name}] Uploading ${queue.length} local changes`);
 
     const itemsToUpload: TItem[] = [];
 
@@ -208,7 +211,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
     }
 
     if (itemsToUpload.length === 0 && queue.every((q) => q.operation === 'delete')) {
-      console.log(`[${this.adapter.name}] Only delete operations in queue`);
+      logger.debug(`[${this.adapter.name}] Only delete operations in queue`);
       for (const queueItem of queue) {
         if (queueItem.id) {
           await this.adapter.dequeue(queueItem.id);
@@ -237,11 +240,11 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
           }
         }
 
-        console.log(
+        logger.info(
           `[${this.adapter.name}] Successfully synced ${response.data.synced.length} items`
         );
       } catch (error) {
-        console.error(`[${this.adapter.name}] Upload failed:`, error);
+        logger.error(`[${this.adapter.name}] Upload failed:`, error);
         for (const queueItem of queue) {
           if (queueItem.id) {
             await this.adapter.markFailed(
@@ -259,11 +262,11 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
     const response = await this.adapter.fetchRemote(this.syncState.lastSyncTime);
 
     if (!response.data || response.data.length === 0) {
-      console.log(`[${this.adapter.name}] No remote updates`);
+      logger.debug(`[${this.adapter.name}] No remote updates`);
       return;
     }
 
-    console.log(`[${this.adapter.name}] Received ${response.data.length} remote updates`);
+    logger.info(`[${this.adapter.name}] Received ${response.data.length} remote updates`);
     await this.mergeRemoteItems(response.data);
   }
 

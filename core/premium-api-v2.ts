@@ -4,6 +4,9 @@
 
 import { authService } from './auth/auth-service';
 import { secureStorage } from './storage/secure-storage';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('PremiumAPI');
 
 /**
  * 调用需要认证的 API
@@ -168,11 +171,11 @@ export const checkSubscription = async (): Promise<SubscriptionStatus> => {
       };
       await secureStorage.set({ subscriptionInfo: payload });
     } catch (cacheErr) {
-      console.warn('Failed to cache subscription status:', cacheErr);
+      logger.warn('Failed to cache subscription status:', cacheErr);
     }
     return result;
   } catch (error) {
-    console.warn('Subscription check failed:', error);
+    logger.warn('Subscription check failed:', error);
     // On error, attempt to read last known subscription status from cache
     try {
       const data = await secureStorage.get('subscriptionInfo');
@@ -191,7 +194,7 @@ export const checkSubscription = async (): Promise<SubscriptionStatus> => {
         }
       }
     } catch (cacheReadErr) {
-      console.warn('Failed to read cached subscription status:', cacheReadErr);
+      logger.warn('Failed to read cached subscription status:', cacheReadErr);
     }
     // Fallback default inactive status
     return { active: false, interval: 'none' };

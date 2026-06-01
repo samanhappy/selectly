@@ -37,6 +37,9 @@ import { dictionaryService } from './core/services/dictionary-service';
 import { highlightService } from './core/services/highlight-service';
 import SubscriptionServiceV2 from './core/services/subscription-service-v2';
 import { UserInfoProvider } from './core/user-info';
+import { createLogger } from './utils/logger';
+
+const logger = createLogger('Options');
 
 const OptionsPage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -163,7 +166,7 @@ const OptionsPage: React.FC = () => {
       setUserConfig(config);
       setI18nConfig(i18n.getConfig());
     } catch (e) {
-      console.error('Failed to load config:', e);
+      logger.error('Failed to load config:', e);
     }
   };
 
@@ -176,7 +179,7 @@ const OptionsPage: React.FC = () => {
         setI18nConfig(i18n.getConfig());
       }
     } catch (e) {
-      console.error('Failed to save config:', e);
+      logger.error('Failed to save config:', e);
     }
   };
 

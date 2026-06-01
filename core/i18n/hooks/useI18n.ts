@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { i18n } from '../index';
 import type { I18nConfig } from '../types';
+import { createLogger } from '../../../utils/logger';
+
+const logger = createLogger('I18n');
 
 export const useI18n = () => {
   const [config, setConfig] = useState<I18nConfig>(i18n.getConfig());
@@ -13,7 +16,7 @@ export const useI18n = () => {
         await i18n.initialize();
         setConfig(i18n.getConfig());
       } catch (error) {
-        console.error('Failed to initialize i18n:', error);
+        logger.error('Failed to initialize i18n:', error);
       } finally {
         setIsLoading(false);
       }
@@ -29,7 +32,7 @@ export const useI18n = () => {
         setConfig(i18n.getConfig());
       }
     } catch (error) {
-      console.error('Failed to update language:', error);
+      logger.error('Failed to update language:', error);
     }
   };
 

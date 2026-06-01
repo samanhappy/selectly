@@ -3,6 +3,9 @@ import OpenAI from 'openai';
 import { authService } from '~core/auth/auth-service';
 
 import type { LLMProvider } from '../config/llm-config';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('Model');
 
 export interface ModelInfo {
   id: string;
@@ -61,7 +64,7 @@ export class ModelService {
       this.modelCache.set(cacheKey, models);
       return models;
     } catch (error) {
-      console.error(`Failed to load models from ${provider.name}:`, error);
+      logger.error(`Failed to load models from ${provider.name}:`, error);
       return [];
     }
   }

@@ -10,9 +10,12 @@ import {
   highlightSyncQueueDB,
   type HighlightSyncQueueItem,
 } from '../storage/highlight-sync-queue-db';
+import { createLogger } from '../../utils/logger';
 import { highlightSyncAPI } from './highlight-sync-api';
 import type { HighlightSyncState } from './highlight-sync-types';
 import { SyncCore, type SyncAdapter } from './sync-core';
+
+const logger = createLogger('HighlightSync');
 
 export class HighlightSyncService {
   private static instance: HighlightSyncService;
@@ -114,7 +117,7 @@ export class HighlightSyncService {
 
       await highlightDB.replaceAggregatesForUrl(url, items);
     } catch (error) {
-      console.warn('[HighlightSync] Failed to refresh aggregates:', error);
+      logger.warn('Failed to refresh aggregates:', error);
     }
   }
 

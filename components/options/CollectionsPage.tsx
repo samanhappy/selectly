@@ -7,7 +7,10 @@ import { Copy, Search, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { collectDB, type CollectedItem } from '../../core/storage/collect-db';
+import { createLogger } from '../../utils/logger';
 import { Button } from '../ui/button';
+
+const logger = createLogger('Collections');
 import { Input } from '../ui/input';
 import { PALETTE } from './constants';
 
@@ -47,7 +50,7 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({ t }) => {
         const { collectService } = await import('../../core/services/collect-service');
         await collectService.sync();
       } catch (error) {
-        console.warn('Failed to sync collections:', error);
+        logger.warn('Failed to sync collections:', error);
       }
     };
 

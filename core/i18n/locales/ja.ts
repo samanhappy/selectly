@@ -209,6 +209,8 @@ export const ja: I18nConfig = {
         '1行に1つのドメイン。これらのドメインのみで進捗を保存/復元します。',
       readingProgressUseSystemBlacklist: 'システムのブラックリストを使用',
       readingProgressUseSystemWhitelist: 'システムのホワイトリストを使用',
+      debugEnabled: 'デバッグログを有効にする',
+      debugEnabledDesc: 'トラブルシューティング用の詳細ログをDevToolsに表示',
     },
     subscription: {
       signIn: 'ログイン',

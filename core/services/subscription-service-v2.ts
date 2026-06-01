@@ -8,6 +8,9 @@ import { CLOUD_PROVIDER } from '../config/llm-config';
 import type { SubscriptionStatus as ApiSubscriptionStatus } from '../premium-api-v2';
 import { checkSubscription, initiateAuthentication, isAuthenticated } from '../premium-api-v2';
 import { secureStorage } from '../storage/secure-storage';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('Subscription');
 
 type SubscriptionStatus = ApiSubscriptionStatus;
 
@@ -83,7 +86,7 @@ class SubscriptionServiceV2 {
         }
       }
     } catch (e) {
-      console.warn('load subscriptionInfo from storage failed:', e);
+      logger.warn('load subscriptionInfo from storage failed:', e);
     }
   }
 
@@ -104,7 +107,7 @@ class SubscriptionServiceV2 {
     try {
       await secureStorage.set({ subscriptionInfo: payload });
     } catch (e) {
-      console.warn('save subscriptionInfo to storage failed:', e);
+      logger.warn('save subscriptionInfo to storage failed:', e);
     }
   }
 
@@ -120,12 +123,12 @@ class SubscriptionServiceV2 {
         .then(() => {
           // If we have cached data, emit it immediately
           if (this.status) {
-            console.log('Loaded cached subscription status:', this.status);
+            logger.info('Loaded cached subscription status:', this.status);
             this.emit();
           }
         })
         .catch((error) => {
-          console.warn('Failed to load cached subscription state:', error);
+          logger.warn('Failed to load cached subscription state:', error);
         });
 
       // For immediate availability, try to get cached data synchronously using Chrome storage API
@@ -147,7 +150,7 @@ class SubscriptionServiceV2 {
         }, 0);
       }
     } catch (error) {
-      console.warn('Failed to initiate cached subscription state loading:', error);
+      logger.warn('Failed to initiate cached subscription state loading:', error);
     }
 
     this.cachedStateLoaded = true;
@@ -216,7 +219,7 @@ class SubscriptionServiceV2 {
       // After successful authentication, refresh subscription status
       await this.refresh({ force: true, reason: 'auth-initiated' });
     } catch (error) {
-      console.error('Authentication failed:', error);
+      logger.error('Authentication failed:', error);
       this.error = error instanceof Error ? error.message : 'Authentication failed';
       this.emit();
       throw error;
@@ -231,7 +234,7 @@ class SubscriptionServiceV2 {
       await authService.signOut();
       this.clearCache();
     } catch (error) {
-      console.error('Sign out failed:', error);
+      logger.error('Sign out failed:', error);
     }
   }
 
@@ -260,7 +263,7 @@ class SubscriptionServiceV2 {
       try {
         listener(state);
       } catch (error) {
-        console.error('Subscription listener error:', error);
+        logger.error('Subscription listener error:', error);
       }
     });
   }
@@ -419,7 +422,7 @@ class SubscriptionServiceV2 {
 
     // Also clear storage to prevent cross-user data leakage
     secureStorage.remove(['subscriptionInfo']).catch((error) => {
-      console.warn('Failed to clear subscription info from storage:', error);
+      logger.warn('Failed to clear subscription info from storage:', error);
     });
 
     this.emit();

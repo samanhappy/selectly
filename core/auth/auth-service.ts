@@ -5,6 +5,7 @@
  */
 
 import { secureStorage } from '../storage/secure-storage';
+import { createLogger } from '../../utils/logger';
 
 interface TokenData {
   accessToken: string;
@@ -25,6 +26,8 @@ interface AuthState {
 }
 
 type AuthListener = (state: AuthState) => void;
+
+const logger = createLogger('AuthService');
 
 export class AuthService {
   private static instance: AuthService;
@@ -83,7 +86,7 @@ export class AuthService {
       });
       this.subscribedToStorageChanges = true;
     } catch (error) {
-      console.warn('Failed to subscribe to storage changes for auth tokens:', error);
+      logger.warn('Failed to subscribe to storage changes for auth tokens:', error);
     }
   }
 
@@ -129,7 +132,7 @@ export class AuthService {
           }
         }
       } catch (error) {
-        console.error('Auth service initialization failed:', error);
+        logger.error('Auth service initialization failed:', error);
         this.state.error = 'Authentication initialization failed';
       } finally {
         // Mark as initialized to avoid tight loops from repeated callers (e.g., polling UIs)
@@ -194,7 +197,7 @@ export class AuthService {
         try {
           await this.refreshAccessToken();
         } catch (error) {
-          console.error('Failed to refresh access token:', error);
+          logger.error('Failed to refresh access token:', error);
         }
       } else {
         throw new Error('Access token expired and no refresh token available');
@@ -219,7 +222,7 @@ export class AuthService {
       try {
         authCode = await this.launchOAuthFlow();
       } catch (webAuthError) {
-        console.warn('WebAuthFlow failed, falling back to getAuthToken:', webAuthError);
+        logger.warn('WebAuthFlow failed, falling back to getAuthToken:', webAuthError instanceof Error ? webAuthError.message : webAuthError);
         // await this.fallbackToGetAuthToken()
         return;
       }
@@ -239,8 +242,8 @@ export class AuthService {
       this.state.loading = false;
       this.emit();
     } catch (error) {
-      console.error('Sign in failed:', error);
-      this.state.error = error instanceof Error ? error.message : 'Authentication failed';
+      logger.error('Sign in failed:', error);
+      this.state.error = error instanceof Error ? error.message : 'Authentication failed' instanceof Error ? error.message : 'Authentication failed';
       this.state.loading = false;
       this.emit();
       throw error;
@@ -260,7 +263,7 @@ export class AuthService {
         try {
           await this.revokeToken(this.tokenData.accessToken);
         } catch (error) {
-          console.warn('Token revocation failed:', error);
+          logger.warn('Token revocation failed:', error);
         }
       }
 
@@ -273,7 +276,7 @@ export class AuthService {
       this.state.loading = false;
       this.emit();
     } catch (error) {
-      console.error('Sign out failed:', error);
+      logger.error('Sign out failed:', error);
       this.state.error = 'Sign out failed';
       this.state.loading = false;
       this.emit();
@@ -491,7 +494,7 @@ export class AuthService {
         body: JSON.stringify({ token }),
       });
     } catch (error) {
-      console.warn('Token revocation request failed:', error);
+      logger.warn('Token revocation request failed:', error);
     }
   }
 
@@ -556,7 +559,7 @@ export class AuthService {
         this.emit();
       }
     } catch (error) {
-      console.warn('Failed to fetch user info:', error);
+      logger.warn('Failed to fetch user info:', error);
     }
   }
 
@@ -567,7 +570,7 @@ export class AuthService {
     try {
       await secureStorage.set({ authUserInfo: this.state.user });
     } catch (error) {
-      console.error('Failed to save user info to storage:', error);
+      logger.error('Failed to save user info to storage:', error);
     }
   }
 
@@ -578,7 +581,7 @@ export class AuthService {
     try {
       await secureStorage.remove(['authUserInfo']);
     } catch (error) {
-      console.warn('Failed to clear user info from storage:', error);
+      logger.warn('Failed to clear user info from storage:', error);
     }
   }
 
@@ -590,7 +593,7 @@ export class AuthService {
       const data = await secureStorage.get('authTokenData');
       this.tokenData = data.authTokenData as TokenData | null;
     } catch (error) {
-      console.warn('Failed to load token from storage:', error);
+      logger.warn('Failed to load token from storage:', error);
       this.tokenData = null;
     }
   }
@@ -602,7 +605,7 @@ export class AuthService {
     try {
       await secureStorage.set({ authTokenData: this.tokenData });
     } catch (error) {
-      console.error('Failed to save token to storage:', error);
+      logger.error('Failed to save token to storage:', error);
     }
   }
 
@@ -614,7 +617,7 @@ export class AuthService {
     try {
       await secureStorage.remove(['authTokenData']);
     } catch (error) {
-      console.warn('Failed to clear token from storage:', error);
+      logger.warn('Failed to clear token from storage:', error);
     }
   }
 
@@ -653,7 +656,7 @@ export class AuthService {
           });
       }
     } catch (error) {
-      console.warn('Failed to load cached state:', error);
+      logger.warn('Failed to load cached state:', error);
     }
 
     this.cachedStateLoaded = true;
@@ -673,7 +676,7 @@ export class AuthService {
         this.state.user = userInfo;
       }
     } catch (error) {
-      console.warn('Failed to load user info from storage:', error);
+      logger.warn('Failed to load user info from storage:', error);
     }
   }
 
@@ -685,7 +688,7 @@ export class AuthService {
       try {
         listener(this.state);
       } catch (error) {
-        console.error('Auth listener error:', error);
+        logger.error('Auth listener error:', error);
       }
     });
   }

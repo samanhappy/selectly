@@ -1,5 +1,9 @@
 import React from 'react';
 
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('ErrorBoundary');
+
 interface ErrorBoundaryState {
   hasError: boolean;
   message?: string;
@@ -13,8 +17,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Erro
   }
 
   componentDidCatch(error: any, info: any) {
-    // eslint-disable-next-line no-console
-    console.warn('[Selectly][ErrorBoundary]', error, info);
+    logger.warn(error, info);
   }
 
   render() {
