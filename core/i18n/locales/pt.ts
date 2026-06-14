@@ -378,6 +378,8 @@ export const pt: I18nConfig = {
     llmDefaultServiceError:
       'O serviço do modelo padrão está temporariamente indisponível, por favor adicione outro provedor ou tente novamente mais tarde',
     llmStreamingServiceError: 'Erro do Serviço de Streaming LLM',
+    llmReasoningRequiredError:
+      'Este modelo exige raciocínio e não pode executar com o modo de pensamento forçado como desativado. Use Automático, ative o pensamento ou escolha outro modelo.',
     premiumRequired: 'Função Premium',
     pleaseSubscribe: 'Assinatura premium é necessária para usar esta função',
     dailyLimitExceeded: 'Limite diário excedido',

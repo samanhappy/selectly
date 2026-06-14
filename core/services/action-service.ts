@@ -1,6 +1,7 @@
-import { getFunctionDisplayFields, type FunctionConfig } from '../config/llm-config';
-import { i18n } from '../i18n';
 import { createLogger } from '../../utils/logger';
+import { ConfigManager, getFunctionDisplayFields, type FunctionConfig } from '../config/llm-config';
+import { getEffectiveThinkingMode } from '../config/thinking-mode';
+import { i18n } from '../i18n';
 import { imageGeneratorService } from './image-generator-service';
 import { LLMService, processText } from './llm-service';
 
@@ -12,6 +13,7 @@ const logger = createLogger('Action');
 export class ActionService {
   private static instance: ActionService;
   private llmService = LLMService.getInstance();
+  private configManager = ConfigManager.getInstance();
 
   static getInstance(): ActionService {
     if (!ActionService.instance) {
@@ -105,6 +107,7 @@ export class ActionService {
       variables.targetLanguage = targetLanguage;
 
       const prompt = processText(selectedText, config.prompt, variables);
+      const effectiveThinkingMode = this.getEffectiveThinkingMode(actionKey, config);
 
       // Send as system + user messages so system prompt stays separate
       await this.llmService.chatStream(
@@ -122,7 +125,8 @@ export class ActionService {
           }
         },
         config.model,
-        config.thinkingMode
+        effectiveThinkingMode.mode,
+        effectiveThinkingMode.allowFallback
       );
 
       // Mark as complete
@@ -137,6 +141,17 @@ export class ActionService {
         updateFn(error.message || i18n.t('errors.unknownError'), '', true, true);
       }
     }
+  }
+
+  private getEffectiveThinkingMode(actionKey: string, config: FunctionConfig) {
+    const userConfig = this.configManager.getConfig();
+    return getEffectiveThinkingMode({
+      functionKey: actionKey,
+      isBuiltIn: config.isBuiltIn ?? true,
+      functionModel: config.model || 'default',
+      functionModelSettings: config.modelSettings,
+      defaultModelSettings: userConfig.llm.defaultModelSettings,
+    });
   }
 
   private async handleCollect(text: string): Promise<void> {

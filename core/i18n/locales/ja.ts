@@ -375,6 +375,8 @@ export const ja: I18nConfig = {
     llmDefaultServiceError:
       'デフォルトモデルサービスは一時的に利用できません。別のプロバイダーを追加するか、後でもう一度試してください',
     llmStreamingServiceError: 'LLMストリーミングサービスエラー',
+    llmReasoningRequiredError:
+      'このモデルは推論を必要とするため、思考モードを強制的に無効にして実行できません。自動を使用するか、思考を有効にするか、別のモデルを選択してください。',
     premiumRequired: 'プレミアム機能',
     pleaseSubscribe: 'この機能を使用するにはプレミアムサブスクリプションが必要です',
     dailyLimitExceeded: '日次制限を超えました',

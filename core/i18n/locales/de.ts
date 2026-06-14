@@ -381,6 +381,8 @@ export const de: I18nConfig = {
     llmDefaultServiceError:
       'Standardmodell-Service ist vorübergehend nicht verfügbar, bitte fügen Sie einen anderen Anbieter hinzu oder versuchen Sie es später erneut',
     llmStreamingServiceError: 'LLM-Streaming-Service-Fehler',
+    llmReasoningRequiredError:
+      'Dieses Modell erfordert Reasoning und kann nicht mit erzwungen deaktiviertem Denkmodus ausgeführt werden. Verwenden Sie Automatisch, aktivieren Sie Denken oder wählen Sie ein anderes Modell.',
     premiumRequired: 'Premium-Funktion',
     pleaseSubscribe: 'Premium-Abonnement ist erforderlich, um diese Funktion zu nutzen',
     dailyLimitExceeded: 'Tägliches Limit überschritten',

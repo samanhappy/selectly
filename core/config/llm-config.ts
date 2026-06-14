@@ -1,11 +1,16 @@
+import { createLogger, setLogLevel } from '../../utils/logger';
 import { i18n } from '../i18n';
 import type { I18nConfig, SupportedLanguage } from '../i18n/types';
 import { secureStorage } from '../storage/secure-storage';
-import { createLogger, setLogLevel } from '../../utils/logger';
 import { parseModelString, resolveModelString } from './model-resolution';
-import { resolveFunctionThinkingMode, type ThinkingMode } from './thinking-mode';
+import {
+  migrateFunctionModelSettings,
+  normalizeModelCallSettings,
+  type ModelCallSettings,
+  type ThinkingMode,
+} from './thinking-mode';
 
-export type { ThinkingMode } from './thinking-mode';
+export type { ModelCallSettings, ThinkingMode } from './thinking-mode';
 
 const logger = createLogger('ConfigManager');
 
@@ -24,6 +29,7 @@ export interface LLMProvider {
 export interface LLMConfig {
   defaultModel: string;
   providers: Record<string, LLMProvider>;
+  defaultModelSettings?: ModelCallSettings;
 }
 
 export interface FunctionConfig {
@@ -42,6 +48,8 @@ export interface FunctionConfig {
   isBuiltIn?: boolean;
   isPremium?: boolean;
   requiresAI?: boolean;
+  modelSettings?: ModelCallSettings;
+  /** @deprecated Use modelSettings.thinkingMode instead. */
   thinkingMode?: ThinkingMode;
   targetLanguage?: string;
   searchEngine?: 'google' | 'bing' | 'baidu';
@@ -214,6 +222,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
     llm: {
       defaultModel: '',
       providers,
+      defaultModelSettings: { thinkingMode: 'auto' },
     },
     functions: {
       highlight: {
@@ -248,7 +257,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
-        thinkingMode: 'disabled',
+        modelSettings: { thinkingMode: 'auto' },
       },
       polish: {
         title: config.defaultFunctions.polish.title,
@@ -265,7 +274,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
-        thinkingMode: 'disabled',
+        modelSettings: { thinkingMode: 'auto' },
       },
       explain: {
         title: config.defaultFunctions.explain.title,
@@ -282,7 +291,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
-        thinkingMode: 'enabled',
+        modelSettings: { thinkingMode: 'auto' },
       },
       correct: {
         title: config.defaultFunctions.correct.title,
@@ -299,7 +308,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
-        thinkingMode: 'disabled',
+        modelSettings: { thinkingMode: 'auto' },
       },
       copy: {
         title: config.defaultFunctions.copy.title,
@@ -382,7 +391,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         displayDomains: [],
         isBuiltIn: true,
         requiresAI: true,
-        thinkingMode: 'enabled',
+        modelSettings: { thinkingMode: 'auto' },
       },
       share: {
         title: config.defaultFunctions.share.title,
@@ -437,6 +446,7 @@ export const DEFAULT_CONFIG: UserConfig = {
   llm: {
     defaultModel: '',
     providers: {},
+    defaultModelSettings: { thinkingMode: 'auto' },
   },
   functions: {},
   functionOrder: [],
@@ -479,7 +489,13 @@ export class ConfigManager {
     }
 
     // Apply debug log level from config
-    setLogLevel(this.config.general?.debugEnabled ? 'debug' : (process.env.NODE_ENV === 'production' ? 'warn' : 'debug'))
+    setLogLevel(
+      this.config.general?.debugEnabled
+        ? 'debug'
+        : process.env.NODE_ENV === 'production'
+          ? 'warn'
+          : 'debug'
+    );
 
     // Listen for config changes from other contexts
     this.startListening();
@@ -494,7 +510,13 @@ export class ConfigManager {
         await secureStorage.set({ userConfig: this.config });
       }
       // Apply debug log level from config
-      setLogLevel(this.config.general?.debugEnabled ? 'debug' : (process.env.NODE_ENV === 'production' ? 'warn' : 'debug'))
+      setLogLevel(
+        this.config.general?.debugEnabled
+          ? 'debug'
+          : process.env.NODE_ENV === 'production'
+            ? 'warn'
+            : 'debug'
+      );
     } catch (error) {
       logger.error('Failed to save config:', error);
     }
@@ -513,7 +535,13 @@ export class ConfigManager {
         if (changes.userConfig?.newValue) {
           const newConfig = changes.userConfig.newValue as UserConfig;
           this.config = newConfig;
-          setLogLevel(newConfig.general?.debugEnabled ? 'debug' : (process.env.NODE_ENV === 'production' ? 'warn' : 'debug'))
+          setLogLevel(
+            newConfig.general?.debugEnabled
+              ? 'debug'
+              : process.env.NODE_ENV === 'production'
+                ? 'warn'
+                : 'debug'
+          );
         }
       });
     }
@@ -658,18 +686,26 @@ export class ConfigManager {
     // Ensure collect is treated as non-AI by default
     if (!nonAIKeys.includes('collect')) nonAIKeys.push('collect');
 
+    const overrideFunctions = override.functions || {};
     const normalizedFunctions: Record<string, FunctionConfig> = Object.fromEntries(
       Object.entries(mergedFunctions).map(([key, fn]) => {
+        const overrideFunction = overrideFunctions[key];
         const isBuiltIn = fn.isBuiltIn ?? builtInKeys.includes(key);
         const requiresAI = fn.requiresAI ?? !nonAIKeys.includes(key);
-        const thinkingMode = resolveFunctionThinkingMode(key, isBuiltIn, fn.thinkingMode);
+        const modelSettings = migrateFunctionModelSettings(key, {
+          isBuiltIn,
+          modelSettings:
+            overrideFunction?.modelSettings ?? (forceReplace ? fn.modelSettings : undefined),
+          thinkingMode: fn.thinkingMode,
+        });
+        const { thinkingMode, ...functionWithoutLegacyThinkingMode } = fn;
         return [
           key,
           {
-            ...fn,
+            ...functionWithoutLegacyThinkingMode,
             isBuiltIn,
             requiresAI,
-            ...(requiresAI ? { thinkingMode } : {}),
+            ...(requiresAI ? { modelSettings } : {}),
           },
         ];
       })
@@ -680,6 +716,9 @@ export class ConfigManager {
       llm: {
         defaultModel: override.llm?.defaultModel ?? old.llm?.defaultModel,
         providers: mergedProviders,
+        defaultModelSettings: normalizeModelCallSettings(
+          override.llm?.defaultModelSettings ?? old.llm?.defaultModelSettings
+        ),
       },
       functions: normalizedFunctions,
       functionOrder: completeOrder,

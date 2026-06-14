@@ -366,6 +366,7 @@ export interface I18nConfig {
     llmServiceError: string;
     llmDefaultServiceError: string;
     llmStreamingServiceError: string;
+    llmReasoningRequiredError: string;
     premiumRequired: string;
     pleaseSubscribe: string;
     dailyLimitExceeded: string;

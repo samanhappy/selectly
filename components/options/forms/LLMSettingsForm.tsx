@@ -100,6 +100,8 @@ export const LLMSettingsForm: React.FC<LLMSettingsFormProps> = ({
           i18n={i18n}
           palette={palette}
           onChange={handleDefaultModelChange}
+          modelSettings={llm.defaultModelSettings}
+          onModelSettingsChange={(defaultModelSettings) => onChange({ defaultModelSettings })}
           label={i18n.popup.models.defaultModel}
         />
 

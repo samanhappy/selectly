@@ -2,11 +2,14 @@ import OpenAI from 'openai';
 
 import { authService } from '~core/auth/auth-service';
 
+import { createLogger } from '../../utils/logger';
 import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { i18n, t } from '../i18n';
-import { createLogger } from '../../utils/logger';
-import { buildThinkingModeRequestBody } from './thinking-mode-adapter';
+import {
+  buildThinkingModeRequestPlan,
+  shouldFallbackForReasoningError,
+} from './thinking-mode-adapter';
 
 const logger = createLogger('LLM');
 
@@ -87,31 +90,38 @@ export class LLMService {
     return { client, modelName, providerId };
   }
 
-  async chat(prompt: string, model?: string, thinkingMode?: ThinkingMode): Promise<string> {
+  async chat(
+    prompt: string,
+    model?: string,
+    thinkingMode?: ThinkingMode,
+    allowThinkingModeFallback = false
+  ): Promise<string> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
     const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
-    const thinkingModeRequestBody = buildThinkingModeRequestBody({
+    const thinkingModeRequestPlan = buildThinkingModeRequestPlan({
       providerId,
       thinkingMode,
+      allowFallback: allowThinkingModeFallback,
     });
     logger.debug('Using model:', modelName);
 
     try {
-      const response = await client.chat.completions.create(
-        {
-          model: modelName,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 1000,
-          ...thinkingModeRequestBody,
-        },
-        { timeout: 10000 }
-      );
+      const requestBody = {
+        model: modelName,
+        messages: [
+          {
+            role: 'user' as const,
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+      };
+      const response = (await this.createChatCompletionWithFallback(
+        client,
+        requestBody,
+        thinkingModeRequestPlan
+      )) as any;
 
       const content = response.choices[0]?.message?.content;
       if (!content) {
@@ -123,7 +133,9 @@ export class LLMService {
       logger.error('LLM service error:', error);
 
       // Provide friendlier error message
-      if (error.status === 401) {
+      if (shouldFallbackForReasoningError(error)) {
+        throw new Error(i18n.t('errors.llmReasoningRequiredError'));
+      } else if (error.status === 401) {
         throw new Error(i18n.t('errors.invalidApiKey'));
       } else if (error.status === 429) {
         throw new Error(i18n.t('errors.rateLimitExceeded'));
@@ -148,13 +160,15 @@ export class LLMService {
     messagesOrPrompt: string | Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
     onChunk: (chunk: string, model: string) => void,
     model?: string,
-    thinkingMode?: ThinkingMode
+    thinkingMode?: ThinkingMode,
+    allowThinkingModeFallback = false
   ): Promise<void> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
     const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
-    const thinkingModeRequestBody = buildThinkingModeRequestBody({
+    const thinkingModeRequestPlan = buildThinkingModeRequestPlan({
       providerId,
       thinkingMode,
+      allowFallback: allowThinkingModeFallback,
     });
     logger.debug('Using model:', modelName);
 
@@ -164,17 +178,19 @@ export class LLMService {
           ? [{ role: 'user' as const, content: messagesOrPrompt }]
           : messagesOrPrompt.map((m) => ({ role: m.role, content: m.content }));
 
-      const stream = await client.chat.completions.create(
-        {
-          model: modelName,
-          messages,
-          temperature: 0.7,
-          max_tokens: 1000,
-          stream: true,
-          ...thinkingModeRequestBody,
-        },
-        { timeout: 10000 }
-      );
+      const requestBody = {
+        model: modelName,
+        messages,
+        temperature: 0.7,
+        max_tokens: 1000,
+        stream: true as const,
+      };
+
+      const stream = (await this.createChatCompletionWithFallback(
+        client,
+        requestBody,
+        thinkingModeRequestPlan
+      )) as unknown as AsyncIterable<any>;
 
       for await (const chunk of stream) {
         const model = chunk.model;
@@ -187,7 +203,9 @@ export class LLMService {
       logger.error('LLM stream service error:', error);
 
       // Provide friendlier error message
-      if (error.status === 401) {
+      if (shouldFallbackForReasoningError(error)) {
+        throw new Error(i18n.t('errors.llmReasoningRequiredError'));
+      } else if (error.status === 401) {
         throw new Error(i18n.t('errors.invalidApiKey'));
       } else if (error.status === 429) {
         throw new Error(i18n.t('errors.rateLimitExceeded'));
@@ -212,6 +230,38 @@ export class LLMService {
 
   getConfig(): LLMConfig {
     return this.configManager.getConfig().llm;
+  }
+
+  private async createChatCompletionWithFallback<T extends Record<string, unknown>>(
+    client: OpenAI,
+    requestBody: T,
+    thinkingModeRequestPlan: {
+      body: Record<string, unknown>;
+      fallbackBody?: Record<string, unknown>;
+    }
+  ) {
+    try {
+      return await client.chat.completions.create(
+        {
+          ...requestBody,
+          ...thinkingModeRequestPlan.body,
+        } as any,
+        { timeout: 10000 }
+      );
+    } catch (error) {
+      if (!thinkingModeRequestPlan.fallbackBody || !shouldFallbackForReasoningError(error)) {
+        throw error;
+      }
+
+      logger.warn('Retrying LLM request with fallback thinking mode');
+      return client.chat.completions.create(
+        {
+          ...requestBody,
+          ...thinkingModeRequestPlan.fallbackBody,
+        } as any,
+        { timeout: 10000 }
+      );
+    }
   }
 
   /**

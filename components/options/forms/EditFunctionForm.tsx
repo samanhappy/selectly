@@ -12,7 +12,6 @@ import { COLOR_PRESETS } from '../color-presets';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { parseColorToRgba, rgbaToHex, rgbaToString, type RgbaColor } from './highlight-color-utils';
 import { IconSelector } from './IconSelector';
-import { ThinkingModeSelect } from './ThinkingModeSelect';
 
 interface EditFunctionFormProps {
   functionKey: string;
@@ -209,6 +208,8 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
                 i18n={i18n}
                 palette={palette}
                 onChange={(model) => onChange('model', model)}
+                modelSettings={config.modelSettings}
+                onModelSettingsChange={(modelSettings) => onChange('modelSettings', modelSettings)}
                 label={i18n.popup.functions.labels.aiModel}
                 showDefault={true}
               />
@@ -285,14 +286,6 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
 
           {showAdvanced && (
             <div>
-              {config.requiresAI !== false && (
-                <ThinkingModeSelect
-                  value={config.thinkingMode}
-                  i18n={i18n}
-                  onChange={(thinkingMode) => onChange('thinkingMode', thinkingMode)}
-                />
-              )}
-
               <label className="sl-switch-row">
                 <input
                   className="sl-checkbox"

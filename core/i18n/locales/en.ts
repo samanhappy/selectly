@@ -145,11 +145,11 @@ export const en: I18nConfig = {
         basicSettings: 'Basic Settings',
         advancedSettings: 'Advanced Settings',
         thinkingMode: 'Thinking Mode',
-        thinkingModeAuto: 'Auto (follow model default)',
-        thinkingModeEnabled: 'Enabled',
-        thinkingModeDisabled: 'Disabled',
+        thinkingModeAuto: 'Auto (use action defaults and model capability)',
+        thinkingModeEnabled: 'Force enabled',
+        thinkingModeDisabled: 'Force disabled',
         thinkingModeHelp:
-          'Availability depends on the model and provider. Incompatible requests may return an error.',
+          'Forced modes are strict. Auto can fall back when a model requires reasoning.',
         autoExecute: 'Auto Execute',
         autoExecuteHelp: 'Run this function automatically when text is selected',
         autoCloseButtons: 'Auto Close Buttons',
@@ -374,6 +374,8 @@ export const en: I18nConfig = {
       'Default model is temporarily unavailable, please add another model or try again later',
     llmStreamingServiceError:
       'Current model is temporarily unavailable, please switch to another model or try again later',
+    llmReasoningRequiredError:
+      'This model requires reasoning and cannot run with thinking mode forced off. Use Auto, enable thinking, or choose another model.',
     premiumRequired: 'Premium Feature',
     pleaseSubscribe: 'Subscription to premium is required to use this feature',
     dailyLimitExceeded: 'Daily Limit Exceeded',
