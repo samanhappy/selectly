@@ -328,6 +328,10 @@ export const fr: I18nConfig = {
     historyClipped:
       "Certains anciens messages n'ont pas été envoyés à cause des limites de contexte.",
     model: 'Modèle',
+    chooseModel: 'Choisir un modèle',
+    loadingModels: 'Chargement des modèles...',
+    noModelsAvailable: 'Aucun modèle disponible',
+    selectedModel: 'Modèle sélectionné',
     error: 'Une erreur est survenue',
   },
 

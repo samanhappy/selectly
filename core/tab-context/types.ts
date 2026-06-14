@@ -57,6 +57,7 @@ export interface TabChatSession {
   createdAt: number;
   updatedAt: number;
   expiresAt: number;
+  model?: string;
   context: TabContextSnapshot | null;
   messages: TabMessage[];
 }

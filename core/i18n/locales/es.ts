@@ -326,6 +326,10 @@ export const es: I18nConfig = {
       'El contexto de la página no está disponible. Aun así puedes chatear normalmente.',
     historyClipped: 'Algunos mensajes antiguos no se enviaron por los límites de contexto.',
     model: 'Modelo',
+    chooseModel: 'Elegir modelo',
+    loadingModels: 'Cargando modelos...',
+    noModelsAvailable: 'No hay modelos disponibles',
+    selectedModel: 'Modelo seleccionado',
     error: 'Algo salió mal',
   },
 

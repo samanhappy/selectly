@@ -1,4 +1,4 @@
-import { ConfigManager } from '../config/llm-config';
+import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { parseModelString } from '../config/model-resolution';
 import { getContextBudget } from '../tab-context/budget';
 import { getModelContextWindow } from '../tab-context/model-metadata';
@@ -28,9 +28,11 @@ export class TabContextService {
     return res?.success ? res.tab || null : res?.tab || null;
   }
 
-  async getDefaultModelContextWindow(): Promise<number | undefined> {
+  async getDefaultModelContextWindow(model?: string): Promise<number | undefined> {
     const config = this.configManager.getConfig();
-    const modelString = this.configManager.resolveModel(config.llm.defaultModel || 'default');
+    const modelString = this.configManager.resolveModel(
+      model || config.llm.defaultModel || 'default'
+    );
     if (!modelString) return undefined;
 
     const overrides = config.llm.modelMetadataOverrides || {};
@@ -38,7 +40,8 @@ export class TabContextService {
 
     try {
       const { providerId, modelName } = parseModelString(modelString);
-      const provider = config.llm.providers[providerId];
+      const provider =
+        providerId === CLOUD_PROVIDER.id ? CLOUD_PROVIDER : config.llm.providers[providerId];
       if (provider?.enabled) {
         const models = await modelService.loadModels(provider);
         providerContextWindow = models.find((model) => model.id === modelName)?.contextWindow;
@@ -54,9 +57,9 @@ export class TabContextService {
     });
   }
 
-  async getContextBudget(): Promise<ModelContextBudget> {
+  async getContextBudget(model?: string): Promise<ModelContextBudget> {
     return getContextBudget({
-      contextWindow: await this.getDefaultModelContextWindow(),
+      contextWindow: await this.getDefaultModelContextWindow(model),
     });
   }
 

@@ -320,6 +320,10 @@ export const ja: I18nConfig = {
     ordinaryChat: 'ページコンテキストは利用できません。通常のチャットは可能です。',
     historyClipped: 'コンテキスト制限により、一部の古いメッセージは送信されませんでした。',
     model: 'モデル',
+    chooseModel: 'モデルを選択',
+    loadingModels: 'モデルを読み込み中...',
+    noModelsAvailable: '利用可能なモデルがありません',
+    selectedModel: '選択中のモデル',
     error: '問題が発生しました',
   },
 

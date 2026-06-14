@@ -323,6 +323,10 @@ export const pt: I18nConfig = {
     ordinaryChat: 'O contexto da página está indisponível. Você ainda pode conversar normalmente.',
     historyClipped: 'Algumas mensagens antigas não foram enviadas por causa do limite de contexto.',
     model: 'Modelo',
+    chooseModel: 'Escolher modelo',
+    loadingModels: 'Carregando modelos...',
+    noModelsAvailable: 'Nenhum modelo disponível',
+    selectedModel: 'Modelo selecionado',
     error: 'Algo deu errado',
   },
 

@@ -319,6 +319,10 @@ export const en: I18nConfig = {
     ordinaryChat: 'Page context is unavailable. You can still chat normally.',
     historyClipped: 'Some older messages were not sent because of context limits.',
     model: 'Model',
+    chooseModel: 'Choose model',
+    loadingModels: 'Loading models...',
+    noModelsAvailable: 'No models available',
+    selectedModel: 'Selected model',
     error: 'Something went wrong',
   },
 

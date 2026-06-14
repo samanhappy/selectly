@@ -3,6 +3,7 @@ import Dexie from 'dexie';
 import type { Table } from 'dexie';
 
 import type { TabChatSession, TabContextSnapshot, TabMessage } from '../tab-context/types';
+import { getTabSessionModel, normalizeTabSessionModel } from '../tab-context/session-model';
 
 export const TAB_CHAT_RETENTION_DAYS = 30;
 const TAB_CHAT_RETENTION_MS = TAB_CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
@@ -41,7 +42,10 @@ class TabChatDB extends Dexie {
     return sessions.sort((a, b) => b.updatedAt - a.updatedAt)[0];
   }
 
-  async createSession(context: TabContextSnapshot | null): Promise<TabChatSession> {
+  async createSession(
+    context: TabContextSnapshot | null,
+    model?: string
+  ): Promise<TabChatSession> {
     const now = Date.now();
     const session: TabChatSession = {
       id: uuidv4(),
@@ -52,6 +56,7 @@ class TabChatDB extends Dexie {
       createdAt: now,
       updatedAt: now,
       expiresAt: this.getExpiresAt(now),
+      model: normalizeTabSessionModel(model),
       context,
       messages: [],
     };
@@ -61,25 +66,37 @@ class TabChatDB extends Dexie {
 
   async upsertContext(
     normalizedUrl: string,
-    context: TabContextSnapshot | null
+    context: TabContextSnapshot | null,
+    model?: string
   ): Promise<TabChatSession> {
     const existing = await this.getLatestByNormalizedUrl(normalizedUrl);
     const now = Date.now();
     if (!existing) {
-      return this.createSession(context);
+      return this.createSession(context, model);
     }
 
+    const sessionModel = getTabSessionModel(existing, model);
     const updates: Partial<TabChatSession> = {
       normalizedUrl,
       url: context?.url || existing.url,
       title: context?.title || existing.title,
       hostname: context?.hostname || existing.hostname,
+      model: sessionModel,
       context,
       updatedAt: now,
       expiresAt: this.getExpiresAt(now),
     };
     await this.sessions.update(existing.id, updates);
     return { ...existing, ...updates };
+  }
+
+  async setSessionModel(sessionId: string, model: string) {
+    const now = Date.now();
+    await this.sessions.update(sessionId, {
+      model: normalizeTabSessionModel(model),
+      updatedAt: now,
+      expiresAt: this.getExpiresAt(now),
+    });
   }
 
   async appendMessage(sessionId: string, message: Omit<TabMessage, 'id' | 'createdAt'>) {

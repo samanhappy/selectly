@@ -307,6 +307,10 @@ export const zh: I18nConfig = {
     ordinaryChat: '页面上下文不可用。你仍然可以普通对话。',
     historyClipped: '由于上下文限制，部分较早消息未发送。',
     model: '模型',
+    chooseModel: '选择模型',
+    loadingModels: '正在加载模型...',
+    noModelsAvailable: '暂无可用模型',
+    selectedModel: '当前模型',
     error: '出错了',
   },
 

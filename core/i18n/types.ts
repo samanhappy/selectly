@@ -312,6 +312,10 @@ export interface I18nConfig {
     ordinaryChat: string;
     historyClipped: string;
     model: string;
+    chooseModel: string;
+    loadingModels: string;
+    noModelsAvailable: string;
+    selectedModel: string;
     error: string;
   };
 

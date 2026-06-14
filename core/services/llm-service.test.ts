@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BUILT_IN_PROVIDERS, DEFAULT_CONFIG } from '../config/llm-config';
-import { isLLMConfigUsable } from './llm-config-state';
+import { isLLMConfigUsable, isLLMModelUsable } from './llm-config-state';
 
 describe('isLLMConfigUsable', () => {
   it('treats the implicit cloud default model as configured', () => {
@@ -44,5 +44,21 @@ describe('isLLMConfigUsable', () => {
         },
       })
     ).toBe(true);
+  });
+
+  it('checks an explicit session model without reading the global default model', () => {
+    expect(
+      isLLMModelUsable(
+        {
+          ...DEFAULT_CONFIG,
+          llm: {
+            ...DEFAULT_CONFIG.llm,
+            defaultModel: 'cloud/default',
+            providers: {},
+          },
+        },
+        'openai/gpt-4'
+      )
+    ).toBe(false);
   });
 });

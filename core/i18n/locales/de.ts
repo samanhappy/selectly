@@ -326,6 +326,10 @@ export const de: I18nConfig = {
     ordinaryChat: 'Seitenkontext ist nicht verfügbar. Sie können trotzdem normal chatten.',
     historyClipped: 'Einige ältere Nachrichten wurden wegen Kontextlimits nicht gesendet.',
     model: 'Modell',
+    chooseModel: 'Modell wählen',
+    loadingModels: 'Modelle werden geladen...',
+    noModelsAvailable: 'Keine Modelle verfügbar',
+    selectedModel: 'Ausgewähltes Modell',
     error: 'Etwas ist schiefgelaufen',
   },
 

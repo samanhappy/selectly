@@ -3,8 +3,8 @@ import { parseModelString } from '../config/model-resolution';
 
 const CLOUD_DEFAULT_MODEL = `${CLOUD_PROVIDER.id}/default`;
 
-export const isLLMConfigUsable = (config: UserConfig): boolean => {
-  const modelString = config.llm.defaultModel || CLOUD_DEFAULT_MODEL;
+export const isLLMModelUsable = (config: UserConfig, model?: string): boolean => {
+  const modelString = model || config.llm.defaultModel || CLOUD_DEFAULT_MODEL;
 
   try {
     const { providerId, modelName } = parseModelString(modelString);
@@ -17,3 +17,5 @@ export const isLLMConfigUsable = (config: UserConfig): boolean => {
     return false;
   }
 };
+
+export const isLLMConfigUsable = (config: UserConfig): boolean => isLLMModelUsable(config);

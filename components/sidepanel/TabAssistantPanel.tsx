@@ -13,14 +13,23 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ConfigManager, DEFAULT_CONFIG, type UserConfig } from '../../core/config/llm-config';
 import { i18n } from '../../core/i18n';
 import { collectService } from '../../core/services/collect-service';
+import { isLLMModelUsable } from '../../core/services/llm-config-state';
 import { LLMService } from '../../core/services/llm-service';
+import {
+  buildModelChoices,
+  getModelChoiceLabel,
+  type ModelChoice,
+} from '../../core/services/model-options';
+import { modelService } from '../../core/services/model-service';
 import { tabContextService, type ActiveTabInfo } from '../../core/services/tab-context-service';
 import { tabChatDB } from '../../core/storage/tab-chat-db';
 import { getContextBudget } from '../../core/tab-context/budget';
 import { buildTabChatMessages } from '../../core/tab-context/prompt';
+import { getTabSessionModel, normalizeTabSessionModel } from '../../core/tab-context/session-model';
 import type { TabChatSession, TabContextSnapshot, TabMessage } from '../../core/tab-context/types';
 import { normalizePageUrl } from '../../core/tab-context/url';
 import { MessageContent } from './MessageContent';
+import { TabModelPicker } from './TabModelPicker';
 
 const configManager = ConfigManager.getInstance();
 const llmService = LLMService.getInstance();
@@ -78,11 +87,14 @@ export const TabAssistantPanel = () => {
   const [error, setError] = useState('');
   const [pinned, setPinned] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+  const [modelChoices, setModelChoices] = useState<ModelChoice[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   const labels = t.tabAssistant;
-  const isConfigured = llmService.isConfigured();
-  const modelLabel = config.llm.defaultModel?.split('/').pop() || 'default';
+  const selectedModel = getTabSessionModel(session, config.llm.defaultModel);
+  const isConfigured = isLLMModelUsable(config, selectedModel);
+  const modelLabel = getModelChoiceLabel(selectedModel, modelChoices);
 
   const quickPrompts = useMemo(
     () => [
@@ -94,22 +106,42 @@ export const TabAssistantPanel = () => {
     [labels]
   );
 
-  const loadTab = useCallback(async (tab: ActiveTabInfo | null) => {
-    if (!tab?.id) return;
-    setActiveTab(tab);
-    setLoadingContext(true);
-    setError('');
-
-    const captured = await tabContextService.capture(tab.id);
-    const snapshot = captured || createUnavailableSnapshot(tab);
-    const normalizedUrl = snapshot.normalizedUrl || normalizePageUrl(tab.url || '');
-    const nextSession = await tabChatDB.upsertContext(normalizedUrl, snapshot);
-
-    setContext(snapshot);
-    setSession(nextSession);
-    setMessages(nextSession.messages || []);
-    setLoadingContext(false);
+  const loadModelChoices = useCallback(async (requiredModel?: string) => {
+    const model = normalizeTabSessionModel(
+      requiredModel || configManager.getConfig().llm.defaultModel
+    );
+    setLoadingModels(true);
+    try {
+      const providerModels = await modelService.getAllAvailableModels(
+        configManager.getEnabledProviders()
+      );
+      setModelChoices(buildModelChoices(providerModels, model));
+    } finally {
+      setLoadingModels(false);
+    }
   }, []);
+
+  const loadTab = useCallback(
+    async (tab: ActiveTabInfo | null) => {
+      if (!tab?.id) return;
+      setActiveTab(tab);
+      setLoadingContext(true);
+      setError('');
+
+      const captured = await tabContextService.capture(tab.id);
+      const snapshot = captured || createUnavailableSnapshot(tab);
+      const normalizedUrl = snapshot.normalizedUrl || normalizePageUrl(tab.url || '');
+      const defaultModel = configManager.getConfig().llm.defaultModel;
+      const nextSession = await tabChatDB.upsertContext(normalizedUrl, snapshot, defaultModel);
+
+      setContext(snapshot);
+      setSession(nextSession);
+      setMessages(nextSession.messages || []);
+      setLoadingContext(false);
+      void loadModelChoices(getTabSessionModel(nextSession, defaultModel));
+    },
+    [loadModelChoices]
+  );
 
   const refreshActiveTab = useCallback(async () => {
     const tab = activeTab?.id ? activeTab : await tabContextService.getActiveTab();
@@ -126,6 +158,7 @@ export const TabAssistantPanel = () => {
       if (!mounted) return;
       setConfig(userConfig);
       await llmService.configure(userConfig.llm);
+      await loadModelChoices(userConfig.llm.defaultModel);
       const tab = await tabContextService.getActiveTab();
       if (!mounted) return;
       await loadTab(tab);
@@ -138,7 +171,7 @@ export const TabAssistantPanel = () => {
     return () => {
       mounted = false;
     };
-  }, [labels.error, loadTab]);
+  }, [labels.error, loadModelChoices, loadTab]);
 
   useEffect(() => {
     const element = contentRef.current;
@@ -183,6 +216,7 @@ export const TabAssistantPanel = () => {
     setError('');
     setStreaming(true);
     const previousMessages = [...messages];
+    const modelForRequest = selectedModel;
     const userMessage = await tabChatDB.appendMessage(session.id, {
       role: 'user',
       content: text,
@@ -197,7 +231,7 @@ export const TabAssistantPanel = () => {
 
     let assistantContent = '';
     try {
-      const budget = await tabContextService.getContextBudget();
+      const budget = await tabContextService.getContextBudget(modelForRequest);
       const requestMessages = buildTabChatMessages({
         snapshot: context?.source === 'empty' ? null : context,
         history: previousMessages,
@@ -221,7 +255,7 @@ export const TabAssistantPanel = () => {
             )
           );
         },
-        config.llm.defaultModel,
+        modelForRequest,
         config.llm.defaultModelSettings?.thinkingMode,
         true,
         { maxTokens: budget.maxOutputTokens }
@@ -230,7 +264,7 @@ export const TabAssistantPanel = () => {
       const savedAssistant = await tabChatDB.appendMessage(session.id, {
         role: 'assistant',
         content: assistantContent,
-        model: config.llm.defaultModel,
+        model: modelForRequest,
       });
       setMessages((current) =>
         current.map((item) => (item.id === assistantMessage.id ? savedAssistant : item))
@@ -269,6 +303,28 @@ export const TabAssistantPanel = () => {
 
   const openSettings = () => chrome.runtime.openOptionsPage();
 
+  const selectModel = async (model: string) => {
+    if (!session) return;
+    const nextModel = normalizeTabSessionModel(model);
+    const nextConfig: UserConfig = {
+      ...config,
+      llm: {
+        ...config.llm,
+        defaultModel: nextModel,
+      },
+    };
+
+    await tabChatDB.setSessionModel(session.id, nextModel);
+    await configManager.saveConfig({ llm: nextConfig.llm });
+    const savedConfig = configManager.getConfig();
+    setConfig(savedConfig);
+    await llmService.configure(savedConfig.llm);
+    setSession((current) =>
+      current?.id === session.id ? { ...current, model: nextModel } : current
+    );
+    void loadModelChoices(nextModel);
+  };
+
   const statusText = loadingContext
     ? labels.loadingContext
     : !context || context.source === 'empty'
@@ -297,9 +353,9 @@ export const TabAssistantPanel = () => {
       <header className="border-b border-slate-200 bg-white px-3 py-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <div className="text-[11px] font-medium uppercase text-slate-500">
+            {/* <div className="text-[11px] font-medium uppercase text-slate-500">
               {context?.source === 'empty' ? labels.noPageContext : labels.sharing}
-            </div>
+            </div> */}
             <h1 className="truncate text-sm font-semibold">
               {context?.title || activeTab?.title || labels.noPageTitle}
             </h1>
@@ -307,7 +363,7 @@ export const TabAssistantPanel = () => {
               {context?.url || activeTab?.url || statusText}
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          {/* <div className="flex shrink-0 items-center gap-1">
             <button
               className="sl-btn sl-btn-ghost !h-8 !w-8 !p-0"
               title={labels.refresh}
@@ -324,14 +380,11 @@ export const TabAssistantPanel = () => {
             >
               {pinned ? <PinOff size={14} /> : <Pin size={14} />}
             </button>
-          </div>
+          </div> */}
         </div>
-        <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
+        {/* <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
           <span className="truncate">{contextMeta}</span>
-          <span className="shrink-0">
-            {labels.model}: {modelLabel}
-          </span>
-        </div>
+        </div> */}
       </header>
 
       <main ref={contentRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
@@ -411,9 +464,9 @@ export const TabAssistantPanel = () => {
             </button>
           </div>
         )}
-        <div className="flex items-end gap-2">
+        <div className="rounded-lg border border-slate-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
           <textarea
-            className="sl-textarea max-h-32 min-h-[44px] flex-1 resize-none !py-2"
+            className="max-h-32 min-h-[72px] w-full resize-none bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             value={input}
             disabled={streaming}
             placeholder={labels.placeholder}
@@ -425,29 +478,30 @@ export const TabAssistantPanel = () => {
               }
             }}
           />
-          <button
-            className="sl-btn sl-btn-primary !h-11 !w-11 !p-0"
-            disabled={!input.trim() || streaming || !isConfigured}
-            title={labels.send}
-            aria-label={labels.send}
-            onClick={() => sendMessage(input)}
-          >
-            {streaming ? <RefreshCw size={15} className="animate-spin" /> : <Send size={15} />}
-          </button>
-        </div>
-        <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
-          <span>{pinned ? labels.pinned : statusText}</span>
-          {context?.url && (
-            <a
-              className="inline-flex items-center gap-1 hover:text-slate-700"
-              href={context.url}
-              target="_blank"
-              rel="noreferrer"
+          <div className="flex items-center justify-end gap-2 px-2 pb-2">
+            <TabModelPicker
+              choices={modelChoices}
+              selectedModel={selectedModel}
+              disabled={streaming || !session}
+              loading={loadingModels}
+              labels={{
+                chooseModel: labels.chooseModel,
+                loadingModels: labels.loadingModels,
+                noModelsAvailable: labels.noModelsAvailable,
+                selectedModel: labels.selectedModel,
+              }}
+              onSelect={selectModel}
+            />
+            <button
+              className="sl-btn sl-btn-primary !h-9 !w-9 !rounded-full !p-0"
+              disabled={!input.trim() || streaming || !isConfigured}
+              title={labels.send}
+              aria-label={labels.send}
+              onClick={() => sendMessage(input)}
             >
-              <ExternalLink size={12} />
-              {context.hostname || labels.noPageTitle}
-            </a>
-          )}
+              {streaming ? <RefreshCw size={15} className="animate-spin" /> : <Send size={15} />}
+            </button>
+          </div>
         </div>
       </footer>
     </div>
