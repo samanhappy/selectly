@@ -6,6 +6,7 @@ import { createLogger } from '../../utils/logger';
 import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { i18n, t } from '../i18n';
+import { isLLMConfigUsable } from './llm-config-state';
 import {
   buildThinkingModeRequestPlan,
   shouldFallbackForReasoningError,
@@ -224,9 +225,7 @@ export class LLMService {
   }
 
   isConfigured(): boolean {
-    const config = this.configManager.getConfig();
-    const enabledProviders = this.configManager.getEnabledProviders();
-    return enabledProviders.length > 0 && !!config.llm.defaultModel;
+    return isLLMConfigUsable(this.configManager.getConfig());
   }
 
   getConfig(): LLMConfig {

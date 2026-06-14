@@ -82,7 +82,7 @@ export const TabAssistantPanel = () => {
 
   const labels = t.tabAssistant;
   const isConfigured = llmService.isConfigured();
-  const modelLabel = config.llm.defaultModel?.split('/').pop() || labels.configureModel;
+  const modelLabel = config.llm.defaultModel?.split('/').pop() || 'default';
 
   const quickPrompts = useMemo(
     () => [

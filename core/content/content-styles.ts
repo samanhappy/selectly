@@ -107,7 +107,39 @@ export const contentStyles = `
     pointer-events: auto;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 8px;
+  }
+
+  .selectly-global-action-cluster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .selectly-global-action-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px) scale(0.96);
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease,
+      max-height 0.16s ease;
+  }
+
+  .selectly-global-action-cluster:hover .selectly-global-action-menu,
+  .selectly-global-action-cluster:focus-within .selectly-global-action-menu,
+  .selectly-global-action-cluster.is-expanded .selectly-global-action-menu {
+    max-height: 220px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
   }
 
   .selectly-global-action-btn {
@@ -126,6 +158,11 @@ export const contentStyles = `
       0 6px 14px rgba(15, 23, 42, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+
+  .selectly-global-action-trigger {
+    width: 44px;
+    height: 44px;
   }
 
   .selectly-global-action-btn:hover {
