@@ -380,6 +380,8 @@ export const es: I18nConfig = {
     llmDefaultServiceError:
       'El servicio del modelo predeterminado no está disponible temporalmente, por favor añade otro proveedor o inténtalo más tarde',
     llmStreamingServiceError: 'Error del Servicio de Streaming LLM',
+    llmReasoningRequiredError:
+      'Este modelo requiere razonamiento y no puede ejecutarse con el modo de pensamiento forzado desactivado. Usa Automático, activa el pensamiento o elige otro modelo.',
     premiumRequired: 'Función Premium',
     pleaseSubscribe: 'Se requiere suscripción a premium para usar esta función',
     dailyLimitExceeded: 'Límite diario excedido',

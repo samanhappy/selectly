@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 
-import type { ThinkingMode } from '../../../core/config/llm-config';
+import type { ModelCallSettings } from '../../../core/config/llm-config';
 import { ConfigManager } from '../../../core/config/llm-config';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { IconSelector } from './IconSelector';
-import { ThinkingModeSelect } from './ThinkingModeSelect';
 
 interface NewFunctionFormState {
   key: string;
@@ -24,7 +23,7 @@ interface NewFunctionFormState {
     isPremium?: boolean;
     requiresAI?: boolean;
     isBuiltIn?: boolean;
-    thinkingMode?: ThinkingMode;
+    modelSettings?: ModelCallSettings;
   };
 }
 
@@ -95,6 +94,10 @@ export const AddFunctionForm: React.FC<AddFunctionFormProps> = ({
                 i18n={i18n}
                 palette={palette}
                 onChange={(model) => onChange({ ...state, config: { ...state.config, model } })}
+                modelSettings={state.config.modelSettings}
+                onModelSettingsChange={(modelSettings) =>
+                  onChange({ ...state, config: { ...state.config, modelSettings } })
+                }
                 label={i18n.popup.functions.labels.aiModel}
                 showDefault={true}
               />
@@ -148,16 +151,6 @@ export const AddFunctionForm: React.FC<AddFunctionFormProps> = ({
 
           {showAdvanced && (
             <div>
-              {state.config.requiresAI !== false && (
-                <ThinkingModeSelect
-                  value={state.config.thinkingMode}
-                  i18n={i18n}
-                  onChange={(thinkingMode) =>
-                    onChange({ ...state, config: { ...state.config, thinkingMode } })
-                  }
-                />
-              )}
-
               {/* Execution behavior settings */}
               <label className="sl-switch-row">
                 <input

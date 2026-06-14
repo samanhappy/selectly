@@ -74,7 +74,7 @@ const OptionsPage: React.FC = () => {
       isPremium: true,
       requiresAI: true,
       isBuiltIn: false,
-      thinkingMode: 'auto' as const,
+      modelSettings: { thinkingMode: 'auto' as const },
     },
   });
 
@@ -222,7 +222,7 @@ const OptionsPage: React.FC = () => {
   const handleFunctionConfigChange = (
     functionKey: string,
     field: keyof FunctionConfig,
-    value: string | boolean
+    value: any
   ) => {
     const newConfig = {
       ...userConfig,
@@ -308,7 +308,7 @@ const OptionsPage: React.FC = () => {
         isPremium: true,
         requiresAI: true,
         isBuiltIn: false,
-        thinkingMode: 'auto' as const,
+        modelSettings: { thinkingMode: 'auto' as const },
       },
     });
     closeDrawer();

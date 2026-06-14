@@ -1,10 +1,11 @@
 import { ChevronDown, Loader2, Search } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import type { LLMProvider } from '../../../core/config/llm-config';
+import type { LLMProvider, ModelCallSettings } from '../../../core/config/llm-config';
 import type { ModelInfo } from '../../../core/services/model-service';
 import { modelService } from '../../../core/services/model-service';
 import { createLogger } from '../../../utils/logger';
+import { ModelSettingsButton } from './ModelSettingsButton';
 
 const logger = createLogger('EnhancedModelSelector');
 
@@ -17,6 +18,8 @@ interface EnhancedModelSelectorProps {
   onChange: (model: string) => void;
   label?: string;
   showDefault?: boolean;
+  modelSettings?: ModelCallSettings;
+  onModelSettingsChange?: (settings: ModelCallSettings) => void;
 }
 
 export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
@@ -28,6 +31,8 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
   onChange,
   label,
   showDefault = false,
+  modelSettings,
+  onModelSettingsChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('all');
@@ -138,36 +143,57 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', width: '100%', minWidth: 0 }}>
       {label && (
         <label className="sl-label" style={{ marginBottom: 8, display: 'block' }}>
           {label}
         </label>
       )}
 
-      <button
-        className="sl-input"
-        onClick={handleOpen}
+      <div
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          cursor: 'pointer',
-          background: palette.background,
-          textAlign: 'left',
+          display: 'grid',
+          gridTemplateColumns: onModelSettingsChange ? 'minmax(0, 1fr) auto' : 'minmax(0, 1fr)',
+          gap: 8,
+          alignItems: 'stretch',
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
-        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {getDisplayText(selectedModel)}
-        </span>
-        <ChevronDown
-          size={16}
+        <button
+          className="sl-input"
+          onClick={handleOpen}
           style={{
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s ease',
+            width: '100%',
+            minWidth: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: 'pointer',
+            background: palette.background,
+            textAlign: 'left',
           }}
-        />
-      </button>
+        >
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {getDisplayText(selectedModel)}
+          </span>
+          <ChevronDown
+            size={16}
+            style={{
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}
+          />
+        </button>
+        {onModelSettingsChange && (
+          <ModelSettingsButton
+            settings={modelSettings}
+            i18n={i18n}
+            palette={palette}
+            onChange={onModelSettingsChange}
+          />
+        )}
+      </div>
 
       {isOpen && (
         <div

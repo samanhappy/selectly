@@ -4,6 +4,7 @@ import { ActionButtons } from '../../components/content/ActionButtons';
 import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
+import { createLogger } from '../../utils/logger';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
@@ -12,11 +13,11 @@ import {
   type FunctionConfig,
   type UserConfig,
 } from '../config/llm-config';
+import { getEffectiveThinkingMode } from '../config/thinking-mode';
 import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
-import { createLogger } from '../../utils/logger';
 import { contentStyles } from './content-styles';
 import {
   createSelectionAnchor,
@@ -711,10 +712,7 @@ export class Selectly {
         }
       }
 
-      this.logger.warn(
-        'All text extraction strategies failed. Selection type:',
-        selection?.type
-      );
+      this.logger.warn('All text extraction strategies failed. Selection type:', selection?.type);
       return '';
     } catch (e) {
       this.logger.error('Error in extractSelectedText:', e);
@@ -2069,6 +2067,13 @@ export class Selectly {
 
     try {
       let assistantResponse = '';
+      const effectiveThinkingMode = getEffectiveThinkingMode({
+        functionKey: 'chat',
+        isBuiltIn: config.isBuiltIn ?? true,
+        functionModel: config.model || 'default',
+        functionModelSettings: config.modelSettings,
+        defaultModelSettings: this.configManager.getConfig().llm.defaultModelSettings,
+      });
 
       await llmService.chatStream(
         conversationContext.map((m) => ({ role: m.role, content: m.content })),
@@ -2080,7 +2085,8 @@ export class Selectly {
           }
         },
         config.model,
-        config.thinkingMode
+        effectiveThinkingMode.mode,
+        effectiveThinkingMode.allowFallback
       );
 
       conversationContext.push({ role: 'assistant', content: assistantResponse });
@@ -2234,10 +2240,7 @@ export class Selectly {
       } catch (e) {
         // Cross-origin access denied - content script will be injected by Chrome
         // due to "all_frames: true" in manifest
-        this.logger.debug(
-          'Cross-origin iframe detected (content script will handle):',
-          iframe.src
-        );
+        this.logger.debug('Cross-origin iframe detected (content script will handle):', iframe.src);
         this.trackedIframes.add(iframe); // Mark as processed to avoid retries
         return true;
       }

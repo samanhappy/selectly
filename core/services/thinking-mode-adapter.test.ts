@@ -1,77 +1,96 @@
 import { describe, expect, it } from 'vitest';
 
 import { parseModelString, resolveModelString } from '../config/model-resolution';
-import { buildThinkingModeRequestBody } from './thinking-mode-adapter';
+import {
+  buildThinkingModeRequestPlan,
+  shouldFallbackForReasoningError,
+} from './thinking-mode-adapter';
 
-describe('buildThinkingModeRequestBody', () => {
+describe('buildThinkingModeRequestPlan', () => {
   it('omits extra parameters when mode is auto', () => {
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'deepseek',
         thinkingMode: 'auto',
       })
-    ).toEqual({});
+    ).toEqual({ body: {}, fallbackBody: undefined });
   });
 
   it('maps DeepSeek modes to the thinking object', () => {
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'deepseek',
         thinkingMode: 'enabled',
       })
-    ).toEqual({ thinking: { type: 'enabled' } });
+    ).toEqual({ body: { thinking: { type: 'enabled' } }, fallbackBody: undefined });
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'deepseek',
         thinkingMode: 'disabled',
       })
-    ).toEqual({ thinking: { type: 'disabled' } });
+    ).toEqual({ body: { thinking: { type: 'disabled' } }, fallbackBody: undefined });
   });
 
-  it('maps OpenRouter modes without returning reasoning content', () => {
+  it('maps explicit OpenRouter modes without fallback', () => {
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'openrouter',
         thinkingMode: 'enabled',
       })
-    ).toEqual({ reasoning: { enabled: true, exclude: true } });
+    ).toEqual({
+      body: { reasoning: { enabled: true, exclude: true } },
+      fallbackBody: undefined,
+    });
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'openrouter',
         thinkingMode: 'disabled',
       })
-    ).toEqual({ reasoning: { exclude: true } });
+    ).toEqual({ body: { reasoning: { effort: 'none' } }, fallbackBody: undefined });
+  });
+
+  it('allows OpenRouter auto disabled requests to fallback to minimal hidden reasoning', () => {
+    expect(
+      buildThinkingModeRequestPlan({
+        providerId: 'openrouter',
+        thinkingMode: 'disabled',
+        allowFallback: true,
+      })
+    ).toEqual({
+      body: { reasoning: { effort: 'none' } },
+      fallbackBody: { reasoning: { effort: 'minimal', exclude: true } },
+    });
   });
 
   it('maps SiliconFlow modes without maintaining a model allowlist', () => {
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'siliconflow',
         thinkingMode: 'enabled',
       })
-    ).toEqual({ enable_thinking: true });
+    ).toEqual({ body: { enable_thinking: true }, fallbackBody: undefined });
     expect(
-      buildThinkingModeRequestBody({
+      buildThinkingModeRequestPlan({
         providerId: 'siliconflow',
         thinkingMode: 'disabled',
       })
-    ).toEqual({ enable_thinking: false });
+    ).toEqual({ body: { enable_thinking: false }, fallbackBody: undefined });
   });
 
   it('uses the OpenAI standard for providers without a first-party adapter', () => {
     for (const providerId of ['openai', 'anthropic', 'cloud', 'custom-provider']) {
       expect(
-        buildThinkingModeRequestBody({
+        buildThinkingModeRequestPlan({
           providerId,
           thinkingMode: 'enabled',
         })
-      ).toEqual({ reasoning_effort: 'medium' });
+      ).toEqual({ body: { reasoning_effort: 'medium' }, fallbackBody: undefined });
       expect(
-        buildThinkingModeRequestBody({
+        buildThinkingModeRequestPlan({
           providerId,
           thinkingMode: 'disabled',
         })
-      ).toEqual({ reasoning_effort: 'none' });
+      ).toEqual({ body: { reasoning_effort: 'none' }, fallbackBody: undefined });
     }
   });
 
@@ -79,8 +98,18 @@ describe('buildThinkingModeRequestBody', () => {
     const resolvedModel = resolveModelString('default', 'deepseek/deepseek-chat');
     const { providerId } = parseModelString(resolvedModel);
 
-    expect(buildThinkingModeRequestBody({ providerId, thinkingMode: 'disabled' })).toEqual({
-      thinking: { type: 'disabled' },
+    expect(buildThinkingModeRequestPlan({ providerId, thinkingMode: 'disabled' })).toEqual({
+      body: { thinking: { type: 'disabled' } },
+      fallbackBody: undefined,
     });
+  });
+
+  it('only falls back for reasoning disabled compatibility errors', () => {
+    expect(
+      shouldFallbackForReasoningError(
+        new Error('Reasoning is mandatory for this endpoint and cannot be disabled.')
+      )
+    ).toBe(true);
+    expect(shouldFallbackForReasoningError(new Error('Invalid API key'))).toBe(false);
   });
 });
