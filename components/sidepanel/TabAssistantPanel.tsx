@@ -25,6 +25,13 @@ import { tabContextService, type ActiveTabInfo } from '../../core/services/tab-c
 import { tabChatDB } from '../../core/storage/tab-chat-db';
 import { getContextBudget } from '../../core/tab-context/budget';
 import { buildTabChatMessages } from '../../core/tab-context/prompt';
+import {
+  getCurrentSessionForTab,
+  getNormalizedTabUrl,
+  mergeActiveTabInfo,
+  selectPreservedSession,
+  shouldCaptureTabUpdate,
+} from '../../core/tab-context/session-loader';
 import { getTabSessionModel, normalizeTabSessionModel } from '../../core/tab-context/session-model';
 import type { TabChatSession, TabContextSnapshot, TabMessage } from '../../core/tab-context/types';
 import { normalizePageUrl } from '../../core/tab-context/url';
@@ -90,6 +97,9 @@ export const TabAssistantPanel = () => {
   const [modelChoices, setModelChoices] = useState<ModelChoice[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const activeTabRef = useRef<ActiveTabInfo | null>(null);
+  const sessionRef = useRef<TabChatSession | null>(null);
+  const loadRequestIdRef = useRef(0);
 
   const labels = t.tabAssistant;
   const selectedModel = getTabSessionModel(session, config.llm.defaultModel);
@@ -124,23 +134,74 @@ export const TabAssistantPanel = () => {
   const loadTab = useCallback(
     async (tab: ActiveTabInfo | null) => {
       if (!tab?.id) return;
-      setActiveTab(tab);
+      const previousTab = activeTabRef.current;
+      const requestedTab = mergeActiveTabInfo(tab, previousTab);
+      const currentSession = getCurrentSessionForTab(requestedTab, previousTab, sessionRef.current);
+      const requestId = loadRequestIdRef.current + 1;
+      loadRequestIdRef.current = requestId;
+
+      activeTabRef.current = requestedTab;
+      setActiveTab(requestedTab);
       setLoadingContext(true);
       setError('');
 
-      const captured = await tabContextService.capture(tab.id);
-      const snapshot = captured || createUnavailableSnapshot(tab);
-      const normalizedUrl = snapshot.normalizedUrl || normalizePageUrl(tab.url || '');
       const defaultModel = configManager.getConfig().llm.defaultModel;
-      const nextSession = await tabChatDB.upsertContext(normalizedUrl, snapshot, defaultModel);
 
-      setContext(snapshot);
-      setSession(nextSession);
-      setMessages(nextSession.messages || []);
-      setLoadingContext(false);
-      void loadModelChoices(getTabSessionModel(nextSession, defaultModel));
+      try {
+        const captured = await tabContextService.capture(requestedTab.id);
+        if (loadRequestIdRef.current !== requestId) return;
+
+        if (!captured) {
+          const normalizedUrl = getNormalizedTabUrl(requestedTab, currentSession);
+          const storedSession = normalizedUrl
+            ? await tabChatDB.getLatestByNormalizedUrl(normalizedUrl)
+            : null;
+          if (loadRequestIdRef.current !== requestId) return;
+
+          const preservedSession = selectPreservedSession({
+            normalizedUrl,
+            currentSession,
+            storedSession,
+          });
+
+          if (preservedSession) {
+            const preservedContext =
+              preservedSession.context ||
+              createUnavailableSnapshot({
+                ...requestedTab,
+                title: preservedSession.title || requestedTab.title,
+                url: preservedSession.url || requestedTab.url,
+              });
+            sessionRef.current = preservedSession;
+            setContext(preservedContext);
+            setSession(preservedSession);
+            setMessages(preservedSession.messages || []);
+            void loadModelChoices(getTabSessionModel(preservedSession, defaultModel));
+            return;
+          }
+        }
+
+        const snapshot = captured || createUnavailableSnapshot(requestedTab);
+        const normalizedUrl = snapshot.normalizedUrl || normalizePageUrl(requestedTab.url || '');
+        const nextSession = await tabChatDB.upsertContext(normalizedUrl, snapshot, defaultModel);
+        if (loadRequestIdRef.current !== requestId) return;
+
+        sessionRef.current = nextSession;
+        setContext(snapshot);
+        setSession(nextSession);
+        setMessages(nextSession.messages || []);
+        void loadModelChoices(getTabSessionModel(nextSession, defaultModel));
+      } catch (err: any) {
+        if (loadRequestIdRef.current === requestId) {
+          setError(err?.message || labels.error);
+        }
+      } finally {
+        if (loadRequestIdRef.current === requestId) {
+          setLoadingContext(false);
+        }
+      }
     },
-    [loadModelChoices]
+    [labels.error, loadModelChoices]
   );
 
   const refreshActiveTab = useCallback(async () => {
@@ -181,6 +242,14 @@ export const TabAssistantPanel = () => {
   }, [messages, streaming]);
 
   useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
+
+  useEffect(() => {
     const handleActivated = async (activeInfo: chrome.tabs.TabActiveInfo) => {
       if (pinned) return;
       await loadTab({ id: activeInfo.tabId, windowId: activeInfo.windowId });
@@ -190,8 +259,18 @@ export const TabAssistantPanel = () => {
       changeInfo: chrome.tabs.TabChangeInfo,
       tab: chrome.tabs.Tab
     ) => {
-      if (pinned || tabId !== activeTab?.id) return;
-      if (changeInfo.url || changeInfo.title || changeInfo.status === 'complete') {
+      if (pinned || tabId !== activeTabRef.current?.id) return;
+      if (changeInfo.url || changeInfo.title) {
+        setActiveTab((current) => {
+          const nextTab = mergeActiveTabInfo(
+            { id: tabId, title: tab.title, url: tab.url, windowId: tab.windowId },
+            current
+          );
+          activeTabRef.current = nextTab;
+          return nextTab;
+        });
+      }
+      if (shouldCaptureTabUpdate(changeInfo)) {
         await loadTab({ id: tabId, title: tab.title, url: tab.url, windowId: tab.windowId });
       }
     };
@@ -202,7 +281,7 @@ export const TabAssistantPanel = () => {
       chrome.tabs?.onActivated?.removeListener(handleActivated);
       chrome.tabs?.onUpdated?.removeListener(handleUpdated);
     };
-  }, [activeTab?.id, loadTab, pinned]);
+  }, [loadTab, pinned]);
 
   const sendMessage = async (message: string) => {
     const text = message.trim();
@@ -288,17 +367,21 @@ export const TabAssistantPanel = () => {
 
   const saveMessageToCollections = async (content: string) => {
     if (!content.trim()) return;
-    await collectService.addItem({
-      text: content.trim(),
-      url: context?.url || activeTab?.url || '',
-      title: context?.title || activeTab?.title || labels.noPageTitle,
-      hostname: context?.hostname || '',
-      type: 'page_summary',
-      source: 'tab_context',
-      conversation_id: session?.id,
-    });
-    setSaveState('saved');
-    window.setTimeout(() => setSaveState('idle'), 1500);
+    try {
+      await collectService.addItem({
+        text: content.trim(),
+        url: context?.url || activeTab?.url || '',
+        title: context?.title || activeTab?.title || labels.noPageTitle,
+        hostname: context?.hostname || '',
+        type: 'page_summary',
+        source: 'tab_context',
+        conversation_id: session?.id,
+      });
+      setSaveState('saved');
+      window.setTimeout(() => setSaveState('idle'), 1500);
+    } catch (err: any) {
+      setError(err?.message || labels.error);
+    }
   };
 
   const openSettings = () => chrome.runtime.openOptionsPage();

@@ -11,10 +11,7 @@ import { normalizePageUrl } from './url';
 
 export const TAB_CONTEXT_EXTRACTOR_VERSION = 'tab-context-v1';
 
-const BLOCK_SELECTOR = [
-  'article',
-  'main',
-  'section',
+export const TAB_CONTEXT_BLOCK_SELECTOR = [
   'h1',
   'h2',
   'h3',
@@ -75,7 +72,7 @@ const getHeadingForElement = (element: Element): string | undefined => {
 const collectDomBlocks = (doc: Document, frameUrl?: string): TabContextBlock[] => {
   const blocks: TabContextBlock[] = [];
   const seen = new Set<string>();
-  const elements = Array.from(doc.body?.querySelectorAll(BLOCK_SELECTOR) || []);
+  const elements = Array.from(doc.body?.querySelectorAll(TAB_CONTEXT_BLOCK_SELECTOR) || []);
 
   for (const element of elements) {
     if (SKIP_TAGS.has(element.tagName) || !isElementVisible(element)) continue;

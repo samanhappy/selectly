@@ -1,8 +1,8 @@
-import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
-import { isCodeBlockContent, MessageContent } from './MessageContent';
+import { isCodeBlockContent, MessageContent, sanitizeMarkdownHref } from './MessageContent';
 
 describe('MessageContent', () => {
   it('renders fenced code as block content instead of inline code', () => {
@@ -33,7 +33,9 @@ describe('MessageContent', () => {
   });
 
   it('treats code inside a pre element as block content even when it is a single line', () => {
-    const html = renderToStaticMarkup(<MessageContent content={['```', 'single_line()', '```'].join('\n')} />);
+    const html = renderToStaticMarkup(
+      <MessageContent content={['```', 'single_line()', '```'].join('\n')} />
+    );
 
     expect(html).toContain('sl-code-block-content');
     expect(html).not.toContain('sl-code-inline');
@@ -44,5 +46,17 @@ describe('MessageContent', () => {
 
     expect(html).toContain('sl-code-inline');
     expect(html).not.toContain('sl-code-block-content');
+  });
+
+  it('removes unsafe markdown link protocols', () => {
+    const html = renderToStaticMarkup(<MessageContent content="[bad](javascript:alert(1))" />);
+
+    expect(html).not.toContain('javascript:');
+    expect(html).not.toContain('href=');
+  });
+
+  it('keeps safe markdown link protocols', () => {
+    expect(sanitizeMarkdownHref(' https://example.com ')).toBe('https://example.com');
+    expect(sanitizeMarkdownHref('mailto:support@example.com')).toBe('mailto:support@example.com');
   });
 });

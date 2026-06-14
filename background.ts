@@ -449,7 +449,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
       }
       if (!sidePanel.setOptions) {
-        sendResponse({ success: false, error: 'Side panel options are not available in this browser' });
+        sendResponse({
+          success: false,
+          error: 'Side panel options are not available in this browser',
+        });
         return true;
       }
 
@@ -530,10 +533,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             return;
           }
 
-          const res = await chrome.tabs.sendMessage(tabId, {
-            action: 'tabContext:capturePage',
-            budget: request.budget,
-          });
+          const res = await chrome.tabs.sendMessage(
+            tabId,
+            {
+              action: 'tabContext:capturePage',
+              budget: request.budget,
+            },
+            { frameId: 0 }
+          );
           sendResponse(res);
         } catch (err: any) {
           logger.warn('Failed to capture tab context:', err);
