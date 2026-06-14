@@ -40,7 +40,7 @@ describe('buildThinkingModeRequestBody', () => {
         providerId: 'openrouter',
         thinkingMode: 'disabled',
       })
-    ).toEqual({ reasoning: { effort: 'none' } });
+    ).toEqual({ reasoning: { exclude: true } });
   });
 
   it('maps SiliconFlow modes without maintaining a model allowlist', () => {

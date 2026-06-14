@@ -16,9 +16,10 @@ export const buildThinkingModeRequestBody = ({
     case 'deepseek':
       return { thinking: { type: mode } };
     case 'openrouter':
-      return mode === 'enabled'
-        ? { reasoning: { enabled: true, exclude: true } }
-        : { reasoning: { effort: 'none' } };
+      if (mode === 'enabled') {
+        return { reasoning: { enabled: true, exclude: true } };
+      }
+      return { reasoning: { exclude: true } };
     case 'siliconflow':
       return { enable_thinking: mode === 'enabled' };
     default:
