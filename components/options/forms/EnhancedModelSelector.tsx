@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { LLMProvider, ModelCallSettings } from '../../../core/config/llm-config';
 import type { ModelInfo } from '../../../core/services/model-service';
 import { modelService } from '../../../core/services/model-service';
+import type { ModelMetadataOverride } from '../../../core/tab-context/types';
 import { createLogger } from '../../../utils/logger';
 import { ModelSettingsButton } from './ModelSettingsButton';
 
@@ -20,6 +21,8 @@ interface EnhancedModelSelectorProps {
   showDefault?: boolean;
   modelSettings?: ModelCallSettings;
   onModelSettingsChange?: (settings: ModelCallSettings) => void;
+  selectedModelMetadata?: ModelMetadataOverride;
+  onSelectedModelMetadataChange?: (metadata: ModelMetadataOverride) => void;
 }
 
 export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
@@ -33,6 +36,8 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
   showDefault = false,
   modelSettings,
   onModelSettingsChange,
+  selectedModelMetadata,
+  onSelectedModelMetadataChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('all');
@@ -188,9 +193,11 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
         {onModelSettingsChange && (
           <ModelSettingsButton
             settings={modelSettings}
+            modelMetadata={selectedModelMetadata}
             i18n={i18n}
             palette={palette}
             onChange={onModelSettingsChange}
+            onModelMetadataChange={onSelectedModelMetadataChange}
           />
         )}
       </div>

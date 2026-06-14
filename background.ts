@@ -16,6 +16,20 @@ import { secureStorage } from './core/storage/secure-storage';
 import { createLogger } from './utils/logger';
 
 const logger = createLogger('Background');
+let lastSidePanelTabId: number | null = null;
+const TAB_ASSISTANT_SIDE_PANEL_PATH = 'tabs/tab-assistant.html';
+
+const enableTabAssistantSidePanel = (tabId: number) => {
+  const sidePanel = chrome.sidePanel;
+  if (!sidePanel?.setOptions) {
+    return Promise.reject(new Error('Side panel options are not available in this browser'));
+  }
+  return sidePanel.setOptions({
+    tabId,
+    path: TAB_ASSISTANT_SIDE_PANEL_PATH,
+    enabled: true,
+  });
+};
 
 // Initialize extension on installation
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -92,6 +106,12 @@ chrome.runtime.onStartup.addListener(async () => {
     logger.info('Dictionary sync service initialized and sync triggered');
   } catch (error) {
     logger.warn('Dictionary sync service initialization failed:', error);
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  if (lastSidePanelTabId === tabId) {
+    lastSidePanelTabId = null;
   }
 });
 
@@ -412,6 +432,115 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         } catch (err: any) {
           logger.error('Failed to delete reading progress:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'tabContext:openSidePanel': {
+      const tabId = sender.tab?.id;
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id' });
+        return true;
+      }
+
+      const sidePanel = chrome.sidePanel;
+      if (!sidePanel?.open) {
+        sendResponse({ success: false, error: 'Side panel is not available in this browser' });
+        return true;
+      }
+      if (!sidePanel.setOptions) {
+        sendResponse({ success: false, error: 'Side panel options are not available in this browser' });
+        return true;
+      }
+
+      void enableTabAssistantSidePanel(tabId).catch((err: any) => {
+        logger.warn('Failed to enable tab assistant side panel:', err);
+      });
+
+      lastSidePanelTabId = tabId;
+      try {
+        const openPromise = sidePanel.open({ tabId });
+        Promise.resolve(openPromise)
+          .then(() => {
+            sendResponse({ success: true, tabId });
+          })
+          .catch((err: any) => {
+            logger.error('Failed to open side panel:', err);
+            sendResponse({ success: false, error: err?.message || 'Failed to open side panel' });
+          });
+      } catch (err: any) {
+        logger.error('Failed to open side panel:', err);
+        sendResponse({ success: false, error: err?.message || 'Failed to open side panel' });
+      }
+      return true;
+    }
+    case 'tabContext:prepareSidePanel': {
+      (async () => {
+        try {
+          const tabId = sender.tab?.id;
+          if (!tabId) {
+            sendResponse({ success: false, error: 'Missing tab id' });
+            return;
+          }
+
+          await enableTabAssistantSidePanel(tabId);
+          sendResponse({ success: true, tabId });
+        } catch (err: any) {
+          logger.warn('Failed to prepare tab assistant side panel:', err);
+          sendResponse({ success: false, error: err?.message || 'Failed to prepare side panel' });
+        }
+      })();
+      return true;
+    }
+    case 'tabContext:getActiveTab': {
+      (async () => {
+        try {
+          const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+          const tab = tabs[0];
+          sendResponse({
+            success: true,
+            tab: tab
+              ? {
+                  id: tab.id,
+                  title: tab.title,
+                  url: tab.url,
+                  windowId: tab.windowId,
+                }
+              : lastSidePanelTabId
+                ? { id: lastSidePanelTabId }
+                : null,
+          });
+        } catch (err: any) {
+          logger.warn('Failed to get active tab:', err);
+          sendResponse({
+            success: false,
+            error: err?.message || 'Failed to get active tab',
+            tab: lastSidePanelTabId ? { id: lastSidePanelTabId } : null,
+          });
+        }
+      })();
+      return true;
+    }
+    case 'tabContext:capture': {
+      (async () => {
+        try {
+          const tabId = request.tabId as number | undefined;
+          if (!tabId) {
+            sendResponse({ success: false, error: 'Missing tab id' });
+            return;
+          }
+
+          const res = await chrome.tabs.sendMessage(tabId, {
+            action: 'tabContext:capturePage',
+            budget: request.budget,
+          });
+          sendResponse(res);
+        } catch (err: any) {
+          logger.warn('Failed to capture tab context:', err);
+          sendResponse({
+            success: false,
+            error: err?.message || 'This page cannot be read',
+          });
         }
       })();
       return true;

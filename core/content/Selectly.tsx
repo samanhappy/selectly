@@ -18,6 +18,8 @@ import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
+import { captureTabContextSnapshot } from '../tab-context/extractor';
+import type { ModelContextBudget } from '../tab-context/types';
 import { contentStyles } from './content-styles';
 import {
   createSelectionAnchor,
@@ -54,6 +56,7 @@ export class Selectly {
   private globalActionHost: HTMLDivElement | null = null;
   private globalActionContainer: HTMLDivElement | null = null;
   private globalActionRoot: any = null;
+  private tabAssistantSidePanelPrepared = false;
   private readingProgressInitialized = false;
   private scrollRafId: number | null = null;
   private progressRefreshRafId: number | null = null;
@@ -801,10 +804,45 @@ export class Selectly {
     });
 
     this.listenForConfigUpdates();
+    if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
+      chrome.runtime.onMessage.addListener(this.handleRuntimeMessage);
+    }
 
     // Monitor and attach listeners to iframes
     this.setupIframeMonitoring();
   }
+
+  private handleRuntimeMessage = (
+    request: any,
+    _sender: chrome.runtime.MessageSender,
+    sendResponse: (response?: any) => void
+  ) => {
+    const action = request?.action || request?.type;
+
+    if (action !== 'tabContext:capturePage') {
+      return false;
+    }
+
+    if (window.top !== window.self) {
+      return false;
+    }
+
+    (async () => {
+      try {
+        const budget = (request?.budget || { maxContextChars: 24000 }) as ModelContextBudget;
+        const snapshot = captureTabContextSnapshot(document, budget);
+        sendResponse({ success: true, snapshot });
+      } catch (error: any) {
+        this.logger.error('Failed to capture tab context:', error);
+        sendResponse({
+          success: false,
+          error: error?.message || 'Failed to capture page context',
+        });
+      }
+    })();
+
+    return true;
+  };
 
   private handleFloatingScroll = () => {
     this.hideButtons();
@@ -1232,6 +1270,47 @@ export class Selectly {
     return this.hasVerticalScroll() && (!autoSave || this.isReadingProgressDisabled());
   }
 
+  private shouldShowTabAssistantButton(): boolean {
+    const general = this.userConfig.general || ({} as any);
+    if (general.showTabAssistantButton === false) return false;
+    const blacklist = general.tabAssistantBlacklist || [];
+    if (!Array.isArray(blacklist) || blacklist.length === 0) return true;
+    return !this.isDomainMatched(blacklist, window.location.href, window.location.hostname);
+  }
+
+  private async openTabAssistant() {
+    try {
+      if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+      const res = await chrome.runtime.sendMessage({
+        action: 'tabContext:openSidePanel',
+      });
+      if (!res?.success) {
+        this.logger.warn('Failed to open side panel:', res?.error);
+      }
+    } catch (error) {
+      this.logger.warn('Failed to open side panel:', error);
+    }
+  }
+
+  private async prepareTabAssistant() {
+    if (this.tabAssistantSidePanelPrepared) return;
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
+
+    this.tabAssistantSidePanelPrepared = true;
+    try {
+      const res = await chrome.runtime.sendMessage({
+        action: 'tabContext:prepareSidePanel',
+      });
+      if (!res?.success) {
+        this.tabAssistantSidePanelPrepared = false;
+        this.logger.debug('Failed to prepare side panel:', res?.error);
+      }
+    } catch (error) {
+      this.tabAssistantSidePanelPrepared = false;
+      this.logger.debug('Failed to prepare side panel:', error);
+    }
+  }
+
   private mountGlobalActionBar() {
     if (this.globalActionHost) return;
 
@@ -1248,11 +1327,24 @@ export class Selectly {
     shadow.appendChild(this.globalActionContainer);
 
     this.globalActionRoot = createRoot(this.globalActionContainer);
+    this.renderGlobalActionBar();
+  }
+
+  private renderGlobalActionBar() {
+    if (!this.globalActionRoot) return;
+    const showTabAssistant = this.shouldShowTabAssistantButton();
+    if (showTabAssistant) {
+      void this.prepareTabAssistant();
+    }
 
     this.globalActionRoot.render(
       <GlobalActionBar
+        onOpenTabAssistant={() => this.openTabAssistant()}
         onSaveProgress={() => this.saveReadingProgress('manual')}
+        showTabAssistant={showTabAssistant}
+        showSaveProgress={this.shouldShowManualSaveButton()}
         labels={{
+          askPage: i18n.getConfig().content?.askPage || 'Ask this page',
           saveProgress: i18n.getConfig().content?.saveProgress || 'Save progress',
           progressSaved: i18n.getConfig().content?.progressSaved || 'Progress saved',
         }}
@@ -1274,8 +1366,9 @@ export class Selectly {
   }
 
   private updateGlobalActionBar() {
-    if (this.shouldShowManualSaveButton()) {
+    if (this.shouldShowTabAssistantButton() || this.shouldShowManualSaveButton()) {
       this.mountGlobalActionBar();
+      this.renderGlobalActionBar();
     } else if (this.globalActionHost) {
       this.hideGlobalActionBar();
     }

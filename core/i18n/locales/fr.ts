@@ -117,6 +117,9 @@ export const fr: I18nConfig = {
       enableProvidersFirst: "Veuillez activer au moins un fournisseur d'abord",
       close: 'Fermer',
       context: 'Contexte',
+      contextWindowPlaceholder: 'ex. 128000',
+      contextWindowHelp:
+        "Remplacement optionnel de la fenêtre de contexte du modèle. Utilisé pour dimensionner le contexte de page dans le chat d'onglet.",
     },
     functions: {
       title: 'Fonctions',
@@ -214,6 +217,10 @@ export const fr: I18nConfig = {
         'Un domaine par ligne. La progression ne sera enregistrée ou restaurée que pour ces domaines.',
       readingProgressUseSystemBlacklist: 'Utiliser la liste noire système',
       readingProgressUseSystemWhitelist: 'Utiliser la liste blanche système',
+      showTabAssistantButton: 'Afficher le bouton demander à la page',
+      tabAssistantBlacklist: 'Liste noire demander à la page',
+      tabAssistantBlacklistDesc:
+        'Un domaine par ligne. Le bouton demander à la page est masqué sur ces sites.',
       debugEnabled: 'Activer le journal de débogage',
       debugEnabledDesc: 'Afficher les journaux détaillés dans DevTools pour le dépannage',
     },
@@ -286,6 +293,42 @@ export const fr: I18nConfig = {
     addToDictionary: 'Ajouter au Dictionnaire',
     saveProgress: 'Enregistrer la progression',
     progressSaved: 'Progression enregistrée',
+    askPage: 'Demander à cette page',
+  },
+
+  tabAssistant: {
+    title: 'Demander à cette page',
+    noPageTitle: 'Page actuelle',
+    sharing: 'Partage',
+    noPageContext: 'Aucun contexte de page',
+    contextReady: 'Contexte de page prêt',
+    contextUnavailable: 'Cette page ne peut pas être lue',
+    contextTruncated: 'Contexte tronqué',
+    contextStats: '{{chars}} caractères · {{blocks}} blocs',
+    skippedFrames: '{{count}} cadres ignorés',
+    refresh: 'Actualiser le contexte',
+    pin: 'Épingler la session',
+    unpin: 'Désépingler la session',
+    pinned: 'Épinglé',
+    placeholder: 'Posez une question sur cette page...',
+    send: 'Envoyer',
+    configureModel: 'Configurez un modèle pour commencer à discuter.',
+    openSettings: 'Ouvrir les paramètres',
+    saveSession: 'Enregistrer la session',
+    saveToCollections: 'Enregistrer dans les collections',
+    saved: 'Enregistré',
+    copy: 'Copier',
+    summarizePage: 'Résumer la page',
+    extractKeyPoints: 'Extraire les points clés',
+    listActionItems: 'Lister les actions',
+    translatePage: 'Traduire la page',
+    loadingContext: 'Lecture de la page...',
+    ordinaryChat:
+      'Le contexte de page est indisponible. Vous pouvez toujours discuter normalement.',
+    historyClipped:
+      "Certains anciens messages n'ont pas été envoyés à cause des limites de contexte.",
+    model: 'Modèle',
+    error: 'Une erreur est survenue',
   },
 
   button: {

@@ -37,6 +37,44 @@ export const GeneralSettingsForm: React.FC<GeneralSettingsFormProps> = ({
       </div>
       <div className="sl-field">
         <label className="sl-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {config?.tabAssistant?.title || 'Ask this page'}
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <label className="sl-checkbox" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={userConfig.general?.showTabAssistantButton !== false}
+              onChange={(e) => onChange('showTabAssistantButton', e.target.checked)}
+            />
+            {config?.popup?.general?.showTabAssistantButton || 'Show Ask page button'}
+          </label>
+          <label className="sl-field" style={{ marginBottom: 0 }}>
+            <span className="sl-label">
+              {config?.popup?.general?.tabAssistantBlacklist || 'Ask page blacklist'}
+            </span>
+            <textarea
+              className="sl-textarea"
+              value={(userConfig.general?.tabAssistantBlacklist || []).join('\n')}
+              onChange={(e) =>
+                onChange(
+                  'tabAssistantBlacklist',
+                  e.target.value
+                    .split('\n')
+                    .map((item) => item.trim())
+                    .filter(Boolean)
+                )
+              }
+              style={{ minHeight: 80 }}
+            />
+            <div className="sl-helper">
+              {config?.popup?.general?.tabAssistantBlacklistDesc ||
+                'One domain per line. The Ask page button is hidden on these sites.'}
+            </div>
+          </label>
+        </div>
+      </div>
+      <div className="sl-field">
+        <label className="sl-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Globe size={16} />
           {config?.popup?.general?.readingProgressTitle || 'Reading Progress'}
         </label>

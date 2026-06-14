@@ -2,6 +2,8 @@ import { Settings } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { ConfigManager, type LLMConfig, type LLMProvider } from '../../../core/config/llm-config';
+import { sanitizeModelMetadataOverride } from '../../../core/tab-context/model-metadata';
+import type { ModelMetadataOverride } from '../../../core/tab-context/types';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { ProviderManager } from './ProviderManager';
 
@@ -70,6 +72,18 @@ export const LLMSettingsForm: React.FC<LLMSettingsFormProps> = ({
     });
   };
 
+  const handleDefaultModelMetadataChange = (metadata: ModelMetadataOverride) => {
+    if (!llm.defaultModel) return;
+    const sanitized = sanitizeModelMetadataOverride(metadata);
+    const next = { ...(llm.modelMetadataOverrides || {}) };
+    if (sanitized.contextWindow) {
+      next[llm.defaultModel] = sanitized;
+    } else {
+      delete next[llm.defaultModel];
+    }
+    onChange({ modelMetadataOverrides: next });
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {/* Default Model Selection */}
@@ -102,6 +116,8 @@ export const LLMSettingsForm: React.FC<LLMSettingsFormProps> = ({
           onChange={handleDefaultModelChange}
           modelSettings={llm.defaultModelSettings}
           onModelSettingsChange={(defaultModelSettings) => onChange({ defaultModelSettings })}
+          selectedModelMetadata={llm.modelMetadataOverrides?.[llm.defaultModel]}
+          onSelectedModelMetadataChange={handleDefaultModelMetadataChange}
           label={i18n.popup.models.defaultModel}
         />
 

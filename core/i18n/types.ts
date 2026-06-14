@@ -112,6 +112,8 @@ export interface I18nConfig {
       enableProvidersFirst: string;
       close: string;
       context: string;
+      contextWindowPlaceholder: string;
+      contextWindowHelp: string;
     };
     functions: {
       title: string;
@@ -202,6 +204,11 @@ export interface I18nConfig {
       readingProgressWhitelistDesc: string;
       readingProgressUseSystemBlacklist: string;
       readingProgressUseSystemWhitelist: string;
+      showTabAssistantButton: string;
+      tabAssistantBlacklist: string;
+      tabAssistantBlacklistDesc: string;
+      debugEnabled?: string;
+      debugEnabledDesc?: string;
     };
     subscription: {
       signIn: string;
@@ -272,6 +279,40 @@ export interface I18nConfig {
     addToDictionary: string;
     saveProgress: string;
     progressSaved: string;
+    askPage: string;
+  };
+
+  tabAssistant: {
+    title: string;
+    noPageTitle: string;
+    sharing: string;
+    noPageContext: string;
+    contextReady: string;
+    contextUnavailable: string;
+    contextTruncated: string;
+    contextStats: string;
+    skippedFrames: string;
+    refresh: string;
+    pin: string;
+    unpin: string;
+    pinned: string;
+    placeholder: string;
+    send: string;
+    configureModel: string;
+    openSettings: string;
+    saveSession: string;
+    saveToCollections: string;
+    saved: string;
+    copy: string;
+    summarizePage: string;
+    extractKeyPoints: string;
+    listActionItems: string;
+    translatePage: string;
+    loadingContext: string;
+    ordinaryChat: string;
+    historyClipped: string;
+    model: string;
+    error: string;
   };
 
   button: {

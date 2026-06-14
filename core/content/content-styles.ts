@@ -105,6 +105,9 @@ export const contentStyles = `
     bottom: 16px;
     z-index: 1000000;
     pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .selectly-global-action-btn {

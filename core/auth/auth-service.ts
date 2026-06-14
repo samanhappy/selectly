@@ -4,8 +4,8 @@
  * Supports token refresh and cross-browser compatibility
  */
 
-import { secureStorage } from '../storage/secure-storage';
 import { createLogger } from '../../utils/logger';
+import { secureStorage } from '../storage/secure-storage';
 
 interface TokenData {
   accessToken: string;
@@ -222,7 +222,10 @@ export class AuthService {
       try {
         authCode = await this.launchOAuthFlow();
       } catch (webAuthError) {
-        logger.warn('WebAuthFlow failed, falling back to getAuthToken:', webAuthError instanceof Error ? webAuthError.message : webAuthError);
+        logger.warn(
+          'WebAuthFlow failed, falling back to getAuthToken:',
+          webAuthError instanceof Error ? webAuthError.message : webAuthError
+        );
         // await this.fallbackToGetAuthToken()
         return;
       }
@@ -243,7 +246,7 @@ export class AuthService {
       this.emit();
     } catch (error) {
       logger.error('Sign in failed:', error);
-      this.state.error = error instanceof Error ? error.message : 'Authentication failed' instanceof Error ? error.message : 'Authentication failed';
+      this.state.error = error instanceof Error ? error.message : 'Authentication failed';
       this.state.loading = false;
       this.emit();
       throw error;
