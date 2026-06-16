@@ -329,8 +329,12 @@ export const fr: I18nConfig = {
     saved: 'Enregistré',
     copy: 'Copier',
     summarizePage: 'Résumer',
+    askAboutPage: 'Demander à propos de cette page',
+    askAboutPagePrompt: 'Que dois-je comprendre sur cette page ?',
     translatePage: 'Traduire',
     loadingContext: 'Lecture de la page...',
+    pageBriefTitle: 'Prêt à comprendre cette page',
+    pageBriefDescription: 'Posez une question précise ou commencez par un court résumé.',
     ordinaryChat:
       'Le contexte de page est indisponible. Vous pouvez toujours discuter normalement.',
     historyClipped:

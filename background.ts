@@ -14,6 +14,11 @@ import { dictionaryDB } from './core/storage/dictionary-db';
 import { StorageMigration } from './core/storage/migration';
 import { secureStorage } from './core/storage/secure-storage';
 import {
+  createSelectionLaunchIntent,
+  isLaunchIntentExpired,
+  type TabAssistantLaunchIntent,
+} from './core/tab-context/launch-intent';
+import {
   TabAssistantSidePanelController,
   type TabAssistantSidePanelApi,
 } from './core/tab-context/side-panel-toggle';
@@ -24,6 +29,7 @@ const TAB_ASSISTANT_SIDE_PANEL_PATH = 'tabs/tab-assistant.html';
 const tabAssistantSidePanelController = new TabAssistantSidePanelController(
   TAB_ASSISTANT_SIDE_PANEL_PATH
 );
+const tabAssistantLaunchIntents = new Map<number, TabAssistantLaunchIntent>();
 
 type TabAssistantSidePanelEvents = TabAssistantSidePanelApi & {
   onOpened?: {
@@ -488,6 +494,74 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           logger.error('Failed to toggle side panel:', err);
           sendResponse({ success: false, error: err?.message || 'Failed to toggle side panel' });
         });
+      return true;
+    }
+    case 'tabContext:openSidePanelWithSelection': {
+      const tabId = sender.tab?.id;
+      const selectedText = String(request?.payload?.selectedText || '').trim();
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id' });
+        return true;
+      }
+      if (!selectedText) {
+        sendResponse({ success: false, error: 'No text selected' });
+        return true;
+      }
+
+      const sidePanel = getTabAssistantSidePanel();
+      if (!sidePanel?.open) {
+        sendResponse({ success: false, error: 'Side panel is not available in this browser' });
+        return true;
+      }
+      if (!sidePanel.setOptions) {
+        sendResponse({
+          success: false,
+          error: 'Side panel options are not available in this browser',
+        });
+        return true;
+      }
+
+      const intent = createSelectionLaunchIntent({
+        tabId,
+        selectedText,
+        pageTitle: sender.tab?.title,
+        pageUrl: sender.tab?.url,
+      });
+      tabAssistantLaunchIntents.set(tabId, intent);
+
+      Promise.resolve(tabAssistantSidePanelController.show(sidePanel, tabId))
+        .then((result) => {
+          void chrome.runtime
+            .sendMessage({
+              action: 'tabContext:launchIntentAvailable',
+              tabId,
+              intentId: intent.id,
+            })
+            .catch(() => undefined);
+          sendResponse({ success: true, tabId, action: result.action, intentId: intent.id });
+        })
+        .catch((err: any) => {
+          logger.error('Failed to open side panel with selection:', err);
+          sendResponse({ success: false, error: err?.message || 'Failed to open side panel' });
+        });
+      return true;
+    }
+    case 'tabContext:consumeLaunchIntent': {
+      const tabId = Number(request?.tabId);
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id' });
+        return true;
+      }
+
+      const intent = tabAssistantLaunchIntents.get(tabId) || null;
+      if (!intent || isLaunchIntentExpired(intent)) {
+        tabAssistantLaunchIntents.delete(tabId);
+        sendResponse({ success: true, intent: null });
+        return true;
+      }
+
+      tabAssistantLaunchIntents.delete(tabId);
+      sendResponse({ success: true, intent });
       return true;
     }
     case 'tabContext:prepareSidePanel': {

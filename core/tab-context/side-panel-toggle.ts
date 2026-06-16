@@ -40,6 +40,13 @@ export class TabAssistantSidePanelController {
     return this.isOpen(tabId) ? this.close(sidePanel, tabId) : this.open(sidePanel, tabId);
   }
 
+  async show(
+    sidePanel: TabAssistantSidePanelApi,
+    tabId: number
+  ): Promise<TabAssistantSidePanelToggleResult> {
+    return this.open(sidePanel, tabId);
+  }
+
   markOpened(tabId: number): void {
     this.openTabIds.add(tabId);
     this.lastKnownTabId = tabId;

@@ -315,8 +315,12 @@ export interface I18nConfig {
     saved: string;
     copy: string;
     summarizePage: string;
+    askAboutPage: string;
+    askAboutPagePrompt: string;
     translatePage: string;
     loadingContext: string;
+    pageBriefTitle: string;
+    pageBriefDescription: string;
     ordinaryChat: string;
     historyClipped: string;
     model: string;

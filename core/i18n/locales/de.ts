@@ -329,8 +329,13 @@ export const de: I18nConfig = {
     saved: 'Gespeichert',
     copy: 'Kopieren',
     summarizePage: 'Seite zusammenfassen',
+    askAboutPage: 'Zu dieser Seite fragen',
+    askAboutPagePrompt: 'Was sollte ich über diese Seite verstehen?',
     translatePage: 'Seite übersetzen',
     loadingContext: 'Seite wird gelesen...',
+    pageBriefTitle: 'Bereit, diese Seite zu verstehen',
+    pageBriefDescription:
+      'Stelle eine gezielte Frage oder starte mit einer kurzen Zusammenfassung.',
     ordinaryChat: 'Seitenkontext ist nicht verfügbar. Sie können trotzdem normal chatten.',
     historyClipped: 'Einige ältere Nachrichten wurden wegen Kontextlimits nicht gesendet.',
     model: 'Modell',

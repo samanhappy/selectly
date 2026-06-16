@@ -328,8 +328,12 @@ export const es: I18nConfig = {
     saved: 'Guardado',
     copy: 'Copiar',
     summarizePage: 'Resumir',
+    askAboutPage: 'Preguntar sobre esta página',
+    askAboutPagePrompt: '¿Qué debo entender sobre esta página?',
     translatePage: 'Traducir',
     loadingContext: 'Leyendo página...',
+    pageBriefTitle: 'Listo para entender esta página',
+    pageBriefDescription: 'Haz una pregunta concreta o empieza con un resumen breve.',
     ordinaryChat:
       'El contexto de la página no está disponible. Aun así puedes chatear normalmente.',
     historyClipped: 'Algunos mensajes antiguos no se enviaron por los límites de contexto.',

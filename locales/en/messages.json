@@ -1,11 +1,11 @@
 {
   "extensionName": {
-    "message": "Selectly: Open-source Customizable AI Text Tools",
+    "message": "Selectly: AI Webpage Assistant",
     "description": "The name of the extension"
   },
   "extensionDescription": {
-    "message": "Highlight text to translate, polish, explain, chat — or run custom workflows. All-in-one, customizable, AI-powered tools.",
-    "tip": "No copy-paste. No context switching.",
+    "message": "Understand any webpage with AI. Select text for instant answers, or open the side panel to ask about the whole page.",
+    "tip": "Select to understand. Open the side panel to go deeper.",
     "description": "The description of the extension"
   }
 }

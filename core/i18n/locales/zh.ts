@@ -310,8 +310,12 @@ export const zh: I18nConfig = {
     saved: '已保存',
     copy: '复制',
     summarizePage: '总结',
+    askAboutPage: '询问此页面',
+    askAboutPagePrompt: '我应该理解这个页面的哪些重点？',
     translatePage: '翻译',
     loadingContext: '正在读取页面...',
+    pageBriefTitle: '已准备好理解此页面',
+    pageBriefDescription: '直接提问，或先从简短页面总结开始。',
     ordinaryChat: '页面上下文不可用。你仍然可以普通对话。',
     historyClipped: '由于上下文限制，部分较早消息未发送。',
     model: '模型',
@@ -475,10 +479,9 @@ export const zh: I18nConfig = {
       prompt: '{text}',
     },
     chat: {
-      title: '对话',
-      description: '与 AI 对话',
-      prompt:
-        '你是一个有用的 AI 助手。请以对话的方式回应用户的消息。用户选择了这段文字："{text}"。',
+      title: '提问',
+      description: '结合页面上下文询问选中文本',
+      prompt: '结合当前页面解释或回答关于这段选中文本的问题：\n\n{text}',
     },
     collect: {
       title: '收藏',

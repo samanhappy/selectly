@@ -322,8 +322,12 @@ export const en: I18nConfig = {
     saved: 'Saved',
     copy: 'Copy',
     summarizePage: 'Summarize',
+    askAboutPage: 'Ask about this page',
+    askAboutPagePrompt: 'What should I understand about this page?',
     translatePage: 'Translate',
     loadingContext: 'Reading page...',
+    pageBriefTitle: 'Ready to understand this page',
+    pageBriefDescription: 'Ask a focused question or start with a concise page summary.',
     ordinaryChat: 'Page context is unavailable. You can still chat normally.',
     historyClipped: 'Some older messages were not sent because of context limits.',
     model: 'Model',
@@ -493,10 +497,10 @@ export const en: I18nConfig = {
       prompt: '{text}',
     },
     chat: {
-      title: 'Chat',
-      description: 'Chat with AI',
+      title: 'Ask',
+      description: 'Ask about the selection in page context',
       prompt:
-        'You are a helpful AI assistant. Please respond to user messages in a conversational manner. The user has selected this text: "{text}".',
+        'Explain or answer questions about this selected text in the context of the current page:\n\n{text}',
     },
     collect: {
       title: 'Collect',

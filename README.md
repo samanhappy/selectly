@@ -5,19 +5,19 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.2-blue.svg)](https://reactjs.org/)
 
-Select any text on a webpage. Get instant AI-powered actions: translate, explain, polish, correct grammar, or chat about it. Works with OpenAI, Anthropic, DeepSeek, OpenRouter, SiliconFlow, and any OpenAI-compatible API.
+Understand any webpage with AI. Select text for instant translation or explanation, then open the side panel to summarize and ask about the whole page. Selectly Cloud works out of the box, and advanced users can still bring their own OpenAI-compatible provider.
 
 English | [中文文档](./README_CN.md)
 
 ## Features
 
-**Text Actions** — 🌐 Translate · ✨ Polish · 💡 Explain · ✅ Fix Grammar · 💬 Chat
+**Core Reading Loop** — Translate selection · Explain in context · Ask the page
 
-**Utilities** — 🔍 Search · 📋 Copy · 🔗 Open URL · 📚 Collect · 📤 Share as Image
+**Side Panel** — Page summaries · Contextual Q&A · Tab-scoped chat history
 
-**Premium** — 👑 Subscription · ☁️ Cloud Sync · 🔐 OAuth2 Login
+**Advanced Actions** — Polish · Correct grammar · Highlight · Custom prompts
 
-**Customizable** — 🔧 Multiple LLM providers · ⚙️ Toggle features on/off · 📝 Edit prompts · ➕ Write your own functions · 🌍 7 languages · 🎨 Button position
+**Model Options** — Selectly Cloud by default · BYOK for OpenAI, Anthropic, DeepSeek, OpenRouter, SiliconFlow, and compatible APIs
 
 ## Quick Start
 
@@ -38,19 +38,19 @@ In Chrome: `chrome://extensions/` → Developer mode on → Load unpacked → pi
 
 ### LLM Setup
 
-Click the extension icon → LLM Config tab → pick a provider, paste your API key, choose a model.
+Selectly Cloud is the default model path. To bring your own provider, click the extension icon → LLM Config tab → pick a provider, paste your API key, choose a model.
 
 ## Tech Stack
 
-| | | |
-| --- | --- | --- |
-| [Plasmo](https://plasmo.com/) | Extension framework | 0.90.5 |
-| [TypeScript](https://www.typescriptlang.org/) | Language | 5.3.3 |
-| [React](https://reactjs.org/) | UI | 18.2.0 |
-| [Tailwind CSS](https://tailwindcss.com/) | Styling | 3.4.17 |
-| [OpenAI SDK](https://github.com/openai/openai-node) | LLM calls | 5.16.0 |
-| [Dexie.js](https://dexie.org/) | IndexedDB | 4.0.8 |
-| [Stripe](https://stripe.com/) | Payments | 9.8.0 |
+|                                                     |                     |        |
+| --------------------------------------------------- | ------------------- | ------ |
+| [Plasmo](https://plasmo.com/)                       | Extension framework | 0.90.5 |
+| [TypeScript](https://www.typescriptlang.org/)       | Language            | 5.3.3  |
+| [React](https://reactjs.org/)                       | UI                  | 18.2.0 |
+| [Tailwind CSS](https://tailwindcss.com/)            | Styling             | 3.4.17 |
+| [OpenAI SDK](https://github.com/openai/openai-node) | LLM calls           | 5.16.0 |
+| [Dexie.js](https://dexie.org/)                      | IndexedDB           | 4.0.8  |
+| [Stripe](https://stripe.com/)                       | Payments            | 9.8.0  |
 
 ## Architecture
 
@@ -76,8 +76,8 @@ Each service owns one concern. LLM adapters are provider-swappable. Sensitive da
 
 ## Privacy
 
-- Config and API keys never leave your browser
-- Text goes only to the LLM provider you choose
+- BYOK config and API keys never leave your browser
+- Text is sent to Selectly Cloud or the LLM provider you choose only when you invoke an AI action
 - No tracking, no analytics
 - Encrypted storage via Chrome's secure storage
 - Source code is open
@@ -99,10 +99,9 @@ Pick anything: translations, new LLM providers, built-in functions, bug fixes, d
 ## Roadmap
 
 - [ ] Firefox and Edge
-- [ ] More built-in functions
-- [ ] Advanced prompt templates
+- [ ] Stronger side panel page understanding
+- [ ] Confirmed page-action suggestions
 - [ ] Export/import config
-- [ ] Function marketplace
 
 ## License
 

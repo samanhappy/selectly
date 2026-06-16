@@ -5,19 +5,19 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.2-blue.svg)](https://reactjs.org/)
 
-选中网页上的任意文本，立刻获得 AI 操作：翻译、润色、解释、纠正语法、对话。支持 OpenAI、Anthropic、DeepSeek、OpenRouter、SiliconFlow 及所有 OpenAI 兼容 API。
+用 AI 理解任何网页。选中文本即可翻译或解释，打开侧边栏即可总结并追问整页内容。Selectly Cloud 开箱即用，高级用户仍可自带 OpenAI 兼容供应商。
 
 [English](./README.md) | 中文文档
 
 ## 功能特性
 
-**文本操作** — 🌐 翻译 · ✨ 润色 · 💡 解释 · ✅ 纠正语法 · 💬 对话
+**核心阅读循环** — 划词翻译 · 结合上下文解释 · 询问整页
 
-**实用工具** — 🔍 搜索 · 📋 复制 · 🔗 打开链接 · 📚 收藏 · 📤 分享为图片
+**侧边栏** — 页面总结 · 上下文问答 · 绑定标签页的对话历史
 
-**高级功能** — 👑 订阅 · ☁️ 云同步 · 🔐 OAuth2 登录
+**高级动作** — 润色 · 纠错 · 高亮 · 自定义 Prompt
 
-**可定制** — 🔧 多 LLM 提供商 · ⚙️ 开关功能 · 📝 编辑提示词 · ➕ 自定义功能 · 🌍 7 种语言 · 🎨 按钮位置
+**模型选项** — 默认使用 Selectly Cloud · BYOK 支持 OpenAI、Anthropic、DeepSeek、OpenRouter、SiliconFlow 及兼容 API
 
 ## 快速开始
 
@@ -38,19 +38,19 @@ pnpm dev
 
 ### 配置 LLM
 
-点击扩展图标 → LLM 配置标签 → 选择提供商，粘贴 API 密钥，选择模型。
+Selectly Cloud 是默认模型路径。如需自带供应商，点击扩展图标 → LLM 配置标签 → 选择提供商，粘贴 API 密钥，选择模型。
 
 ## 技术栈
 
-| | | |
-| --- | --- | --- |
-| [Plasmo](https://plasmo.com/) | 扩展框架 | 0.90.5 |
-| [TypeScript](https://www.typescriptlang.org/) | 语言 | 5.3.3 |
-| [React](https://reactjs.org/) | UI | 18.2.0 |
-| [Tailwind CSS](https://tailwindcss.com/) | 样式 | 3.4.17 |
-| [OpenAI SDK](https://github.com/openai/openai-node) | LLM 调用 | 5.16.0 |
-| [Dexie.js](https://dexie.org/) | IndexedDB | 4.0.8 |
-| [Stripe](https://stripe.com/) | 支付 | 9.8.0 |
+|                                                     |           |        |
+| --------------------------------------------------- | --------- | ------ |
+| [Plasmo](https://plasmo.com/)                       | 扩展框架  | 0.90.5 |
+| [TypeScript](https://www.typescriptlang.org/)       | 语言      | 5.3.3  |
+| [React](https://reactjs.org/)                       | UI        | 18.2.0 |
+| [Tailwind CSS](https://tailwindcss.com/)            | 样式      | 3.4.17 |
+| [OpenAI SDK](https://github.com/openai/openai-node) | LLM 调用  | 5.16.0 |
+| [Dexie.js](https://dexie.org/)                      | IndexedDB | 4.0.8  |
+| [Stripe](https://stripe.com/)                       | 支付      | 9.8.0  |
 
 ## 架构
 
@@ -76,8 +76,8 @@ selectly/
 
 ## 隐私
 
-- 配置和 API 密钥不离开你的浏览器
-- 文本只发送到你选择的 LLM 提供商
+- BYOK 配置和 API 密钥不离开你的浏览器
+- 只有当你触发 AI 动作时，文本才会发送到 Selectly Cloud 或你选择的 LLM 提供商
 - 无跟踪、无分析
 - 通过 Chrome 安全存储加密
 - 源码开放
@@ -99,10 +99,9 @@ pnpm format       # Prettier 格式化
 ## 路线图
 
 - [ ] Firefox 和 Edge
-- [ ] 更多内置功能
-- [ ] 高级提示词模板
+- [ ] 更强的侧边栏页面理解
+- [ ] 需要用户确认的网页操作建议
 - [ ] 导出/导入配置
-- [ ] 功能市场
 
 ## 许可证
 

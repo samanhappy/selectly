@@ -192,24 +192,29 @@ export class ActionService {
   }
 
   private async handleChat(selectedText: string, config: FunctionConfig): Promise<void> {
-    // Get Selectly instance
-    const selectlyInstance = (window as any).selectlyInstance;
-    if (!selectlyInstance) {
+    if (!selectedText.trim()) {
       return;
     }
 
-    if (!config.prompt) {
-      selectlyInstance.showErrorResult(
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
+      return;
+    }
+
+    const res = await chrome.runtime.sendMessage({
+      action: 'tabContext:openSidePanelWithSelection',
+      payload: {
+        selectedText,
+      },
+    });
+
+    if (!res?.success) {
+      const selectlyInstance = (window as any).selectlyInstance;
+      selectlyInstance?.showErrorResult?.(
         i18n.t('errors.configError'),
-        `${i18n.t('errors.missingPromptConfig')}: chat`,
+        res?.error || i18n.t('errors.unknownError'),
         'chat'
       );
-      return;
     }
-
-    // Show dialogue streaming result window (use localized description for built-in functions)
-    const { description } = getFunctionDisplayFields('chat', config, i18n.getConfig());
-    selectlyInstance.showDialogueResult(description, selectedText, config);
   }
 
   private async handleSearch(text: string): Promise<void> {

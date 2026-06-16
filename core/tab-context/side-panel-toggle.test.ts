@@ -47,6 +47,23 @@ describe('TabAssistantSidePanelController', () => {
     expect(controller.isOpen(7)).toBe(false);
   });
 
+  it('show keeps the side panel open instead of toggling it closed', async () => {
+    const sidePanel = createSidePanel();
+    const controller = new TabAssistantSidePanelController('tabs/tab-assistant.html');
+
+    await controller.toggle(sidePanel, 7);
+    vi.clearAllMocks();
+
+    await expect(controller.show(sidePanel, 7)).resolves.toEqual({
+      action: 'opened',
+      tabId: 7,
+    });
+
+    expect(sidePanel.open).toHaveBeenCalledWith({ tabId: 7 });
+    expect(sidePanel.close).not.toHaveBeenCalled();
+    expect(controller.isOpen(7)).toBe(true);
+  });
+
   it('falls back to disabling the tab side panel when close is unavailable', async () => {
     const sidePanel = createSidePanel();
     delete sidePanel.close;

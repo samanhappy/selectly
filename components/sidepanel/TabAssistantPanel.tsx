@@ -25,6 +25,7 @@ import { modelService } from '../../core/services/model-service';
 import { tabContextService, type ActiveTabInfo } from '../../core/services/tab-context-service';
 import { tabChatDB } from '../../core/storage/tab-chat-db';
 import { getContextBudget } from '../../core/tab-context/budget';
+import type { TabAssistantLaunchIntent } from '../../core/tab-context/launch-intent';
 import { buildTabChatMessages } from '../../core/tab-context/prompt';
 import {
   getCurrentSessionForTab,
@@ -99,17 +100,31 @@ export const TabAssistantPanel = () => {
   const [contextPreviewOpen, setContextPreviewOpen] = useState(false);
   const [modelChoices, setModelChoices] = useState<ModelChoice[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [autoPrompt, setAutoPrompt] = useState<{ id: string; text: string } | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<ActiveTabInfo | null>(null);
   const sessionRef = useRef<TabChatSession | null>(null);
   const loadRequestIdRef = useRef(0);
+  const handledLaunchIntentIdsRef = useRef<Set<string>>(new Set());
 
   const labels = t.tabAssistant;
   const selectedModel = getTabSessionModel(session, config.llm.defaultModel);
   const isConfigured = isLLMModelUsable(config, selectedModel);
   const modelLabel = getModelChoiceLabel(selectedModel, modelChoices);
 
-  const quickPrompts = useMemo(() => [labels.summarizePage, labels.translatePage], [labels]);
+  const quickPrompts = useMemo(
+    () => [
+      {
+        label: labels.summarizePage,
+        prompt: labels.summarizePage,
+      },
+      {
+        label: labels.askAboutPage || 'Ask about this page',
+        prompt: labels.askAboutPagePrompt || labels.askAboutPage || 'Ask about this page',
+      },
+    ],
+    [labels]
+  );
 
   const loadModelChoices = useCallback(async (requiredModel?: string) => {
     const model = normalizeTabSessionModel(
@@ -125,6 +140,37 @@ export const TabAssistantPanel = () => {
       setLoadingModels(false);
     }
   }, []);
+
+  const buildSelectionQuestion = useCallback((selectedText: string) => {
+    const text = selectedText.trim();
+    if (configManager.getConfig().general.language === 'zh') {
+      return `结合当前页面解释这段选中文本：\n\n"${text}"`;
+    }
+    return `Explain this selection in the context of the current page:\n\n"${text}"`;
+  }, []);
+
+  const queueLaunchIntent = useCallback(
+    (intent: TabAssistantLaunchIntent | null) => {
+      if (!intent?.selectedText?.trim()) return;
+      if (handledLaunchIntentIdsRef.current.has(intent.id)) return;
+
+      handledLaunchIntentIdsRef.current.add(intent.id);
+      setAutoPrompt({
+        id: intent.id,
+        text: buildSelectionQuestion(intent.selectedText),
+      });
+    },
+    [buildSelectionQuestion]
+  );
+
+  const consumeLaunchIntentForTab = useCallback(
+    async (tabId?: number) => {
+      if (!tabId) return;
+      const intent = await tabContextService.consumeLaunchIntent(tabId);
+      queueLaunchIntent(intent);
+    },
+    [queueLaunchIntent]
+  );
 
   const loadTab = useCallback(
     async (tab: ActiveTabInfo | null) => {
@@ -172,6 +218,7 @@ export const TabAssistantPanel = () => {
             setSession(preservedSession);
             setMessages(preservedSession.messages || []);
             void loadModelChoices(getTabSessionModel(preservedSession, defaultModel));
+            void consumeLaunchIntentForTab(requestedTab.id);
             return;
           }
         }
@@ -186,6 +233,7 @@ export const TabAssistantPanel = () => {
         setSession(nextSession);
         setMessages(nextSession.messages || []);
         void loadModelChoices(getTabSessionModel(nextSession, defaultModel));
+        void consumeLaunchIntentForTab(requestedTab.id);
       } catch (err: any) {
         if (loadRequestIdRef.current === requestId) {
           setError(err?.message || labels.error);
@@ -196,7 +244,7 @@ export const TabAssistantPanel = () => {
         }
       }
     },
-    [labels.error, loadModelChoices]
+    [consumeLaunchIntentForTab, labels.error, loadModelChoices]
   );
 
   const refreshActiveTab = useCallback(async () => {
@@ -243,6 +291,20 @@ export const TabAssistantPanel = () => {
   useEffect(() => {
     sessionRef.current = session;
   }, [session]);
+
+  useEffect(() => {
+    const handleLaunchIntent = (request: any) => {
+      if (request?.action !== 'tabContext:launchIntentAvailable') return;
+      const tabId = Number(request.tabId);
+      if (!tabId || tabId !== activeTabRef.current?.id) return;
+      void consumeLaunchIntentForTab(tabId);
+    };
+
+    chrome.runtime?.onMessage?.addListener(handleLaunchIntent);
+    return () => {
+      chrome.runtime?.onMessage?.removeListener(handleLaunchIntent);
+    };
+  }, [consumeLaunchIntentForTab]);
 
   useEffect(() => {
     const handleActivated = async (activeInfo: chrome.tabs.TabActiveInfo) => {
@@ -355,6 +417,14 @@ export const TabAssistantPanel = () => {
       setStreaming(false);
     }
   };
+
+  useEffect(() => {
+    if (!autoPrompt || !session || loadingContext || streaming) return;
+
+    const prompt = autoPrompt.text;
+    setAutoPrompt(null);
+    void sendMessage(prompt);
+  }, [autoPrompt, loadingContext, session, streaming]);
 
   const copyMessage = async (content: string) => {
     await navigator.clipboard.writeText(content);
@@ -484,16 +554,35 @@ export const TabAssistantPanel = () => {
 
       <main ref={contentRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
         {messages.length === 0 && (
-          <div className="mb-3 grid grid-cols-2 gap-2">
-            {quickPrompts.map((prompt) => (
-              <button
-                key={prompt}
-                className="rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-xs font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50"
-                onClick={() => sendMessage(prompt)}
-              >
-                {prompt}
-              </button>
-            ))}
+          <div className="mb-3 flex flex-col gap-3">
+            <section className="rounded-lg border border-slate-200 bg-white p-3">
+              <div className="mb-2 text-[11px] font-medium uppercase text-slate-500">
+                {statusText}
+              </div>
+              <h2 className="text-sm font-semibold text-slate-900">
+                {context?.source === 'empty'
+                  ? labels.noPageContext
+                  : labels.pageBriefTitle || 'Ready to understand this page'}
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                {context?.source === 'empty'
+                  ? labels.ordinaryChat
+                  : labels.pageBriefDescription ||
+                    'Ask a focused question or start with a concise page summary.'}
+              </p>
+              <div className="mt-2 truncate text-[11px] text-slate-400">{contextMeta}</div>
+            </section>
+            <div className="grid grid-cols-2 gap-2">
+              {quickPrompts.map((prompt) => (
+                <button
+                  key={prompt.label}
+                  className="rounded-md border border-slate-200 bg-white px-3 py-2 text-left text-xs font-medium text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+                  onClick={() => sendMessage(prompt.prompt)}
+                >
+                  {prompt.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

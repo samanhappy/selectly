@@ -1,6 +1,7 @@
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { parseModelString } from '../config/model-resolution';
 import { getContextBudget } from '../tab-context/budget';
+import type { TabAssistantLaunchIntent } from '../tab-context/launch-intent';
 import { getModelContextWindow } from '../tab-context/model-metadata';
 import type { ModelContextBudget, TabContextSnapshot } from '../tab-context/types';
 import { modelService } from './model-service';
@@ -76,6 +77,15 @@ export class TabContextService {
     }
 
     return res.snapshot || null;
+  }
+
+  async consumeLaunchIntent(tabId: number): Promise<TabAssistantLaunchIntent | null> {
+    const res = await chrome.runtime.sendMessage({
+      action: 'tabContext:consumeLaunchIntent',
+      tabId,
+    });
+
+    return res?.success ? res.intent || null : null;
   }
 }
 
