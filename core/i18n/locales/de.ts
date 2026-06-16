@@ -319,8 +319,6 @@ export const de: I18nConfig = {
     saved: 'Gespeichert',
     copy: 'Kopieren',
     summarizePage: 'Seite zusammenfassen',
-    extractKeyPoints: 'Kernpunkte extrahieren',
-    listActionItems: 'Aufgaben auflisten',
     translatePage: 'Seite übersetzen',
     loadingContext: 'Seite wird gelesen...',
     ordinaryChat: 'Seitenkontext ist nicht verfügbar. Sie können trotzdem normal chatten.',

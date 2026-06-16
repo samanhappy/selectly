@@ -305,8 +305,6 @@ export interface I18nConfig {
     saved: string;
     copy: string;
     summarizePage: string;
-    extractKeyPoints: string;
-    listActionItems: string;
     translatePage: string;
     loadingContext: string;
     ordinaryChat: string;

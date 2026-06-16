@@ -317,10 +317,8 @@ export const es: I18nConfig = {
     saveToCollections: 'Guardar en colecciones',
     saved: 'Guardado',
     copy: 'Copiar',
-    summarizePage: 'Resumir página',
-    extractKeyPoints: 'Extraer puntos clave',
-    listActionItems: 'Listar acciones',
-    translatePage: 'Traducir página',
+    summarizePage: 'Resumir',
+    translatePage: 'Traducir',
     loadingContext: 'Leyendo página...',
     ordinaryChat:
       'El contexto de la página no está disponible. Aun así puedes chatear normalmente.',

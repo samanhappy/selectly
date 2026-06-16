@@ -106,15 +106,7 @@ export const TabAssistantPanel = () => {
   const isConfigured = isLLMModelUsable(config, selectedModel);
   const modelLabel = getModelChoiceLabel(selectedModel, modelChoices);
 
-  const quickPrompts = useMemo(
-    () => [
-      labels.summarizePage,
-      labels.extractKeyPoints,
-      labels.listActionItems,
-      labels.translatePage,
-    ],
-    [labels]
-  );
+  const quickPrompts = useMemo(() => [labels.summarizePage, labels.translatePage], [labels]);
 
   const loadModelChoices = useCallback(async (requiredModel?: string) => {
     const model = normalizeTabSessionModel(

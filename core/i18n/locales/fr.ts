@@ -318,10 +318,8 @@ export const fr: I18nConfig = {
     saveToCollections: 'Enregistrer dans les collections',
     saved: 'Enregistré',
     copy: 'Copier',
-    summarizePage: 'Résumer la page',
-    extractKeyPoints: 'Extraire les points clés',
-    listActionItems: 'Lister les actions',
-    translatePage: 'Traduire la page',
+    summarizePage: 'Résumer',
+    translatePage: 'Traduire',
     loadingContext: 'Lecture de la page...',
     ordinaryChat:
       'Le contexte de page est indisponible. Vous pouvez toujours discuter normalement.',
