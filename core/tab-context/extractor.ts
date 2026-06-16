@@ -112,6 +112,53 @@ const readWithReadability = (doc: Document): { text: string; title?: string } | 
   }
 };
 
+const normalizeComparableText = (text: string): string => normalizeText(text).toLowerCase();
+
+const isTextCoveredBy = (text: string, container: string): boolean => {
+  const normalizedText = normalizeComparableText(text);
+  const normalizedContainer = normalizeComparableText(container);
+  return normalizedText.length > 0 && normalizedContainer.includes(normalizedText);
+};
+
+const createReadabilityBlock = (
+  readability: { text: string; title?: string },
+  docTitle: string,
+  url: string
+): TabContextBlock => ({
+  id: 'b1',
+  order: 0,
+  heading: readability.title || docTitle || undefined,
+  text: readability.text,
+  charCount: readability.text.length,
+  frameUrl: url,
+});
+
+const mergeReadabilityAndDomBlocks = (
+  readability: { text: string; title?: string },
+  domBlocks: TabContextBlock[],
+  docTitle: string,
+  url: string
+): TabContextBlock[] => {
+  const readabilityBlock = createReadabilityBlock(readability, docTitle, url);
+  const supplementalDomBlocks = domBlocks.filter(
+    (block) => !isTextCoveredBy(block.text, readability.text)
+  );
+
+  if (supplementalDomBlocks.length === 0) {
+    return [readabilityBlock];
+  }
+
+  const domHasReadabilityBlock = domBlocks.some((block) =>
+    isTextCoveredBy(readability.text, block.text)
+  );
+
+  if (domHasReadabilityBlock) {
+    return domBlocks;
+  }
+
+  return [readabilityBlock, ...supplementalDomBlocks];
+};
+
 const trimBlocksToBudget = (
   blocks: TabContextBlock[],
   maxContextChars: number
@@ -184,22 +231,16 @@ export const captureTabContextSnapshot = (
   const normalizedUrl = normalizePageUrl(url);
   const hostname = doc.location.hostname;
   const readability = readWithReadability(doc);
+  const domBlocks = collectDomBlocks(doc, url);
   const frameResult = collectAccessibleFrameBlocks(doc);
   let source: TabContextSource = 'dom';
   let blocks: TabContextBlock[] = [];
 
   if (readability) {
     source = 'readability';
-    blocks.push({
-      id: 'b1',
-      order: 0,
-      heading: readability.title || doc.title || undefined,
-      text: readability.text,
-      charCount: readability.text.length,
-      frameUrl: url,
-    });
+    blocks.push(...mergeReadabilityAndDomBlocks(readability, domBlocks, doc.title, url));
   } else {
-    blocks.push(...collectDomBlocks(doc, url));
+    blocks.push(...domBlocks);
   }
 
   blocks.push(...frameResult.blocks);
@@ -207,7 +248,7 @@ export const captureTabContextSnapshot = (
 
   const orderedBlocks = blocks.map((block, index) => ({
     ...block,
-    id: block.id || `b${index + 1}`,
+    id: `b${index + 1}`,
     order: index,
   }));
   const totalChars = orderedBlocks.reduce((sum, block) => sum + block.charCount, 0);
