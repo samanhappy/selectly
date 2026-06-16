@@ -292,6 +292,16 @@ export interface I18nConfig {
     contextTruncated: string;
     contextStats: string;
     skippedFrames: string;
+    viewContext: string;
+    contextPreviewTitle: string;
+    contextPreview: string;
+    contextBlocks: string;
+    contextSource: string;
+    contextFrame: string;
+    contextBlockChars: string;
+    copyContext: string;
+    contextCopied: string;
+    closeContextPreview: string;
     refresh: string;
     pin: string;
     unpin: string;

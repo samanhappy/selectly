@@ -2,6 +2,7 @@ import {
   BookmarkPlus,
   Copy,
   ExternalLink,
+  FileText,
   Pin,
   PinOff,
   RefreshCw,
@@ -35,6 +36,7 @@ import {
 import { getTabSessionModel, normalizeTabSessionModel } from '../../core/tab-context/session-model';
 import type { TabChatSession, TabContextSnapshot, TabMessage } from '../../core/tab-context/types';
 import { normalizePageUrl } from '../../core/tab-context/url';
+import { ContextPreviewModal } from './ContextPreviewModal';
 import { MessageContent } from './MessageContent';
 import { TabModelPicker } from './TabModelPicker';
 
@@ -94,6 +96,7 @@ export const TabAssistantPanel = () => {
   const [error, setError] = useState('');
   const [pinned, setPinned] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+  const [contextPreviewOpen, setContextPreviewOpen] = useState(false);
   const [modelChoices, setModelChoices] = useState<ModelChoice[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -378,6 +381,11 @@ export const TabAssistantPanel = () => {
 
   const openSettings = () => chrome.runtime.openOptionsPage();
 
+  const copyContextText = async () => {
+    if (!context?.text.trim()) return;
+    await copyMessage(context.text);
+  };
+
   const selectModel = async (model: string) => {
     if (!session) return;
     const nextModel = normalizeTabSessionModel(model);
@@ -422,6 +430,7 @@ export const TabAssistantPanel = () => {
           .filter(Boolean)
           .join(' · ')
       : labels.ordinaryChat;
+  const canViewContext = !!context && context.source !== 'empty' && !!context.text.trim();
 
   return (
     <div className="selectly-popup flex h-screen min-h-0 flex-col bg-slate-50 text-slate-900">
@@ -437,6 +446,17 @@ export const TabAssistantPanel = () => {
             <div className="truncate text-xs text-slate-500">
               {context?.url || activeTab?.url || statusText}
             </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              className="sl-btn sl-btn-ghost !h-8 !w-8 !p-0"
+              disabled={!canViewContext}
+              title={canViewContext ? labels.viewContext : labels.noPageContext}
+              aria-label={canViewContext ? labels.viewContext : labels.noPageContext}
+              onClick={() => setContextPreviewOpen(true)}
+            >
+              <FileText size={14} />
+            </button>
           </div>
           {/* <div className="flex shrink-0 items-center gap-1">
             <button
@@ -579,6 +599,28 @@ export const TabAssistantPanel = () => {
           </div>
         </div>
       </footer>
+      <ContextPreviewModal
+        context={context}
+        labels={{
+          title: labels.contextPreviewTitle,
+          preview: labels.contextPreview,
+          blocks: labels.contextBlocks,
+          source: labels.contextSource,
+          frame: labels.contextFrame,
+          blockChars: labels.contextBlockChars,
+          copyContext: labels.copyContext,
+          contextCopied: labels.contextCopied,
+          close: labels.closeContextPreview,
+          contextReady: labels.contextReady,
+          contextTruncated: labels.contextTruncated,
+          noPageContext: labels.noPageContext,
+          contextStats: labels.contextStats,
+          skippedFrames: labels.skippedFrames,
+        }}
+        open={contextPreviewOpen}
+        onClose={() => setContextPreviewOpen(false)}
+        onCopy={copyContextText}
+      />
     </div>
   );
 };

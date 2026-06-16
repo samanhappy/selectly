@@ -13,22 +13,36 @@ import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
 import { StorageMigration } from './core/storage/migration';
 import { secureStorage } from './core/storage/secure-storage';
+import {
+  TabAssistantSidePanelController,
+  type TabAssistantSidePanelApi,
+} from './core/tab-context/side-panel-toggle';
 import { createLogger } from './utils/logger';
 
 const logger = createLogger('Background');
-let lastSidePanelTabId: number | null = null;
 const TAB_ASSISTANT_SIDE_PANEL_PATH = 'tabs/tab-assistant.html';
+const tabAssistantSidePanelController = new TabAssistantSidePanelController(
+  TAB_ASSISTANT_SIDE_PANEL_PATH
+);
+
+type TabAssistantSidePanelEvents = TabAssistantSidePanelApi & {
+  onOpened?: {
+    addListener(callback: (info: { tabId?: number; path: string }) => void): void;
+  };
+  onClosed?: {
+    addListener(callback: (info: { tabId?: number; path: string }) => void): void;
+  };
+};
+
+const getTabAssistantSidePanel = (): TabAssistantSidePanelEvents | null =>
+  (chrome.sidePanel as unknown as TabAssistantSidePanelEvents | undefined) ?? null;
 
 const enableTabAssistantSidePanel = (tabId: number) => {
-  const sidePanel = chrome.sidePanel;
+  const sidePanel = getTabAssistantSidePanel();
   if (!sidePanel?.setOptions) {
     return Promise.reject(new Error('Side panel options are not available in this browser'));
   }
-  return sidePanel.setOptions({
-    tabId,
-    path: TAB_ASSISTANT_SIDE_PANEL_PATH,
-    enabled: true,
-  });
+  return tabAssistantSidePanelController.prepare(sidePanel, tabId);
 };
 
 // Initialize extension on installation
@@ -110,8 +124,18 @@ chrome.runtime.onStartup.addListener(async () => {
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => {
-  if (lastSidePanelTabId === tabId) {
-    lastSidePanelTabId = null;
+  tabAssistantSidePanelController.markClosed(tabId);
+});
+
+const sidePanelEvents = getTabAssistantSidePanel();
+sidePanelEvents?.onOpened?.addListener((info) => {
+  if (info.path === TAB_ASSISTANT_SIDE_PANEL_PATH && info.tabId != null) {
+    tabAssistantSidePanelController.markOpened(info.tabId);
+  }
+});
+sidePanelEvents?.onClosed?.addListener((info) => {
+  if (info.path === TAB_ASSISTANT_SIDE_PANEL_PATH && info.tabId != null) {
+    tabAssistantSidePanelController.markClosed(info.tabId);
   }
 });
 
@@ -443,7 +467,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
       }
 
-      const sidePanel = chrome.sidePanel;
+      const sidePanel = getTabAssistantSidePanel();
       if (!sidePanel?.open) {
         sendResponse({ success: false, error: 'Side panel is not available in this browser' });
         return true;
@@ -456,25 +480,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
       }
 
-      void enableTabAssistantSidePanel(tabId).catch((err: any) => {
-        logger.warn('Failed to enable tab assistant side panel:', err);
-      });
-
-      lastSidePanelTabId = tabId;
-      try {
-        const openPromise = sidePanel.open({ tabId });
-        Promise.resolve(openPromise)
-          .then(() => {
-            sendResponse({ success: true, tabId });
-          })
-          .catch((err: any) => {
-            logger.error('Failed to open side panel:', err);
-            sendResponse({ success: false, error: err?.message || 'Failed to open side panel' });
-          });
-      } catch (err: any) {
-        logger.error('Failed to open side panel:', err);
-        sendResponse({ success: false, error: err?.message || 'Failed to open side panel' });
-      }
+      Promise.resolve(tabAssistantSidePanelController.toggle(sidePanel, tabId))
+        .then((result) => {
+          sendResponse({ success: true, tabId, action: result.action });
+        })
+        .catch((err: any) => {
+          logger.error('Failed to toggle side panel:', err);
+          sendResponse({ success: false, error: err?.message || 'Failed to toggle side panel' });
+        });
       return true;
     }
     case 'tabContext:prepareSidePanel': {
@@ -497,6 +510,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     case 'tabContext:getActiveTab': {
       (async () => {
+        const lastSidePanelTabId = tabAssistantSidePanelController.getLastKnownTabId();
         try {
           const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
           const tab = tabs[0];
