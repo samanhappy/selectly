@@ -1282,7 +1282,7 @@ export class Selectly {
     try {
       if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
       const res = await chrome.runtime.sendMessage({
-        action: 'tabContext:openSidePanel',
+        action: 'tabContext:toggleSidePanel',
       });
       if (!res?.success) {
         this.logger.warn('Failed to open side panel:', res?.error);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildTabChatMessages } from './prompt';
+import { buildTabChatMessages, getTabChatPromptSnapshot } from './prompt';
 import type { TabContextSnapshot, TabMessage } from './types';
 
 const snapshot: TabContextSnapshot = {
@@ -53,5 +53,17 @@ describe('buildTabChatMessages', () => {
       role: 'user',
       content: 'Summarize this page',
     });
+  });
+});
+
+describe('getTabChatPromptSnapshot', () => {
+  it('drops empty page context when there is no selected text', () => {
+    expect(getTabChatPromptSnapshot({ ...snapshot, source: 'empty', text: '' })).toBeNull();
+  });
+
+  it('keeps empty page context when selected text is available', () => {
+    const context = { ...snapshot, source: 'empty' as const, text: '', selectedText: 'selection' };
+
+    expect(getTabChatPromptSnapshot(context)).toBe(context);
   });
 });

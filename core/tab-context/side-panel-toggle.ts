@@ -53,7 +53,7 @@ export class TabAssistantSidePanelController {
         : this.lastKnownTabId;
   }
 
-  private async open(
+  async open(
     sidePanel: TabAssistantSidePanelApi,
     tabId: number
   ): Promise<TabAssistantSidePanelToggleResult> {

@@ -25,7 +25,12 @@ import { modelService } from '../../core/services/model-service';
 import { tabContextService, type ActiveTabInfo } from '../../core/services/tab-context-service';
 import { tabChatDB } from '../../core/storage/tab-chat-db';
 import { getContextBudget } from '../../core/tab-context/budget';
-import { buildTabChatMessages } from '../../core/tab-context/prompt';
+import { buildTabChatMessages, getTabChatPromptSnapshot } from '../../core/tab-context/prompt';
+import {
+  mergeSelectedTextIntoSnapshot,
+  removeSelectedTextFromSnapshot,
+  type TabSelectionContext,
+} from '../../core/tab-context/selection-context';
 import {
   getCurrentSessionForTab,
   getNormalizedTabUrl,
@@ -38,6 +43,7 @@ import type { TabChatSession, TabContextSnapshot, TabMessage } from '../../core/
 import { normalizePageUrl } from '../../core/tab-context/url';
 import { ContextPreviewModal } from './ContextPreviewModal';
 import { MessageContent } from './MessageContent';
+import { SelectedTextPreview } from './SelectedTextPreview';
 import { TabModelPicker } from './TabModelPicker';
 
 const configManager = ConfigManager.getInstance();
@@ -97,9 +103,11 @@ export const TabAssistantPanel = () => {
   const [pinned, setPinned] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
   const [contextPreviewOpen, setContextPreviewOpen] = useState(false);
+  const [selectedTextPreviewExpanded, setSelectedTextPreviewExpanded] = useState(false);
   const [modelChoices, setModelChoices] = useState<ModelChoice[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const activeTabRef = useRef<ActiveTabInfo | null>(null);
   const sessionRef = useRef<TabChatSession | null>(null);
   const loadRequestIdRef = useRef(0);
@@ -110,6 +118,7 @@ export const TabAssistantPanel = () => {
   const modelLabel = getModelChoiceLabel(selectedModel, modelChoices);
 
   const quickPrompts = useMemo(() => [labels.summarizePage, labels.translatePage], [labels]);
+  const selectedTextPreview = context?.selectedText?.trim() || '';
 
   const loadModelChoices = useCallback(async (requiredModel?: string) => {
     const model = normalizeTabSessionModel(
@@ -143,6 +152,7 @@ export const TabAssistantPanel = () => {
       const defaultModel = configManager.getConfig().llm.defaultModel;
 
       try {
+        const pendingSelection = await tabContextService.getPendingSelection(requestedTab.id);
         const captured = await tabContextService.capture(requestedTab.id);
         if (loadRequestIdRef.current !== requestId) return;
 
@@ -167,16 +177,27 @@ export const TabAssistantPanel = () => {
                 title: preservedSession.title || requestedTab.title,
                 url: preservedSession.url || requestedTab.url,
               });
-            sessionRef.current = preservedSession;
-            setContext(preservedContext);
-            setSession(preservedSession);
+            const contextWithSelection = mergeSelectedTextIntoSnapshot(
+              preservedContext,
+              pendingSelection
+            );
+            const sessionWithSelection = {
+              ...preservedSession,
+              context: contextWithSelection,
+            };
+            sessionRef.current = sessionWithSelection;
+            setContext(contextWithSelection);
+            setSession(sessionWithSelection);
             setMessages(preservedSession.messages || []);
             void loadModelChoices(getTabSessionModel(preservedSession, defaultModel));
             return;
           }
         }
 
-        const snapshot = captured || createUnavailableSnapshot(requestedTab);
+        const snapshot = mergeSelectedTextIntoSnapshot(
+          captured || createUnavailableSnapshot(requestedTab),
+          pendingSelection
+        );
         const normalizedUrl = snapshot.normalizedUrl || normalizePageUrl(requestedTab.url || '');
         const nextSession = await tabChatDB.upsertContext(normalizedUrl, snapshot, defaultModel);
         if (loadRequestIdRef.current !== requestId) return;
@@ -204,6 +225,54 @@ export const TabAssistantPanel = () => {
     await loadTab(tab);
   }, [activeTab, loadTab]);
 
+  const clearSelectedTextContext = useCallback(() => {
+    const currentTab = activeTabRef.current;
+    const currentSession = sessionRef.current;
+    const nextContext = removeSelectedTextFromSnapshot(currentSession?.context || context);
+
+    setSelectedTextPreviewExpanded(false);
+    setContext((current) => removeSelectedTextFromSnapshot(current));
+    setSession((current) =>
+      current
+        ? {
+            ...current,
+            context: removeSelectedTextFromSnapshot(current.context),
+          }
+        : current
+    );
+
+    if (currentSession?.id) {
+      void tabChatDB.updateContext(currentSession.id, nextContext);
+    }
+    if (currentTab?.id) {
+      void tabContextService.clearPendingSelection(currentTab.id);
+    }
+  }, [context]);
+
+  const applySelectionContext = useCallback((selection: TabSelectionContext | null) => {
+    if (!selection?.selectedText) return;
+    const currentTab = activeTabRef.current;
+    if (!currentTab?.id || currentTab.id !== selection.tabId) return;
+
+    setSelectedTextPreviewExpanded(false);
+    setContext((current) => {
+      const nextContext = mergeSelectedTextIntoSnapshot(
+        current || createUnavailableSnapshot(currentTab),
+        selection
+      );
+      return nextContext;
+    });
+    setSession((current) =>
+      current?.context
+        ? {
+            ...current,
+            context: mergeSelectedTextIntoSnapshot(current.context, selection),
+          }
+        : current
+    );
+    inputRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     const init = async () => {
@@ -230,6 +299,26 @@ export const TabAssistantPanel = () => {
   }, [labels.error, loadModelChoices, loadTab]);
 
   useEffect(() => {
+    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
+      return;
+    }
+
+    const handleRuntimeMessage = (request: any) => {
+      if (request?.action !== 'tabContext:selectedTextUpdated') {
+        return false;
+      }
+
+      applySelectionContext(request.selection || null);
+      return false;
+    };
+
+    chrome.runtime?.onMessage?.addListener(handleRuntimeMessage);
+    return () => {
+      chrome.runtime?.onMessage?.removeListener(handleRuntimeMessage);
+    };
+  }, [applySelectionContext]);
+
+  useEffect(() => {
     const element = contentRef.current;
     if (element) {
       element.scrollTop = element.scrollHeight;
@@ -243,6 +332,12 @@ export const TabAssistantPanel = () => {
   useEffect(() => {
     sessionRef.current = session;
   }, [session]);
+
+  useEffect(() => {
+    if (selectedTextPreview) {
+      inputRef.current?.focus();
+    }
+  }, [selectedTextPreview]);
 
   useEffect(() => {
     const handleActivated = async (activeInfo: chrome.tabs.TabActiveInfo) => {
@@ -291,6 +386,8 @@ export const TabAssistantPanel = () => {
     setStreaming(true);
     const previousMessages = [...messages];
     const modelForRequest = selectedModel;
+    const contextForRequest = getTabChatPromptSnapshot(context);
+    const shouldClearSelectedTextAfterSend = !!contextForRequest?.selectedText?.trim();
     const userMessage = await tabChatDB.appendMessage(session.id, {
       role: 'user',
       content: text,
@@ -302,12 +399,15 @@ export const TabAssistantPanel = () => {
       createdAt: Date.now(),
     };
     setMessages([...previousMessages, userMessage, assistantMessage]);
+    if (shouldClearSelectedTextAfterSend) {
+      clearSelectedTextContext();
+    }
 
     let assistantContent = '';
     try {
       const budget = await tabContextService.getContextBudget(modelForRequest);
       const requestMessages = buildTabChatMessages({
-        snapshot: context?.source === 'empty' ? null : context,
+        snapshot: contextForRequest,
         history: previousMessages,
         userMessage: text,
         uiLanguage: config.general.language,
@@ -551,6 +651,18 @@ export const TabAssistantPanel = () => {
       )}
 
       <footer className="border-t border-slate-200 bg-white p-3">
+        <SelectedTextPreview
+          selectedText={selectedTextPreview}
+          expanded={selectedTextPreviewExpanded}
+          labels={{
+            selectedText: labels.selectedText,
+            expandSelectedText: labels.expandSelectedText,
+            collapseSelectedText: labels.collapseSelectedText,
+            removeSelectedText: labels.removeSelectedText,
+          }}
+          onToggle={() => setSelectedTextPreviewExpanded((value) => !value)}
+          onRemove={clearSelectedTextContext}
+        />
         {!isConfigured && (
           <div className="mb-2 flex items-center justify-between gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             <span>{labels.configureModel}</span>
@@ -561,6 +673,7 @@ export const TabAssistantPanel = () => {
         )}
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
           <textarea
+            ref={inputRef}
             className="max-h-32 min-h-[72px] w-full resize-none bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400"
             value={input}
             disabled={streaming}

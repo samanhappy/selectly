@@ -52,6 +52,14 @@ const buildContextMessage = (snapshot: TabContextSnapshot): string => {
   ].join('\n');
 };
 
+export const getTabChatPromptSnapshot = (
+  snapshot: TabContextSnapshot | null
+): TabContextSnapshot | null => {
+  if (!snapshot) return null;
+  if (snapshot.source === 'empty' && !snapshot.selectedText?.trim()) return null;
+  return snapshot;
+};
+
 export const buildTabChatMessages = ({
   snapshot,
   history,

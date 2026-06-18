@@ -2,6 +2,7 @@ import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { parseModelString } from '../config/model-resolution';
 import { getContextBudget } from '../tab-context/budget';
 import { getModelContextWindow } from '../tab-context/model-metadata';
+import type { TabSelectionContext } from '../tab-context/selection-context';
 import type { ModelContextBudget, TabContextSnapshot } from '../tab-context/types';
 import { modelService } from './model-service';
 
@@ -76,6 +77,29 @@ export class TabContextService {
     }
 
     return res.snapshot || null;
+  }
+
+  async getPendingSelection(tabId: number): Promise<TabSelectionContext | null> {
+    try {
+      const res = await chrome.runtime.sendMessage({
+        action: 'tabContext:getPendingSelection',
+        tabId,
+      });
+      return res?.success ? res.selection || null : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async clearPendingSelection(tabId: number): Promise<void> {
+    try {
+      await chrome.runtime.sendMessage({
+        action: 'tabContext:clearPendingSelection',
+        tabId,
+      });
+    } catch {
+      // Clearing selected text is a local UX action; do not block on background cleanup.
+    }
   }
 }
 

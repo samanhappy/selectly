@@ -292,6 +292,10 @@ export interface I18nConfig {
     contextTruncated: string;
     contextStats: string;
     skippedFrames: string;
+    selectedText: string;
+    expandSelectedText: string;
+    collapseSelectedText: string;
+    removeSelectedText: string;
     viewContext: string;
     contextPreviewTitle: string;
     contextPreview: string;

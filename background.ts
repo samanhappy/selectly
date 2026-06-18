@@ -14,6 +14,12 @@ import { dictionaryDB } from './core/storage/dictionary-db';
 import { StorageMigration } from './core/storage/migration';
 import { secureStorage } from './core/storage/secure-storage';
 import {
+  createTabSelectionContext,
+  isSelectionContextFresh,
+  mergeSelectedTextIntoSnapshot,
+  type TabSelectionContext,
+} from './core/tab-context/selection-context';
+import {
   TabAssistantSidePanelController,
   type TabAssistantSidePanelApi,
 } from './core/tab-context/side-panel-toggle';
@@ -24,6 +30,7 @@ const TAB_ASSISTANT_SIDE_PANEL_PATH = 'tabs/tab-assistant.html';
 const tabAssistantSidePanelController = new TabAssistantSidePanelController(
   TAB_ASSISTANT_SIDE_PANEL_PATH
 );
+const pendingTabSelections = new Map<number, TabSelectionContext>();
 
 type TabAssistantSidePanelEvents = TabAssistantSidePanelApi & {
   onOpened?: {
@@ -43,6 +50,37 @@ const enableTabAssistantSidePanel = (tabId: number) => {
     return Promise.reject(new Error('Side panel options are not available in this browser'));
   }
   return tabAssistantSidePanelController.prepare(sidePanel, tabId);
+};
+
+const savePendingTabSelection = (tabId: number, selectedText: unknown) => {
+  const selection = createTabSelectionContext(tabId, selectedText);
+  if (!selection) return null;
+
+  pendingTabSelections.set(tabId, selection);
+  return selection;
+};
+
+const getPendingTabSelection = (tabId: number): TabSelectionContext | null => {
+  const selection = pendingTabSelections.get(tabId);
+  if (!selection) return null;
+
+  if (!isSelectionContextFresh(selection)) {
+    pendingTabSelections.delete(tabId);
+    return null;
+  }
+
+  return selection;
+};
+
+const broadcastPendingTabSelection = async (selection: TabSelectionContext) => {
+  try {
+    await chrome.runtime.sendMessage({
+      action: 'tabContext:selectedTextUpdated',
+      selection,
+    });
+  } catch {
+    // The side panel may not be mounted yet; it will consume the pending selection on capture.
+  }
 };
 
 // Initialize extension on installation
@@ -125,6 +163,7 @@ chrome.runtime.onStartup.addListener(async () => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabAssistantSidePanelController.markClosed(tabId);
+  pendingTabSelections.delete(tabId);
 });
 
 const sidePanelEvents = getTabAssistantSidePanel();
@@ -460,7 +499,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })();
       return true;
     }
-    case 'tabContext:openSidePanel': {
+    case 'tabContext:openSidePanel':
+    case 'tabContext:toggleSidePanel': {
       const tabId = sender.tab?.id;
       if (!tabId) {
         sendResponse({ success: false, error: 'Missing tab id' });
@@ -480,8 +520,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
       }
 
-      Promise.resolve(tabAssistantSidePanelController.toggle(sidePanel, tabId))
+      const selection = savePendingTabSelection(tabId, request.selectedText);
+      const sidePanelAction =
+        request.action === 'tabContext:toggleSidePanel'
+          ? tabAssistantSidePanelController.toggle(sidePanel, tabId)
+          : tabAssistantSidePanelController.open(sidePanel, tabId);
+
+      Promise.resolve(sidePanelAction)
         .then((result) => {
+          if (selection) {
+            void broadcastPendingTabSelection(selection);
+          }
           sendResponse({ success: true, tabId, action: result.action });
         })
         .catch((err: any) => {
@@ -538,6 +587,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       })();
       return true;
     }
+    case 'tabContext:getPendingSelection': {
+      const tabId = request.tabId as number | undefined;
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id', selection: null });
+        return true;
+      }
+
+      sendResponse({
+        success: true,
+        selection: getPendingTabSelection(tabId),
+      });
+      return true;
+    }
+    case 'tabContext:clearPendingSelection': {
+      const tabId = request.tabId as number | undefined;
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id' });
+        return true;
+      }
+
+      pendingTabSelections.delete(tabId);
+      sendResponse({ success: true });
+      return true;
+    }
     case 'tabContext:capture': {
       (async () => {
         try {
@@ -555,7 +628,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             },
             { frameId: 0 }
           );
-          sendResponse(res);
+          const selection = getPendingTabSelection(tabId);
+          sendResponse({
+            ...res,
+            snapshot:
+              res?.success && res.snapshot
+                ? mergeSelectedTextIntoSnapshot(res.snapshot, selection)
+                : res?.snapshot,
+          });
         } catch (err: any) {
           logger.warn('Failed to capture tab context:', err);
           sendResponse({

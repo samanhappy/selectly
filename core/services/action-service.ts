@@ -191,25 +191,31 @@ export class ActionService {
     }
   }
 
-  private async handleChat(selectedText: string, config: FunctionConfig): Promise<void> {
-    // Get Selectly instance
+  private async handleChat(selectedText: string, _config: FunctionConfig): Promise<void> {
     const selectlyInstance = (window as any).selectlyInstance;
-    if (!selectlyInstance) {
-      return;
-    }
+    try {
+      if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
+        throw new Error('Side panel is not available in this browser');
+      }
 
-    if (!config.prompt) {
-      selectlyInstance.showErrorResult(
-        i18n.t('errors.configError'),
-        `${i18n.t('errors.missingPromptConfig')}: chat`,
-        'chat'
-      );
-      return;
-    }
+      const res = await chrome.runtime.sendMessage({
+        action: 'tabContext:openSidePanel',
+        selectedText,
+      });
 
-    // Show dialogue streaming result window (use localized description for built-in functions)
-    const { description } = getFunctionDisplayFields('chat', config, i18n.getConfig());
-    selectlyInstance.showDialogueResult(description, selectedText, config);
+      if (!res?.success) {
+        throw new Error(res?.error || 'Failed to open side panel');
+      }
+    } catch (error: any) {
+      logger.error('Failed to open chat side panel:', error);
+      if (selectlyInstance?.showErrorResult) {
+        selectlyInstance.showErrorResult(
+          i18n.t('errors.configError'),
+          error?.message || i18n.t('errors.unknownError'),
+          'chat'
+        );
+      }
+    }
   }
 
   private async handleSearch(text: string): Promise<void> {

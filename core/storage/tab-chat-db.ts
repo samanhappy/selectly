@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from '@lukeed/uuid';
 import Dexie from 'dexie';
 import type { Table } from 'dexie';
 
-import type { TabChatSession, TabContextSnapshot, TabMessage } from '../tab-context/types';
 import { getTabSessionModel, normalizeTabSessionModel } from '../tab-context/session-model';
+import type { TabChatSession, TabContextSnapshot, TabMessage } from '../tab-context/types';
 
 export const TAB_CHAT_RETENTION_DAYS = 30;
 const TAB_CHAT_RETENTION_MS = TAB_CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
@@ -42,10 +42,7 @@ class TabChatDB extends Dexie {
     return sessions.sort((a, b) => b.updatedAt - a.updatedAt)[0];
   }
 
-  async createSession(
-    context: TabContextSnapshot | null,
-    model?: string
-  ): Promise<TabChatSession> {
+  async createSession(context: TabContextSnapshot | null, model?: string): Promise<TabChatSession> {
     const now = Date.now();
     const session: TabChatSession = {
       id: uuidv4(),
@@ -94,6 +91,15 @@ class TabChatDB extends Dexie {
     const now = Date.now();
     await this.sessions.update(sessionId, {
       model: normalizeTabSessionModel(model),
+      updatedAt: now,
+      expiresAt: this.getExpiresAt(now),
+    });
+  }
+
+  async updateContext(sessionId: string, context: TabContextSnapshot | null) {
+    const now = Date.now();
+    await this.sessions.update(sessionId, {
+      context,
       updatedAt: now,
       expiresAt: this.getExpiresAt(now),
     });
