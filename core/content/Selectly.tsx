@@ -5,6 +5,7 @@ import { GlobalActionBar } from '../../components/content/GlobalActionBar';
 import { SharePreview } from '../../components/content/SharePreview';
 import { StreamingResult } from '../../components/content/StreamingResult';
 import { createLogger } from '../../utils/logger';
+import { isReadingProgressEnabled } from '../config/feature-gates';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
@@ -787,7 +788,11 @@ export class Selectly {
 
     this.addStyles();
 
-    this.setupReadingProgress();
+    if (isReadingProgressEnabled()) {
+      this.setupReadingProgress();
+    } else if (window.top === window.self) {
+      this.updateGlobalActionBar();
+    }
 
     await this.restoreHighlights();
 
@@ -1026,8 +1031,13 @@ export class Selectly {
   }
 
   private setupReadingProgress() {
-    if (this.readingProgressInitialized) return;
     if (window.top !== window.self) return;
+
+    if (!isReadingProgressEnabled()) {
+      this.updateGlobalActionBar();
+      return;
+    }
+    if (this.readingProgressInitialized) return;
 
     this.readingProgressInitialized = true;
     this.mountProgressBar();
@@ -1078,6 +1088,7 @@ export class Selectly {
   }
 
   private mountProgressBar() {
+    if (!isReadingProgressEnabled()) return;
     if (this.progressHost) return;
 
     this.progressHost = document.createElement('div');
@@ -1106,6 +1117,12 @@ export class Selectly {
   }
 
   private applyReadingProgressConfig() {
+    if (!isReadingProgressEnabled()) {
+      if (this.progressHost) this.progressHost.style.display = 'none';
+      if (window.top === window.self) this.updateGlobalActionBar();
+      return;
+    }
+
     const { showProgressBar, progressBarColor } = this.getReadingProgressConfig();
     const hasScroll = this.hasVerticalScroll();
 
@@ -1144,6 +1161,8 @@ export class Selectly {
   };
 
   private scheduleSaveProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
+    if (!isReadingProgressEnabled()) return;
+
     const { autoSave } = this.getReadingProgressConfig();
     if (reason === 'scroll' && !autoSave) return;
 
@@ -1240,6 +1259,7 @@ export class Selectly {
   }
 
   private updateProgressBar() {
+    if (!isReadingProgressEnabled()) return;
     if (!this.progressFill) return;
     const { showProgressBar } = this.getReadingProgressConfig();
     if (!showProgressBar) return;
@@ -1266,6 +1286,8 @@ export class Selectly {
   }
 
   private shouldShowManualSaveButton(): boolean {
+    if (!isReadingProgressEnabled()) return false;
+
     const { autoSave } = this.getReadingProgressConfig();
     return this.hasVerticalScroll() && (!autoSave || this.isReadingProgressDisabled());
   }
@@ -1375,6 +1397,7 @@ export class Selectly {
   }
 
   private async getReadingProgressFromBackground(maxAgeMs?: number) {
+    if (!isReadingProgressEnabled()) return null;
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return null;
     const res = await chrome.runtime.sendMessage({
       action: 'readingProgress:get',
@@ -1395,6 +1418,7 @@ export class Selectly {
     },
     maxAgeMs?: number
   ) {
+    if (!isReadingProgressEnabled()) return;
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
     await chrome.runtime.sendMessage({
       action: 'readingProgress:save',
@@ -1405,6 +1429,7 @@ export class Selectly {
   }
 
   private async deleteReadingProgressFromBackground() {
+    if (!isReadingProgressEnabled()) return;
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return;
     await chrome.runtime.sendMessage({
       action: 'readingProgress:delete',
@@ -1413,6 +1438,7 @@ export class Selectly {
   }
 
   private async saveReadingProgress(reason: 'scroll' | 'visibility' | 'pagehide' | 'manual') {
+    if (!isReadingProgressEnabled()) return;
     if (window.top !== window.self) return;
     if (this.isRestoringProgress) return;
     if (reason !== 'manual' && this.isReadingProgressDisabled()) return;
@@ -1454,6 +1480,8 @@ export class Selectly {
   }
 
   private async restoreReadingProgress() {
+    if (!isReadingProgressEnabled()) return;
+
     const { autoRestore } = this.getReadingProgressConfig();
     if (!autoRestore) return;
 

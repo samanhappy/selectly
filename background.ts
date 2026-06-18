@@ -1,4 +1,8 @@
 import { authService } from './core/auth/auth-service';
+import {
+  createReadingProgressDisabledResponse,
+  isReadingProgressEnabled,
+} from './core/config/feature-gates';
 import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
@@ -441,6 +445,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'readingProgress:get': {
+      if (!isReadingProgressEnabled()) {
+        sendResponse(createReadingProgressDisabledResponse());
+        return true;
+      }
+
       (async () => {
         try {
           const url = request.url as string;
@@ -459,6 +468,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'readingProgress:save': {
+      if (!isReadingProgressEnabled()) {
+        sendResponse(createReadingProgressDisabledResponse());
+        return true;
+      }
+
       (async () => {
         try {
           const url = request.url as string;
@@ -483,6 +497,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'readingProgress:delete': {
+      if (!isReadingProgressEnabled()) {
+        sendResponse(createReadingProgressDisabledResponse());
+        return true;
+      }
+
       (async () => {
         try {
           const url = request.url as string;
