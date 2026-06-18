@@ -1,5 +1,5 @@
-import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { GlobalActionBar } from './GlobalActionBar';
@@ -24,6 +24,8 @@ describe('GlobalActionBar', () => {
 
     expect(html).toContain('selectly-global-action-cluster');
     expect(html).toContain('selectly-global-action-trigger');
+    expect(html).toContain('is-expand-up');
+    expect(html.match(/selectly-global-action-drag-target/g)).toHaveLength(1);
     expect(html.match(/selectly-global-action-btn/g)).toHaveLength(3);
   });
 
@@ -39,6 +41,7 @@ describe('GlobalActionBar', () => {
 
     expect(html).not.toContain('selectly-global-action-cluster');
     expect(html).not.toContain('selectly-global-action-trigger');
+    expect(html.match(/selectly-global-action-drag-target/g)).toHaveLength(1);
     expect(html.match(/selectly-global-action-btn/g)).toHaveLength(1);
   });
 });

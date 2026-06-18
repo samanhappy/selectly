@@ -1,6 +1,7 @@
 import { Bookmark, MessageCircle, Sparkles } from 'lucide-react';
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+
+import { useGlobalActionBarPosition } from './useGlobalActionBarPosition';
 
 interface GlobalActionBarProps {
   onOpenTabAssistant?: () => Promise<void>;
@@ -61,18 +62,38 @@ export const GlobalActionBar = ({
     onClick: () => void;
     className?: string;
   }>;
+  const { rootRef, point, expandDirection, isDragging, dragTargetProps } =
+    useGlobalActionBarPosition(actions.length);
 
   if (actions.length === 0) return null;
+
+  const rootClassName = [
+    'selectly-global-actions',
+    `is-expand-${expandDirection}`,
+    isDragging ? 'is-dragging' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const rootStyle: React.CSSProperties = {
+    left: `${point?.x || 0}px`,
+    top: `${point?.y || 0}px`,
+    right: 'auto',
+    bottom: 'auto',
+    visibility: point ? 'visible' : 'hidden',
+  };
 
   if (actions.length === 1) {
     const [action] = actions;
     return (
-      <div className="selectly-global-actions">
+      <div ref={rootRef} className={rootClassName} style={rootStyle}>
         <button
-          className={`selectly-global-action-btn ${action.className || ''}`.trim()}
+          className={`selectly-global-action-btn selectly-global-action-drag-target ${
+            action.className || ''
+          }`.trim()}
           onClick={action.onClick}
           title={action.label}
           aria-label={action.label}
+          {...dragTargetProps}
         >
           {action.icon}
         </button>
@@ -83,7 +104,7 @@ export const GlobalActionBar = ({
   const menuLabel = actions.map((action) => action.label).join(' / ');
 
   return (
-    <div className="selectly-global-actions">
+    <div ref={rootRef} className={rootClassName} style={rootStyle}>
       <div
         className={`selectly-global-action-cluster ${expanded ? 'is-expanded' : ''}`}
         onMouseEnter={() => setExpanded(true)}
@@ -111,12 +132,13 @@ export const GlobalActionBar = ({
           ))}
         </div>
         <button
-          className="selectly-global-action-btn selectly-global-action-trigger"
+          className="selectly-global-action-btn selectly-global-action-trigger selectly-global-action-drag-target"
           onClick={() => setExpanded((value) => !value)}
           title={menuLabel}
           aria-label={menuLabel}
           aria-haspopup="menu"
           aria-expanded={expanded}
+          {...dragTargetProps}
         >
           <Sparkles size={16} />
         </button>
