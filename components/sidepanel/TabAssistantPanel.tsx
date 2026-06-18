@@ -1,14 +1,4 @@
-import {
-  BookmarkPlus,
-  Copy,
-  ExternalLink,
-  FileText,
-  Pin,
-  PinOff,
-  RefreshCw,
-  Send,
-  Settings,
-} from 'lucide-react';
+import { ExternalLink, FileText, Pin, PinOff, RefreshCw, Send, Settings } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ConfigManager, DEFAULT_CONFIG, type UserConfig } from '../../core/config/llm-config';
@@ -42,8 +32,8 @@ import { getTabSessionModel, normalizeTabSessionModel } from '../../core/tab-con
 import type { TabChatSession, TabContextSnapshot, TabMessage } from '../../core/tab-context/types';
 import { normalizePageUrl } from '../../core/tab-context/url';
 import { ContextPreviewModal } from './ContextPreviewModal';
-import { MessageContent } from './MessageContent';
 import { SelectedTextPreview } from './SelectedTextPreview';
+import { TabChatMessage } from './TabChatMessage';
 import { TabModelPicker } from './TabModelPicker';
 
 const configManager = ConfigManager.getInstance();
@@ -599,42 +589,17 @@ export const TabAssistantPanel = () => {
 
         <div className="flex flex-col gap-3">
           {messages.map((message) => (
-            <div
+            <TabChatMessage
               key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`group min-w-0 max-w-[92%] overflow-hidden rounded-lg border px-3 py-2 text-sm leading-relaxed ${
-                  message.role === 'user'
-                    ? 'border-blue-200 bg-blue-50 text-slate-900'
-                    : message.error
-                      ? 'border-red-200 bg-red-50 text-red-900'
-                      : 'border-slate-200 bg-white text-slate-800'
-                }`}
-              >
-                <MessageContent content={message.content || (streaming ? '...' : '')} />
-                {message.role === 'assistant' && message.content && !streaming && (
-                  <div className="mt-2 flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                      className="sl-btn sl-btn-ghost !h-7 !w-7 !p-0"
-                      title={labels.copy}
-                      aria-label={labels.copy}
-                      onClick={() => copyMessage(message.content)}
-                    >
-                      <Copy size={13} />
-                    </button>
-                    <button
-                      className="sl-btn sl-btn-ghost !h-7 !w-7 !p-0"
-                      title={labels.saveToCollections}
-                      aria-label={labels.saveToCollections}
-                      onClick={() => saveMessageToCollections(message.content)}
-                    >
-                      <BookmarkPlus size={13} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+              message={message}
+              streaming={streaming}
+              labels={{
+                copy: labels.copy,
+                saveToCollections: labels.saveToCollections,
+              }}
+              onCopy={copyMessage}
+              onSave={saveMessageToCollections}
+            />
           ))}
         </div>
       </main>
