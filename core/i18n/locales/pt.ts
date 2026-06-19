@@ -117,8 +117,7 @@ export const pt: I18nConfig = {
       close: 'Fechar',
       context: 'Contexto',
       contextWindowPlaceholder: 'ex.: 128000',
-      contextWindowHelp:
-        'Substituição opcional da janela de contexto do modelo. Usada para dimensionar o contexto da página no chat da aba.',
+      contextWindowHelp: 'Opcional. Ajuda o chat da aba com páginas mais longas.',
     },
     functions: {
       title: 'Funções',
@@ -151,11 +150,10 @@ export const pt: I18nConfig = {
         basicSettings: 'Configurações Básicas',
         advancedSettings: 'Configurações Avançadas',
         thinkingMode: 'Modo de raciocínio',
-        thinkingModeAuto: 'Automático (seguir padrão do modelo)',
+        thinkingModeAuto: 'Automático',
         thinkingModeEnabled: 'Ativado',
         thinkingModeDisabled: 'Desativado',
-        thinkingModeHelp:
-          'A disponibilidade depende do modelo e do provedor. Solicitações incompatíveis podem retornar um erro.',
+        thinkingModeHelp: 'Automático funciona melhor para a maioria das ações.',
         autoExecute: 'Executar Automaticamente',
         autoExecuteHelp: 'Executar esta função automaticamente quando o texto for selecionado',
         autoCloseButtons: 'Fechar Botões Automaticamente',
@@ -443,7 +441,7 @@ export const pt: I18nConfig = {
       'O serviço do modelo padrão está temporariamente indisponível, por favor adicione outro provedor ou tente novamente mais tarde',
     llmStreamingServiceError: 'Erro do Serviço de Streaming LLM',
     llmReasoningRequiredError:
-      'Este modelo exige raciocínio e não pode executar com o modo de pensamento forçado como desativado. Use Automático, ative o pensamento ou escolha outro modelo.',
+      'Este modelo precisa do modo de raciocínio. Use Automático, ative-o ou escolha outro modelo.',
     premiumRequired: 'Função Premium',
     pleaseSubscribe: 'Assinatura premium é necessária para usar esta função',
     dailyLimitExceeded: 'Limite diário excedido',

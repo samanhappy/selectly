@@ -8,11 +8,15 @@ import {
   type FloatingAnchor,
   type FloatingPosition,
 } from '../../core/content/floating-position';
+import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import { i18n } from '../../core/i18n';
 import { getActionIcon } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('StreamingResult');
+
+export const shouldShowDictionaryAction = (actionKey?: string) =>
+  isDictionaryEnabled() && actionKey === 'translate';
 
 interface StreamingResultProps {
   anchor: FloatingAnchor;
@@ -1052,7 +1056,7 @@ export const StreamingResult = ({
               pointerEvents: isFooterVisible ? 'auto' : 'none',
             }}
           >
-            {actionKey === 'translate' && (
+            {shouldShowDictionaryAction(actionKey) && (
               <button
                 onClick={handleAddToDictionary}
                 className="dict-btn glass-button"

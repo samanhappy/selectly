@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { createReadingProgressDisabledResponse, isReadingProgressEnabled } from './feature-gates';
+import {
+  createDictionaryDisabledResponse,
+  createReadingProgressDisabledResponse,
+  isDictionaryEnabled,
+  isReadingProgressEnabled,
+} from './feature-gates';
 
 describe('feature gates', () => {
   it('keeps reading progress hidden and inactive', () => {
@@ -12,6 +17,17 @@ describe('feature gates', () => {
       success: true,
       disabled: true,
       record: null,
+    });
+  });
+
+  it('keeps dictionary hidden and inactive', () => {
+    expect(isDictionaryEnabled()).toBe(false);
+  });
+
+  it('returns a successful no-op response for disabled dictionary messages', () => {
+    expect(createDictionaryDisabledResponse()).toEqual({
+      success: true,
+      disabled: true,
     });
   });
 });

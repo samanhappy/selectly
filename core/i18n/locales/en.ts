@@ -114,8 +114,7 @@ export const en: I18nConfig = {
       close: 'Close',
       context: 'Context',
       contextWindowPlaceholder: 'e.g. 128000',
-      contextWindowHelp:
-        'Optional model-level context window override. Used to size page context for tab chat.',
+      contextWindowHelp: 'Optional. Helps tab chat handle longer pages.',
     },
     functions: {
       title: 'Functions',
@@ -148,11 +147,10 @@ export const en: I18nConfig = {
         basicSettings: 'Basic Settings',
         advancedSettings: 'Advanced Settings',
         thinkingMode: 'Thinking Mode',
-        thinkingModeAuto: 'Auto (use action defaults and model capability)',
-        thinkingModeEnabled: 'Force enabled',
-        thinkingModeDisabled: 'Force disabled',
-        thinkingModeHelp:
-          'Forced modes are strict. Auto can fall back when a model requires reasoning.',
+        thinkingModeAuto: 'Auto',
+        thinkingModeEnabled: 'On',
+        thinkingModeDisabled: 'Off',
+        thinkingModeHelp: 'Auto is best for most actions.',
         autoExecute: 'Auto Execute',
         autoExecuteHelp: 'Run this function automatically when text is selected',
         autoCloseButtons: 'Auto Close Buttons',
@@ -439,7 +437,7 @@ export const en: I18nConfig = {
     llmStreamingServiceError:
       'Current model is temporarily unavailable, please switch to another model or try again later',
     llmReasoningRequiredError:
-      'This model requires reasoning and cannot run with thinking mode forced off. Use Auto, enable thinking, or choose another model.',
+      'This model needs thinking mode. Use Auto, turn it on, or choose another model.',
     premiumRequired: 'Premium Feature',
     pleaseSubscribe: 'Subscription to premium is required to use this feature',
     dailyLimitExceeded: 'Daily Limit Exceeded',

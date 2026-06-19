@@ -119,8 +119,7 @@ export const de: I18nConfig = {
       close: 'Schließen',
       context: 'Kontext',
       contextWindowPlaceholder: 'z. B. 128000',
-      contextWindowHelp:
-        'Optionale modellweite Kontextfenster-Überschreibung. Wird für die Seitengröße im Tab-Chat verwendet.',
+      contextWindowHelp: 'Optional. Hilft dem Tab-Chat bei längeren Seiten.',
     },
     functions: {
       title: 'Funktionen',
@@ -153,11 +152,10 @@ export const de: I18nConfig = {
         basicSettings: 'Grundeinstellungen',
         advancedSettings: 'Erweiterte Einstellungen',
         thinkingMode: 'Denkmodus',
-        thinkingModeAuto: 'Automatisch (Modellstandard verwenden)',
-        thinkingModeEnabled: 'Aktiviert',
-        thinkingModeDisabled: 'Deaktiviert',
-        thinkingModeHelp:
-          'Die Verfügbarkeit hängt von Modell und Anbieter ab. Inkompatible Anfragen können einen Fehler zurückgeben.',
+        thinkingModeAuto: 'Automatisch',
+        thinkingModeEnabled: 'Ein',
+        thinkingModeDisabled: 'Aus',
+        thinkingModeHelp: 'Automatisch passt für die meisten Aktionen.',
         autoExecute: 'Automatisch ausführen',
         autoExecuteHelp: 'Diese Funktion automatisch bei Textauswahl ausführen',
         autoCloseButtons: 'Schaltflächen automatisch schließen',
@@ -446,7 +444,7 @@ export const de: I18nConfig = {
       'Standardmodell-Service ist vorübergehend nicht verfügbar, bitte fügen Sie einen anderen Anbieter hinzu oder versuchen Sie es später erneut',
     llmStreamingServiceError: 'LLM-Streaming-Service-Fehler',
     llmReasoningRequiredError:
-      'Dieses Modell erfordert Reasoning und kann nicht mit erzwungen deaktiviertem Denkmodus ausgeführt werden. Verwenden Sie Automatisch, aktivieren Sie Denken oder wählen Sie ein anderes Modell.',
+      'Dieses Modell benötigt den Denkmodus. Verwenden Sie Automatisch, schalten Sie ihn ein oder wählen Sie ein anderes Modell.',
     premiumRequired: 'Premium-Funktion',
     pleaseSubscribe: 'Premium-Abonnement ist erforderlich, um diese Funktion zu nutzen',
     dailyLimitExceeded: 'Tägliches Limit überschritten',

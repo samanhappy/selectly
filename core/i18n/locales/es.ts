@@ -117,8 +117,7 @@ export const es: I18nConfig = {
       close: 'Cerrar',
       context: 'Contexto',
       contextWindowPlaceholder: 'ej. 128000',
-      contextWindowHelp:
-        'Anulación opcional de la ventana de contexto del modelo. Se usa para ajustar el contexto de página en el chat de pestaña.',
+      contextWindowHelp: 'Opcional. Ayuda al chat de pestaña con páginas más largas.',
     },
     functions: {
       title: 'Funciones',
@@ -151,11 +150,10 @@ export const es: I18nConfig = {
         basicSettings: 'Configuración Básica',
         advancedSettings: 'Configuración Avanzada',
         thinkingMode: 'Modo de razonamiento',
-        thinkingModeAuto: 'Automático (usar valor predeterminado del modelo)',
+        thinkingModeAuto: 'Automático',
         thinkingModeEnabled: 'Activado',
         thinkingModeDisabled: 'Desactivado',
-        thinkingModeHelp:
-          'La disponibilidad depende del modelo y del proveedor. Las solicitudes incompatibles pueden devolver un error.',
+        thinkingModeHelp: 'Automático funciona mejor para la mayoría de acciones.',
         autoExecute: 'Ejecutar Automáticamente',
         autoExecuteHelp: 'Ejecutar esta función automáticamente cuando se seleccione texto',
         autoCloseButtons: 'Cerrar Botones Automáticamente',
@@ -446,7 +444,7 @@ export const es: I18nConfig = {
       'El servicio del modelo predeterminado no está disponible temporalmente, por favor añade otro proveedor o inténtalo más tarde',
     llmStreamingServiceError: 'Error del Servicio de Streaming LLM',
     llmReasoningRequiredError:
-      'Este modelo requiere razonamiento y no puede ejecutarse con el modo de pensamiento forzado desactivado. Usa Automático, activa el pensamiento o elige otro modelo.',
+      'Este modelo necesita modo de razonamiento. Usa Automático, actívalo o elige otro modelo.',
     premiumRequired: 'Función Premium',
     pleaseSubscribe: 'Se requiere suscripción a premium para usar esta función',
     dailyLimitExceeded: 'Límite diario excedido',

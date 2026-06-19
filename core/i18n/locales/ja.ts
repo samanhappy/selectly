@@ -115,8 +115,7 @@ export const ja: I18nConfig = {
       close: '閉じる',
       context: 'コンテキスト',
       contextWindowPlaceholder: '例: 128000',
-      contextWindowHelp:
-        '任意のモデル単位のコンテキストウィンドウ上書きです。タブチャットで読み込むページ量に使われます。',
+      contextWindowHelp: '任意。タブチャットで長いページを扱いやすくします。',
     },
     functions: {
       title: '機能',
@@ -149,11 +148,10 @@ export const ja: I18nConfig = {
         basicSettings: '基本設定',
         advancedSettings: '詳細設定',
         thinkingMode: '思考モード',
-        thinkingModeAuto: '自動（モデルのデフォルトに従う）',
-        thinkingModeEnabled: '有効',
-        thinkingModeDisabled: '無効',
-        thinkingModeHelp:
-          '利用可否はモデルとプロバイダーによって異なります。互換性のないリクエストはエラーになる場合があります。',
+        thinkingModeAuto: '自動',
+        thinkingModeEnabled: 'オン',
+        thinkingModeDisabled: 'オフ',
+        thinkingModeHelp: 'ほとんどの操作では自動がおすすめです。',
         autoExecute: '自動実行',
         autoExecuteHelp: 'テキスト選択時にこの機能を自動実行します',
         autoCloseButtons: 'ボタンを自動的に閉じる',
@@ -440,7 +438,7 @@ export const ja: I18nConfig = {
       'デフォルトモデルサービスは一時的に利用できません。別のプロバイダーを追加するか、後でもう一度試してください',
     llmStreamingServiceError: 'LLMストリーミングサービスエラー',
     llmReasoningRequiredError:
-      'このモデルは推論を必要とするため、思考モードを強制的に無効にして実行できません。自動を使用するか、思考を有効にするか、別のモデルを選択してください。',
+      'このモデルには思考モードが必要です。自動にするか、オンにするか、別のモデルを選択してください。',
     premiumRequired: 'プレミアム機能',
     pleaseSubscribe: 'この機能を使用するにはプレミアムサブスクリプションが必要です',
     dailyLimitExceeded: '日次制限を超えました',

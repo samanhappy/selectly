@@ -1,6 +1,8 @@
 import { authService } from './core/auth/auth-service';
 import {
+  createDictionaryDisabledResponse,
   createReadingProgressDisabledResponse,
+  isDictionaryEnabled,
   isReadingProgressEnabled,
 } from './core/config/feature-gates';
 import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
@@ -155,13 +157,15 @@ chrome.runtime.onStartup.addListener(async () => {
     logger.warn('Highlight sync service initialization failed:', error);
   }
 
-  // Initialize and trigger dictionary sync once
-  try {
-    await dictionarySyncService.initialize();
-    void dictionarySyncService.sync();
-    logger.info('Dictionary sync service initialized and sync triggered');
-  } catch (error) {
-    logger.warn('Dictionary sync service initialization failed:', error);
+  if (isDictionaryEnabled()) {
+    // Initialize and trigger dictionary sync once
+    try {
+      await dictionarySyncService.initialize();
+      void dictionarySyncService.sync();
+      logger.info('Dictionary sync service initialized and sync triggered');
+    } catch (error) {
+      logger.warn('Dictionary sync service initialization failed:', error);
+    }
   }
 });
 
@@ -218,13 +222,15 @@ sidePanelEvents?.onClosed?.addListener((info) => {
     logger.warn('Highlight sync service initialization failed on load:', error);
   }
 
-  // Initialize and trigger dictionary sync once
-  try {
-    await dictionarySyncService.initialize();
-    void dictionarySyncService.sync();
-    logger.info('Dictionary sync service initialized and sync triggered on load');
-  } catch (error) {
-    logger.warn('Dictionary sync service initialization failed on load:', error);
+  if (isDictionaryEnabled()) {
+    // Initialize and trigger dictionary sync once
+    try {
+      await dictionarySyncService.initialize();
+      void dictionarySyncService.sync();
+      logger.info('Dictionary sync service initialized and sync triggered on load');
+    } catch (error) {
+      logger.warn('Dictionary sync service initialization failed on load:', error);
+    }
   }
 })();
 
@@ -409,6 +415,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'addDictionaryEntry': {
+      if (!isDictionaryEnabled()) {
+        sendResponse(createDictionaryDisabledResponse());
+        return true;
+      }
+
       const payload = request.payload as {
         source: string;
         translation: string;
