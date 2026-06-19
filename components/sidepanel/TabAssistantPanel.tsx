@@ -1,4 +1,4 @@
-import { ExternalLink, FileText, Pin, PinOff, RefreshCw, Send, Settings } from 'lucide-react';
+import { FileText, History, MessageSquarePlus, RefreshCw, Send, Settings } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ConfigManager, DEFAULT_CONFIG, type UserConfig } from '../../core/config/llm-config';
@@ -6,11 +6,7 @@ import { i18n } from '../../core/i18n';
 import { collectService } from '../../core/services/collect-service';
 import { isLLMModelUsable } from '../../core/services/llm-config-state';
 import { LLMService } from '../../core/services/llm-service';
-import {
-  buildModelChoices,
-  getModelChoiceLabel,
-  type ModelChoice,
-} from '../../core/services/model-options';
+import { buildModelChoices, type ModelChoice } from '../../core/services/model-options';
 import { modelService } from '../../core/services/model-service';
 import { tabContextService, type ActiveTabInfo } from '../../core/services/tab-context-service';
 import { tabChatDB } from '../../core/storage/tab-chat-db';
@@ -33,6 +29,7 @@ import type { TabChatSession, TabContextSnapshot, TabMessage } from '../../core/
 import { normalizePageUrl } from '../../core/tab-context/url';
 import { ContextPreviewModal } from './ContextPreviewModal';
 import { SelectedTextPreview } from './SelectedTextPreview';
+import { TabChatHistoryModal } from './TabChatHistoryModal';
 import { TabChatMessage } from './TabChatMessage';
 import { TabModelPicker } from './TabModelPicker';
 
@@ -93,6 +90,8 @@ export const TabAssistantPanel = () => {
   const [pinned, setPinned] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
   const [contextPreviewOpen, setContextPreviewOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historySessions, setHistorySessions] = useState<TabChatSession[]>([]);
   const [selectedTextPreviewExpanded, setSelectedTextPreviewExpanded] = useState(false);
   const [modelChoices, setModelChoices] = useState<ModelChoice[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
@@ -105,7 +104,7 @@ export const TabAssistantPanel = () => {
   const labels = t.tabAssistant;
   const selectedModel = getTabSessionModel(session, config.llm.defaultModel);
   const isConfigured = isLLMModelUsable(config, selectedModel);
-  const modelLabel = getModelChoiceLabel(selectedModel, modelChoices);
+  const canStartNewChat = !!session && messages.length > 0 && !streaming;
 
   const quickPrompts = useMemo(() => [labels.summarizePage, labels.translatePage], [labels]);
   const selectedTextPreview = context?.selectedText?.trim() || '';
@@ -215,6 +214,36 @@ export const TabAssistantPanel = () => {
     await loadTab(tab);
   }, [activeTab, loadTab]);
 
+  const getCurrentHistoryNormalizedUrl = useCallback(() => {
+    const currentSession = sessionRef.current;
+    const currentTab = activeTabRef.current;
+    return (
+      currentSession?.normalizedUrl ||
+      context?.normalizedUrl ||
+      (currentTab ? getNormalizedTabUrl(currentTab, currentSession) : '')
+    );
+  }, [context?.normalizedUrl]);
+
+  const loadHistorySessions = useCallback(async () => {
+    const normalizedUrl = getCurrentHistoryNormalizedUrl();
+    const currentSession = sessionRef.current;
+    const sessions = normalizedUrl ? await tabChatDB.listByNormalizedUrl(normalizedUrl) : [];
+    if (currentSession && !sessions.some((item) => item.id === currentSession.id)) {
+      sessions.unshift(currentSession);
+    }
+    setHistorySessions(sessions);
+  }, [getCurrentHistoryNormalizedUrl]);
+
+  const openHistory = useCallback(async () => {
+    if (streaming || !session) return;
+    try {
+      await loadHistorySessions();
+      setHistoryOpen(true);
+    } catch (err: any) {
+      setError(err?.message || labels.error);
+    }
+  }, [labels.error, loadHistorySessions, session, streaming]);
+
   const clearSelectedTextContext = useCallback(() => {
     const currentTab = activeTabRef.current;
     const currentSession = sessionRef.current;
@@ -238,6 +267,80 @@ export const TabAssistantPanel = () => {
       void tabContextService.clearPendingSelection(currentTab.id);
     }
   }, [context]);
+
+  const startNewChat = useCallback(async () => {
+    const currentSession = sessionRef.current;
+    if (!canStartNewChat || !currentSession) return;
+
+    const currentTab = activeTabRef.current;
+    const baseContext =
+      context ||
+      currentSession.context ||
+      (currentTab ? createUnavailableSnapshot(currentTab) : null);
+    const nextContext = removeSelectedTextFromSnapshot(baseContext);
+
+    try {
+      if (currentSession.id) {
+        await tabChatDB.updateContext(currentSession.id, nextContext);
+      }
+      if (currentTab?.id) {
+        await tabContextService.clearPendingSelection(currentTab.id);
+      }
+
+      const nextSession = await tabChatDB.createSession(nextContext, selectedModel);
+      sessionRef.current = nextSession;
+      setSession(nextSession);
+      setContext(nextContext);
+      setMessages([]);
+      setInput('');
+      setError('');
+      setSelectedTextPreviewExpanded(false);
+      setContextPreviewOpen(false);
+      setHistoryOpen(false);
+      setHistorySessions((current) => [
+        nextSession,
+        ...current.filter((item) => item.id !== nextSession.id),
+      ]);
+      inputRef.current?.focus();
+    } catch (err: any) {
+      setError(err?.message || labels.error);
+    }
+  }, [canStartNewChat, context, labels.error, selectedModel]);
+
+  const selectHistorySession = useCallback(
+    (nextSession: TabChatSession) => {
+      if (streaming || nextSession.id === sessionRef.current?.id) return;
+
+      const currentTab = activeTabRef.current;
+      const fallbackTab: ActiveTabInfo = currentTab
+        ? {
+            ...currentTab,
+            title: nextSession.title || currentTab.title,
+            url: nextSession.url || currentTab.url,
+          }
+        : {
+            id: 0,
+            title: nextSession.title,
+            url: nextSession.url,
+          };
+      const nextContext = nextSession.context || createUnavailableSnapshot(fallbackTab);
+      const nextSessionWithContext = { ...nextSession, context: nextContext };
+
+      sessionRef.current = nextSessionWithContext;
+      setSession(nextSessionWithContext);
+      setContext(nextContext);
+      setMessages(nextSessionWithContext.messages || []);
+      setInput('');
+      setError('');
+      setSelectedTextPreviewExpanded(false);
+      setHistoryOpen(false);
+      void loadModelChoices(
+        getTabSessionModel(nextSessionWithContext, configManager.getConfig().llm.defaultModel)
+      );
+      inputRef.current?.focus();
+    },
+    [loadModelChoices, streaming]
+  );
 
   const applySelectionContext = useCallback((selection: TabSelectionContext | null) => {
     if (!selection?.selectedText) return;
@@ -328,6 +431,12 @@ export const TabAssistantPanel = () => {
       inputRef.current?.focus();
     }
   }, [selectedTextPreview]);
+
+  useEffect(() => {
+    if (streaming) {
+      setHistoryOpen(false);
+    }
+  }, [streaming]);
 
   useEffect(() => {
     const handleActivated = async (activeInfo: chrome.tabs.TabActiveInfo) => {
@@ -540,6 +649,24 @@ export const TabAssistantPanel = () => {
           <div className="flex shrink-0 items-center gap-1">
             <button
               className="sl-btn sl-btn-ghost !h-8 !w-8 !p-0"
+              disabled={!canStartNewChat}
+              title={labels.newChat}
+              aria-label={labels.newChat}
+              onClick={startNewChat}
+            >
+              <MessageSquarePlus size={14} />
+            </button>
+            <button
+              className="sl-btn sl-btn-ghost !h-8 !w-8 !p-0"
+              disabled={!session || streaming}
+              title={labels.chatHistory}
+              aria-label={labels.chatHistory}
+              onClick={openHistory}
+            >
+              <History size={14} />
+            </button>
+            <button
+              className="sl-btn sl-btn-ghost !h-8 !w-8 !p-0"
               disabled={!canViewContext}
               title={canViewContext ? labels.viewContext : labels.noPageContext}
               aria-label={canViewContext ? labels.viewContext : labels.noPageContext}
@@ -698,6 +825,22 @@ export const TabAssistantPanel = () => {
         open={contextPreviewOpen}
         onClose={() => setContextPreviewOpen(false)}
         onCopy={copyContextText}
+      />
+      <TabChatHistoryModal
+        sessions={historySessions}
+        currentSessionId={session?.id}
+        labels={{
+          title: labels.chatHistory,
+          currentChat: labels.currentChat,
+          newChat: labels.newChat,
+          noPreviousChats: labels.noPreviousChats,
+          messageCount: labels.messageCount,
+          updatedAt: labels.updatedAt,
+          close: labels.closeChatHistory,
+        }}
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onSelectSession={selectHistorySession}
       />
     </div>
   );

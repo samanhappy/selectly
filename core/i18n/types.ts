@@ -296,6 +296,13 @@ export interface I18nConfig {
     expandSelectedText: string;
     collapseSelectedText: string;
     removeSelectedText: string;
+    newChat: string;
+    chatHistory: string;
+    currentChat: string;
+    noPreviousChats: string;
+    messageCount: string;
+    updatedAt: string;
+    closeChatHistory: string;
     viewContext: string;
     contextPreviewTitle: string;
     contextPreview: string;
