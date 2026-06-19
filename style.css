@@ -139,6 +139,68 @@
 .selectly-popup *::-webkit-scrollbar-thumb { background: var(--sl-border); border-radius: 20px; }
 .selectly-popup *::-webkit-scrollbar-thumb:hover { background: var(--sl-border-strong); }
 
+/* Markdown content */
+.selectly-popup .sl-markdown {
+	min-width: 0;
+	max-width: 100%;
+	overflow-wrap: anywhere;
+}
+.selectly-popup .sl-code-block {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	margin: 8px 0;
+	padding: 8px 12px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	border-radius: 6px;
+	background: var(--sl-surface-muted);
+	color: var(--sl-text);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	tab-size: 2;
+	scrollbar-width: thin;
+	scrollbar-color: var(--sl-border-strong) transparent;
+}
+.selectly-popup .sl-code-block::-webkit-scrollbar {
+	height: 8px;
+}
+.selectly-popup .sl-code-block::-webkit-scrollbar-track {
+	background: transparent;
+}
+.selectly-popup .sl-code-block::-webkit-scrollbar-thumb {
+	background: var(--sl-border-strong);
+	border-radius: 20px;
+}
+.selectly-popup .sl-code-block-content {
+	display: block;
+	min-width: 0;
+	max-width: 100%;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.55;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+.selectly-popup .sl-code-inline {
+	display: inline;
+	max-width: 100%;
+	padding: 1px 4px;
+	border-radius: 4px;
+	background: var(--sl-surface-muted);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 0.9em;
+	white-space: break-spaces;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
 /* Drawer */
 .selectly-popup .sl-drawer-overlay {
 	position: fixed; inset:0; background: rgba(15,23,42,0.28); backdrop-filter: blur(6px); animation: sl-fadeIn .25s ease; z-index: 9998;

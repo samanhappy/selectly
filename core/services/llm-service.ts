@@ -6,6 +6,7 @@ import { createLogger } from '../../utils/logger';
 import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { i18n, t } from '../i18n';
+import { isLLMConfigUsable } from './llm-config-state';
 import {
   buildThinkingModeRequestPlan,
   shouldFallbackForReasoningError,
@@ -161,7 +162,8 @@ export class LLMService {
     onChunk: (chunk: string, model: string) => void,
     model?: string,
     thinkingMode?: ThinkingMode,
-    allowThinkingModeFallback = false
+    allowThinkingModeFallback = false,
+    options?: { maxTokens?: number; temperature?: number }
   ): Promise<void> {
     const modelToUse = model || this.configManager.getConfig().llm.defaultModel;
     const { client, modelName, providerId } = this.parseModelAndGetClient(modelToUse);
@@ -181,8 +183,8 @@ export class LLMService {
       const requestBody = {
         model: modelName,
         messages,
-        temperature: 0.7,
-        max_tokens: 1000,
+        temperature: options?.temperature ?? 0.7,
+        max_tokens: options?.maxTokens ?? 1000,
         stream: true as const,
       };
 
@@ -223,9 +225,7 @@ export class LLMService {
   }
 
   isConfigured(): boolean {
-    const config = this.configManager.getConfig();
-    const enabledProviders = this.configManager.getEnabledProviders();
-    return enabledProviders.length > 0 && !!config.llm.defaultModel;
+    return isLLMConfigUsable(this.configManager.getConfig());
   }
 
   getConfig(): LLMConfig {

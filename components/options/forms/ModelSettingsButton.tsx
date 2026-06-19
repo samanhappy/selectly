@@ -2,20 +2,25 @@ import { Settings } from 'lucide-react';
 import React, { useState } from 'react';
 
 import type { ModelCallSettings } from '../../../core/config/llm-config';
+import type { ModelMetadataOverride } from '../../../core/tab-context/types';
 import { ThinkingModeSelect } from './ThinkingModeSelect';
 
 interface ModelSettingsButtonProps {
   settings?: ModelCallSettings;
+  modelMetadata?: ModelMetadataOverride;
   i18n: any;
   palette: any;
   onChange: (settings: ModelCallSettings) => void;
+  onModelMetadataChange?: (metadata: ModelMetadataOverride) => void;
 }
 
 export const ModelSettingsButton: React.FC<ModelSettingsButtonProps> = ({
   settings = { thinkingMode: 'auto' },
+  modelMetadata,
   i18n,
   palette,
   onChange,
+  onModelMetadataChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -72,6 +77,26 @@ export const ModelSettingsButton: React.FC<ModelSettingsButtonProps> = ({
             i18n={i18n}
             onChange={(thinkingMode) => onChange({ ...settings, thinkingMode })}
           />
+          {onModelMetadataChange && (
+            <label className="sl-field" style={{ marginTop: 12 }}>
+              <span className="sl-label">{i18n.popup.models.contextWindow}</span>
+              <input
+                className="sl-input"
+                type="number"
+                min={1}
+                step={1024}
+                value={modelMetadata?.contextWindow || ''}
+                placeholder={i18n.popup.models.contextWindowPlaceholder}
+                onChange={(event) => {
+                  const value = Number(event.target.value);
+                  onModelMetadataChange({
+                    contextWindow: Number.isFinite(value) && value > 0 ? value : undefined,
+                  });
+                }}
+              />
+              <div className="sl-helper">{i18n.popup.models.contextWindowHelp}</div>
+            </label>
+          )}
           <button
             type="button"
             onClick={() => setIsOpen(false)}

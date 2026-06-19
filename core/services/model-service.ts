@@ -2,8 +2,9 @@ import OpenAI from 'openai';
 
 import { authService } from '~core/auth/auth-service';
 
-import type { LLMProvider } from '../config/llm-config';
 import { createLogger } from '../../utils/logger';
+import type { LLMProvider } from '../config/llm-config';
+import { ConfigManager } from '../config/llm-config';
 
 const logger = createLogger('Model');
 
@@ -21,6 +22,7 @@ export interface ModelInfo {
 export class ModelService {
   private static instance: ModelService;
   private modelCache: Map<string, ModelInfo[]> = new Map();
+  private configManager = ConfigManager.getInstance();
 
   static getInstance(): ModelService {
     if (!ModelService.instance) {
@@ -33,7 +35,15 @@ export class ModelService {
    * Load available models from a provider's /models endpoint
    */
   async loadModels(provider: LLMProvider): Promise<ModelInfo[]> {
-    const cacheKey = `${provider.id}_${provider.baseURL}`;
+    const overrides = this.configManager.getConfig().llm.modelMetadataOverrides || {};
+    const overrideKey = JSON.stringify(
+      Object.fromEntries(
+        Object.entries(overrides).filter(([modelString]) =>
+          modelString.startsWith(`${provider.id}/`)
+        )
+      )
+    );
+    const cacheKey = `${provider.id}_${provider.baseURL}_${overrideKey}`;
 
     // Return cached models if available
     if (this.modelCache.has(cacheKey)) {
@@ -53,12 +63,15 @@ export class ModelService {
       });
 
       const response = await client.models.list();
-      const models: ModelInfo[] = response.data.map((model) => ({
-        id: model.id,
-        name: model.id,
-        description: model.id,
-        contextWindow: undefined,
-      }));
+      const models: ModelInfo[] = response.data.map((model) => {
+        const modelString = `${provider.id}/${model.id}`;
+        return {
+          id: model.id,
+          name: model.id,
+          description: model.id,
+          contextWindow: overrides[modelString]?.contextWindow,
+        };
+      });
 
       // Cache the results
       this.modelCache.set(cacheKey, models);

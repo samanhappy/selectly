@@ -2,6 +2,7 @@ import { createLogger, setLogLevel } from '../../utils/logger';
 import { i18n } from '../i18n';
 import type { I18nConfig, SupportedLanguage } from '../i18n/types';
 import { secureStorage } from '../storage/secure-storage';
+import type { ModelMetadataOverride } from '../tab-context/types';
 import { parseModelString, resolveModelString } from './model-resolution';
 import {
   migrateFunctionModelSettings,
@@ -30,6 +31,7 @@ export interface LLMConfig {
   defaultModel: string;
   providers: Record<string, LLMProvider>;
   defaultModelSettings?: ModelCallSettings;
+  modelMetadataOverrides?: Record<string, ModelMetadataOverride>;
 }
 
 export interface FunctionConfig {
@@ -59,6 +61,8 @@ export interface FunctionConfig {
 export interface GeneralConfig {
   language: SupportedLanguage;
   buttonPosition: 'above' | 'below';
+  showTabAssistantButton?: boolean;
+  tabAssistantBlacklist?: string[];
   showReadingProgressBar?: boolean;
   readingProgressBarColor?: string;
   autoSaveReadingProgress?: boolean;
@@ -207,6 +211,8 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
     general: {
       language: i18n.getCurrentLanguage(),
       buttonPosition: 'above',
+      showTabAssistantButton: true,
+      tabAssistantBlacklist: [],
       showReadingProgressBar: true,
       readingProgressBarColor: '#60a5fa',
       autoSaveReadingProgress: true,
@@ -223,6 +229,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
       defaultModel: '',
       providers,
       defaultModelSettings: { thinkingMode: 'auto' },
+      modelMetadataOverrides: {},
     },
     functions: {
       highlight: {
@@ -431,6 +438,8 @@ export const DEFAULT_CONFIG: UserConfig = {
   general: {
     language: 'en',
     buttonPosition: 'above',
+    showTabAssistantButton: true,
+    tabAssistantBlacklist: [],
     showReadingProgressBar: true,
     readingProgressBarColor: '#60a5fa',
     autoSaveReadingProgress: true,
@@ -447,6 +456,7 @@ export const DEFAULT_CONFIG: UserConfig = {
     defaultModel: '',
     providers: {},
     defaultModelSettings: { thinkingMode: 'auto' },
+    modelMetadataOverrides: {},
   },
   functions: {},
   functionOrder: [],
@@ -455,7 +465,7 @@ export const DEFAULT_CONFIG: UserConfig = {
 // Configuration manager class
 export class ConfigManager {
   private static instance: ConfigManager;
-  private config: UserConfig;
+  private config: UserConfig = DEFAULT_CONFIG;
 
   static getInstance(): ConfigManager {
     if (!ConfigManager.instance) {
@@ -719,6 +729,10 @@ export class ConfigManager {
         defaultModelSettings: normalizeModelCallSettings(
           override.llm?.defaultModelSettings ?? old.llm?.defaultModelSettings
         ),
+        modelMetadataOverrides: {
+          ...(old.llm?.modelMetadataOverrides || {}),
+          ...(override.llm?.modelMetadataOverrides || {}),
+        },
       },
       functions: normalizedFunctions,
       functionOrder: completeOrder,

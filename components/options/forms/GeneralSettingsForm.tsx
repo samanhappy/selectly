@@ -1,6 +1,7 @@
 import { Globe, MousePointer } from 'lucide-react';
 import React from 'react';
 
+import { isReadingProgressEnabled } from '../../../core/config/feature-gates';
 import type { GeneralConfig, UserConfig } from '../../../core/config/llm-config';
 
 interface GeneralSettingsFormProps {
@@ -17,6 +18,7 @@ export const GeneralSettingsForm: React.FC<GeneralSettingsFormProps> = ({
   onClose,
 }) => {
   const config = i18n.getConfig();
+  const showReadingProgressSettings = isReadingProgressEnabled();
   return (
     <div className="sl-drawer-body">
       <h3 style={{ margin: '0 0 24px 0', fontSize: 18, fontWeight: 600, display: 'flex', gap: 8 }}>
@@ -37,48 +39,98 @@ export const GeneralSettingsForm: React.FC<GeneralSettingsFormProps> = ({
       </div>
       <div className="sl-field">
         <label className="sl-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Globe size={16} />
-          {config?.popup?.general?.readingProgressTitle || 'Reading Progress'}
+          {config?.tabAssistant?.title || 'Ask this page'}
         </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <label className="sl-checkbox" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input
               type="checkbox"
-              checked={userConfig.general?.showReadingProgressBar !== false}
-              onChange={(e) => onChange('showReadingProgressBar', e.target.checked)}
+              checked={userConfig.general?.showTabAssistantButton !== false}
+              onChange={(e) => onChange('showTabAssistantButton', e.target.checked)}
             />
-            {config?.popup?.general?.showReadingProgressBar || 'Show progress bar'}
+            {config?.popup?.general?.showTabAssistantButton || 'Show Ask page button'}
           </label>
-          <label className="sl-checkbox" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={userConfig.general?.autoSaveReadingProgress !== false}
-              onChange={(e) => onChange('autoSaveReadingProgress', e.target.checked)}
-            />
-            {config?.popup?.general?.autoSaveReadingProgress || 'Auto save reading progress'}
-          </label>
-          <label className="sl-checkbox" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={userConfig.general?.autoRestoreReadingProgress !== false}
-              onChange={(e) => onChange('autoRestoreReadingProgress', e.target.checked)}
-            />
-            {config?.popup?.general?.autoRestoreReadingProgress || 'Restore last position on load'}
-          </label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, color: '#64748b' }}>
-              {config?.popup?.general?.readingProgressBarColor || 'Progress bar color'}
+          <label className="sl-field" style={{ marginBottom: 0 }}>
+            <span className="sl-label">
+              {config?.popup?.general?.tabAssistantBlacklist || 'Ask page blacklist'}
             </span>
-            <input
-              className="sl-input"
-              type="color"
-              value={userConfig.general?.readingProgressBarColor || '#60a5fa'}
-              onChange={(e) => onChange('readingProgressBarColor', e.target.value)}
-              style={{ width: 44, height: 28, padding: 0, border: 'none', background: 'none' }}
+            <textarea
+              className="sl-textarea"
+              value={(userConfig.general?.tabAssistantBlacklist || []).join('\n')}
+              onChange={(e) =>
+                onChange(
+                  'tabAssistantBlacklist',
+                  e.target.value
+                    .split('\n')
+                    .map((item) => item.trim())
+                    .filter(Boolean)
+                )
+              }
+              style={{ minHeight: 80 }}
             />
-          </div>
+            <div className="sl-helper">
+              {config?.popup?.general?.tabAssistantBlacklistDesc ||
+                'One domain per line. The Ask page button is hidden on these sites.'}
+            </div>
+          </label>
         </div>
       </div>
+      {showReadingProgressSettings ? (
+        <div className="sl-field">
+          <label className="sl-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Globe size={16} />
+            {config?.popup?.general?.readingProgressTitle || 'Reading Progress'}
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <label
+              className="sl-checkbox"
+              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            >
+              <input
+                type="checkbox"
+                checked={userConfig.general?.showReadingProgressBar !== false}
+                onChange={(e) => onChange('showReadingProgressBar', e.target.checked)}
+              />
+              {config?.popup?.general?.showReadingProgressBar || 'Show progress bar'}
+            </label>
+            <label
+              className="sl-checkbox"
+              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            >
+              <input
+                type="checkbox"
+                checked={userConfig.general?.autoSaveReadingProgress !== false}
+                onChange={(e) => onChange('autoSaveReadingProgress', e.target.checked)}
+              />
+              {config?.popup?.general?.autoSaveReadingProgress || 'Auto save reading progress'}
+            </label>
+            <label
+              className="sl-checkbox"
+              style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            >
+              <input
+                type="checkbox"
+                checked={userConfig.general?.autoRestoreReadingProgress !== false}
+                onChange={(e) => onChange('autoRestoreReadingProgress', e.target.checked)}
+              />
+              {config?.popup?.general?.autoRestoreReadingProgress ||
+                'Restore last position on load'}
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 12, color: '#64748b' }}>
+                {config?.popup?.general?.readingProgressBarColor || 'Progress bar color'}
+              </span>
+              <input
+                className="sl-input"
+                type="color"
+                value={userConfig.general?.readingProgressBarColor || '#60a5fa'}
+                onChange={(e) => onChange('readingProgressBarColor', e.target.value)}
+                style={{ width: 44, height: 28, padding: 0, border: 'none', background: 'none' }}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="sl-actions">
         <button className="sl-btn sl-btn-primary" onClick={onClose}>
           {config?.common?.close || 'Close'}

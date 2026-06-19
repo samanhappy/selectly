@@ -1,4 +1,8 @@
 import { authService } from './core/auth/auth-service';
+import {
+  createReadingProgressDisabledResponse,
+  isReadingProgressEnabled,
+} from './core/config/feature-gates';
 import { DEFAULT_CONFIG, getDefaultConfig } from './core/config/llm-config';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
@@ -13,9 +17,75 @@ import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
 import { StorageMigration } from './core/storage/migration';
 import { secureStorage } from './core/storage/secure-storage';
+import {
+  createTabSelectionContext,
+  isSelectionContextFresh,
+  mergeSelectedTextIntoSnapshot,
+  type TabSelectionContext,
+} from './core/tab-context/selection-context';
+import {
+  TabAssistantSidePanelController,
+  type TabAssistantSidePanelApi,
+} from './core/tab-context/side-panel-toggle';
 import { createLogger } from './utils/logger';
 
 const logger = createLogger('Background');
+const TAB_ASSISTANT_SIDE_PANEL_PATH = 'tabs/tab-assistant.html';
+const tabAssistantSidePanelController = new TabAssistantSidePanelController(
+  TAB_ASSISTANT_SIDE_PANEL_PATH
+);
+const pendingTabSelections = new Map<number, TabSelectionContext>();
+
+type TabAssistantSidePanelEvents = TabAssistantSidePanelApi & {
+  onOpened?: {
+    addListener(callback: (info: { tabId?: number; path: string }) => void): void;
+  };
+  onClosed?: {
+    addListener(callback: (info: { tabId?: number; path: string }) => void): void;
+  };
+};
+
+const getTabAssistantSidePanel = (): TabAssistantSidePanelEvents | null =>
+  (chrome.sidePanel as unknown as TabAssistantSidePanelEvents | undefined) ?? null;
+
+const enableTabAssistantSidePanel = (tabId: number) => {
+  const sidePanel = getTabAssistantSidePanel();
+  if (!sidePanel?.setOptions) {
+    return Promise.reject(new Error('Side panel options are not available in this browser'));
+  }
+  return tabAssistantSidePanelController.prepare(sidePanel, tabId);
+};
+
+const savePendingTabSelection = (tabId: number, selectedText: unknown) => {
+  const selection = createTabSelectionContext(tabId, selectedText);
+  if (!selection) return null;
+
+  pendingTabSelections.set(tabId, selection);
+  return selection;
+};
+
+const getPendingTabSelection = (tabId: number): TabSelectionContext | null => {
+  const selection = pendingTabSelections.get(tabId);
+  if (!selection) return null;
+
+  if (!isSelectionContextFresh(selection)) {
+    pendingTabSelections.delete(tabId);
+    return null;
+  }
+
+  return selection;
+};
+
+const broadcastPendingTabSelection = async (selection: TabSelectionContext) => {
+  try {
+    await chrome.runtime.sendMessage({
+      action: 'tabContext:selectedTextUpdated',
+      selection,
+    });
+  } catch {
+    // The side panel may not be mounted yet; it will consume the pending selection on capture.
+  }
+};
 
 // Initialize extension on installation
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -92,6 +162,23 @@ chrome.runtime.onStartup.addListener(async () => {
     logger.info('Dictionary sync service initialized and sync triggered');
   } catch (error) {
     logger.warn('Dictionary sync service initialization failed:', error);
+  }
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  tabAssistantSidePanelController.markClosed(tabId);
+  pendingTabSelections.delete(tabId);
+});
+
+const sidePanelEvents = getTabAssistantSidePanel();
+sidePanelEvents?.onOpened?.addListener((info) => {
+  if (info.path === TAB_ASSISTANT_SIDE_PANEL_PATH && info.tabId != null) {
+    tabAssistantSidePanelController.markOpened(info.tabId);
+  }
+});
+sidePanelEvents?.onClosed?.addListener((info) => {
+  if (info.path === TAB_ASSISTANT_SIDE_PANEL_PATH && info.tabId != null) {
+    tabAssistantSidePanelController.markClosed(info.tabId);
   }
 });
 
@@ -358,6 +445,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'readingProgress:get': {
+      if (!isReadingProgressEnabled()) {
+        sendResponse(createReadingProgressDisabledResponse());
+        return true;
+      }
+
       (async () => {
         try {
           const url = request.url as string;
@@ -376,6 +468,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'readingProgress:save': {
+      if (!isReadingProgressEnabled()) {
+        sendResponse(createReadingProgressDisabledResponse());
+        return true;
+      }
+
       (async () => {
         try {
           const url = request.url as string;
@@ -400,6 +497,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     }
     case 'readingProgress:delete': {
+      if (!isReadingProgressEnabled()) {
+        sendResponse(createReadingProgressDisabledResponse());
+        return true;
+      }
+
       (async () => {
         try {
           const url = request.url as string;
@@ -412,6 +514,153 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         } catch (err: any) {
           logger.error('Failed to delete reading progress:', err);
           sendResponse({ success: false, error: err?.message || 'Unknown error' });
+        }
+      })();
+      return true;
+    }
+    case 'tabContext:openSidePanel':
+    case 'tabContext:toggleSidePanel': {
+      const tabId = sender.tab?.id;
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id' });
+        return true;
+      }
+
+      const sidePanel = getTabAssistantSidePanel();
+      if (!sidePanel?.open) {
+        sendResponse({ success: false, error: 'Side panel is not available in this browser' });
+        return true;
+      }
+      if (!sidePanel.setOptions) {
+        sendResponse({
+          success: false,
+          error: 'Side panel options are not available in this browser',
+        });
+        return true;
+      }
+
+      const selection = savePendingTabSelection(tabId, request.selectedText);
+      const sidePanelAction =
+        request.action === 'tabContext:toggleSidePanel'
+          ? tabAssistantSidePanelController.toggle(sidePanel, tabId)
+          : tabAssistantSidePanelController.open(sidePanel, tabId);
+
+      Promise.resolve(sidePanelAction)
+        .then((result) => {
+          if (selection) {
+            void broadcastPendingTabSelection(selection);
+          }
+          sendResponse({ success: true, tabId, action: result.action });
+        })
+        .catch((err: any) => {
+          logger.error('Failed to toggle side panel:', err);
+          sendResponse({ success: false, error: err?.message || 'Failed to toggle side panel' });
+        });
+      return true;
+    }
+    case 'tabContext:prepareSidePanel': {
+      (async () => {
+        try {
+          const tabId = sender.tab?.id;
+          if (!tabId) {
+            sendResponse({ success: false, error: 'Missing tab id' });
+            return;
+          }
+
+          await enableTabAssistantSidePanel(tabId);
+          sendResponse({ success: true, tabId });
+        } catch (err: any) {
+          logger.warn('Failed to prepare tab assistant side panel:', err);
+          sendResponse({ success: false, error: err?.message || 'Failed to prepare side panel' });
+        }
+      })();
+      return true;
+    }
+    case 'tabContext:getActiveTab': {
+      (async () => {
+        const lastSidePanelTabId = tabAssistantSidePanelController.getLastKnownTabId();
+        try {
+          const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+          const tab = tabs[0];
+          sendResponse({
+            success: true,
+            tab: tab
+              ? {
+                  id: tab.id,
+                  title: tab.title,
+                  url: tab.url,
+                  windowId: tab.windowId,
+                }
+              : lastSidePanelTabId
+                ? { id: lastSidePanelTabId }
+                : null,
+          });
+        } catch (err: any) {
+          logger.warn('Failed to get active tab:', err);
+          sendResponse({
+            success: false,
+            error: err?.message || 'Failed to get active tab',
+            tab: lastSidePanelTabId ? { id: lastSidePanelTabId } : null,
+          });
+        }
+      })();
+      return true;
+    }
+    case 'tabContext:getPendingSelection': {
+      const tabId = request.tabId as number | undefined;
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id', selection: null });
+        return true;
+      }
+
+      sendResponse({
+        success: true,
+        selection: getPendingTabSelection(tabId),
+      });
+      return true;
+    }
+    case 'tabContext:clearPendingSelection': {
+      const tabId = request.tabId as number | undefined;
+      if (!tabId) {
+        sendResponse({ success: false, error: 'Missing tab id' });
+        return true;
+      }
+
+      pendingTabSelections.delete(tabId);
+      sendResponse({ success: true });
+      return true;
+    }
+    case 'tabContext:capture': {
+      (async () => {
+        try {
+          const tabId = request.tabId as number | undefined;
+          if (!tabId) {
+            sendResponse({ success: false, error: 'Missing tab id' });
+            return;
+          }
+
+          const res = await chrome.tabs.sendMessage(
+            tabId,
+            {
+              action: 'tabContext:capturePage',
+              budget: request.budget,
+            },
+            { frameId: 0 }
+          );
+          const selection = getPendingTabSelection(tabId);
+          sendResponse({
+            ...res,
+            snapshot:
+              res?.success && res.snapshot
+                ? mergeSelectedTextIntoSnapshot(res.snapshot, selection)
+                : res?.snapshot,
+          });
+        } catch (err: any) {
+          logger.warn('Failed to capture tab context:', err);
+          sendResponse({
+            success: false,
+            error: err?.message || 'This page cannot be read',
+          });
         }
       })();
       return true;

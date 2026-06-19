@@ -3,6 +3,7 @@ import Dexie from 'dexie';
 import type { Table } from 'dexie';
 
 import { authService } from '~core/auth/auth-service';
+
 import { createLogger, mask } from '../../utils/logger';
 
 const logger = createLogger('CollectDB');
@@ -14,6 +15,9 @@ export interface CollectedItem {
   url: string;
   hostname: string;
   title: string;
+  type?: 'selection' | 'page_summary' | 'excerpt';
+  source?: 'selection' | 'tab_context';
+  conversation_id?: string;
   created_at?: number;
   updated_at?: number;
   deleted_at?: number;

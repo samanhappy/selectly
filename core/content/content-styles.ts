@@ -105,6 +105,55 @@ export const contentStyles = `
     bottom: 16px;
     z-index: 1000000;
     pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    will-change: left, top;
+  }
+
+  .selectly-global-action-cluster {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .selectly-global-action-menu {
+    position: absolute;
+    left: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 8px) scale(0.96);
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease;
+  }
+
+  .selectly-global-actions.is-expand-up .selectly-global-action-menu {
+    bottom: calc(100% + 8px);
+    transform: translate(-50%, 8px) scale(0.96);
+  }
+
+  .selectly-global-actions.is-expand-down .selectly-global-action-menu {
+    top: calc(100% + 8px);
+    transform: translate(-50%, -8px) scale(0.96);
+  }
+
+  .selectly-global-action-cluster:hover .selectly-global-action-menu,
+  .selectly-global-action-cluster:focus-within .selectly-global-action-menu,
+  .selectly-global-action-cluster.is-expanded .selectly-global-action-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0) scale(1);
   }
 
   .selectly-global-action-btn {
@@ -123,6 +172,31 @@ export const contentStyles = `
       0 6px 14px rgba(15, 23, 42, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    user-select: none;
+  }
+
+  .selectly-global-action-trigger {
+    width: 44px;
+    height: 44px;
+  }
+
+  .selectly-global-action-drag-target {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .selectly-global-actions.is-dragging .selectly-global-action-drag-target {
+    cursor: grabbing;
+  }
+
+  .selectly-global-actions.is-dragging .selectly-global-action-btn {
+    transform: none;
+    transition: none;
+  }
+
+  .selectly-global-actions.is-dragging .selectly-global-action-menu {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .selectly-global-action-btn:hover {
