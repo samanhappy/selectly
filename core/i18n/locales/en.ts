@@ -329,7 +329,7 @@ export const en: I18nConfig = {
     configureModel: 'Configure a model to start chatting.',
     openSettings: 'Open settings',
     saveSession: 'Save session',
-    saveToCollections: 'Save to Collections',
+    saveToCollections: 'Collect',
     saved: 'Saved',
     copy: 'Copy',
     summarizePage: 'Summarize',

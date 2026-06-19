@@ -336,7 +336,7 @@ export const de: I18nConfig = {
     configureModel: 'Konfigurieren Sie ein Modell, um den Chat zu starten.',
     openSettings: 'Einstellungen öffnen',
     saveSession: 'Sitzung speichern',
-    saveToCollections: 'In Sammlungen speichern',
+    saveToCollections: 'Sammeln',
     saved: 'Gespeichert',
     copy: 'Kopieren',
     summarizePage: 'Seite zusammenfassen',

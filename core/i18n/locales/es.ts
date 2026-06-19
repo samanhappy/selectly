@@ -335,7 +335,7 @@ export const es: I18nConfig = {
     configureModel: 'Configura un modelo para empezar a chatear.',
     openSettings: 'Abrir configuración',
     saveSession: 'Guardar sesión',
-    saveToCollections: 'Guardar en colecciones',
+    saveToCollections: 'Recopilar',
     saved: 'Guardado',
     copy: 'Copiar',
     summarizePage: 'Resumir',

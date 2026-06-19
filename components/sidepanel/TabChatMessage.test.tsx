@@ -14,7 +14,7 @@ const assistantMessage: TabMessage = {
 
 const labels = {
   copy: 'Copy',
-  saveToCollections: 'Save to Collections',
+  saveToCollections: 'Collect',
 };
 
 describe('TabChatMessage', () => {
@@ -36,7 +36,7 @@ describe('TabChatMessage', () => {
     );
     expect(html).toContain('items-start');
     expect(html).toContain('aria-label="Copy"');
-    expect(html).toContain('aria-label="Save to Collections"');
+    expect(html).toContain('aria-label="Collect"');
   });
 
   it('does not render actions while the assistant message is streaming', () => {

@@ -333,7 +333,7 @@ export const pt: I18nConfig = {
     configureModel: 'Configure um modelo para começar a conversar.',
     openSettings: 'Abrir configurações',
     saveSession: 'Salvar sessão',
-    saveToCollections: 'Salvar nas Coleções',
+    saveToCollections: 'Coletar',
     saved: 'Salvo',
     copy: 'Copiar',
     summarizePage: 'Resumir',

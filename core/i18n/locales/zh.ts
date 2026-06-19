@@ -317,7 +317,7 @@ export const zh: I18nConfig = {
     configureModel: '配置模型后即可开始对话。',
     openSettings: '打开设置',
     saveSession: '保存会话',
-    saveToCollections: '保存到收藏',
+    saveToCollections: '收藏',
     saved: '已保存',
     copy: '复制',
     summarizePage: '总结',

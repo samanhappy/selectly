@@ -330,7 +330,7 @@ export const ja: I18nConfig = {
     configureModel: 'チャットを始めるにはモデルを設定してください。',
     openSettings: '設定を開く',
     saveSession: 'セッションを保存',
-    saveToCollections: 'コレクションに保存',
+    saveToCollections: '収集',
     saved: '保存済み',
     copy: 'コピー',
     summarizePage: '要約',

@@ -59,6 +59,7 @@ describe('TabChatHistoryModal', () => {
     expect(html).toContain('Chat history');
     expect(html).toContain('Current question');
     expect(html).toContain('Previous question');
+    expect(html).not.toContain('role="list"');
     expect(html).toContain('Current');
     expect(html).toContain('2 messages');
     expect(html).not.toContain('empty-old');

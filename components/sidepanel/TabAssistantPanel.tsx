@@ -280,9 +280,6 @@ export const TabAssistantPanel = () => {
     const nextContext = removeSelectedTextFromSnapshot(baseContext);
 
     try {
-      if (currentSession.id) {
-        await tabChatDB.updateContext(currentSession.id, nextContext);
-      }
       if (currentTab?.id) {
         await tabContextService.clearPendingSelection(currentTab.id);
       }
