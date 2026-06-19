@@ -21,6 +21,7 @@ import { OptionsHeader } from './components/options/OptionsHeader';
 import { Sidebar } from './components/options/Sidebar';
 import { SubscriptionPage } from './components/options/SubscriptionPage';
 import { getAuthStateFromBackground } from './core/auth/auth-background-bridge';
+import { canAddCustomFunctions } from './core/config/custom-actions';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
@@ -31,6 +32,7 @@ import {
   type LLMProvider,
   type UserConfig,
 } from './core/config/llm-config';
+import { installWorkflowPack, type WorkflowPack } from './core/config/workflow-packs';
 import { i18n } from './core/i18n';
 import { collectService } from './core/services/collect-service';
 import { dictionaryService } from './core/services/dictionary-service';
@@ -71,7 +73,7 @@ const OptionsPage: React.FC = () => {
       collapsed: false,
       enabled: true,
       displayDomains: [],
-      isPremium: true,
+      isPremium: false,
       requiresAI: true,
       isBuiltIn: false,
       modelSettings: { thinkingMode: 'auto' as const },
@@ -268,10 +270,19 @@ const OptionsPage: React.FC = () => {
   };
 
   const handleAddCustomFunction = () => {
+    if (!canAddCustomFunctions(userConfig.functions, isSubscribed)) {
+      setActive('subscription');
+      return;
+    }
     openDrawer('add');
   };
 
   const addCustomFunction = () => {
+    if (!canAddCustomFunctions(userConfig.functions, isSubscribed)) {
+      setActive('subscription');
+      closeDrawer();
+      return;
+    }
     if (!newFunctionForm.key && newFunctionForm.config.title) {
       newFunctionForm.key = newFunctionForm.config.title.toLowerCase().replace(/\s+/g, '-');
     }
@@ -282,7 +293,12 @@ const OptionsPage: React.FC = () => {
       ...userConfig,
       functions: {
         ...userConfig.functions,
-        [newFunctionForm.key]: { ...newFunctionForm.config, requiresAI: true, isBuiltIn: false },
+        [newFunctionForm.key]: {
+          ...newFunctionForm.config,
+          requiresAI: true,
+          isBuiltIn: false,
+          isPremium: false,
+        },
       },
       functionOrder: [
         ...(userConfig.functionOrder || Object.keys(userConfig.functions)),
@@ -305,13 +321,30 @@ const OptionsPage: React.FC = () => {
         collapsed: false,
         displayDomains: [],
         autoExecuteDomains: [],
-        isPremium: true,
+        isPremium: false,
         requiresAI: true,
         isBuiltIn: false,
         modelSettings: { thinkingMode: 'auto' as const },
       },
     });
     closeDrawer();
+  };
+
+  const handleInstallWorkflowPack = (pack: WorkflowPack) => {
+    const result = installWorkflowPack(userConfig, pack, {
+      isSubscribed,
+      locale: userConfig.general?.language === 'zh' ? 'zh' : 'en',
+    });
+
+    if (result.installedCount === 0 && result.blockedCount > 0) {
+      setActive('subscription');
+      return;
+    }
+    if (result.installedCount === 0) {
+      return;
+    }
+
+    saveConfig(result.nextConfig);
   };
 
   const removeFunction = (functionKey: string) => {
@@ -481,6 +514,7 @@ const OptionsPage: React.FC = () => {
                   }
                   onPremiumClick={() => setActive('subscription')}
                   onAddCustomFunction={handleAddCustomFunction}
+                  onInstallWorkflowPack={handleInstallWorkflowPack}
                   onOpenConfig={() => openDrawer('config')}
                 />
               )}

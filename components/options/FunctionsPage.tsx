@@ -7,13 +7,37 @@ import { Blocks, MousePointer, Plus, Settings as SettingsIcon } from 'lucide-rea
 import React, { useState } from 'react';
 
 import {
+  FREE_CUSTOM_ACTION_LIMIT,
+  getCustomFunctionCount,
+  getRemainingCustomFunctionSlots,
+} from '../../core/config/custom-actions';
+import {
   getFunctionDisplayFields,
   type FunctionConfig,
   type UserConfig,
 } from '../../core/config/llm-config';
+import type { WorkflowPack } from '../../core/config/workflow-packs';
 import { getActionIcon as baseGetActionIcon } from '../../utils/icon-utils';
 import { PALETTE } from './constants';
 import { FunctionCard } from './FunctionCard';
+import { WorkflowPackLibrary } from './WorkflowPackLibrary';
+
+const FUNCTION_LIMIT_COPY = {
+  en: {
+    unlimited: 'Unlimited custom actions',
+    upgrade: 'Upgrade for unlimited',
+    count: (count: number) => `${count}/${FREE_CUSTOM_ACTION_LIMIT} custom actions`,
+  },
+  zh: {
+    unlimited: '无限自定义动作',
+    upgrade: '升级解锁无限动作',
+    count: (count: number) => `已用 ${count}/${FREE_CUSTOM_ACTION_LIMIT} 个自定义动作`,
+  },
+};
+
+const getFunctionLimitCopy = (language?: string) => {
+  return language === 'zh' ? FUNCTION_LIMIT_COPY.zh : FUNCTION_LIMIT_COPY.en;
+};
 
 interface FunctionsPageProps {
   userConfig: UserConfig;
@@ -24,6 +48,7 @@ interface FunctionsPageProps {
   onReorder: (order: string[]) => void;
   onPremiumClick: () => void;
   onAddCustomFunction: () => void;
+  onInstallWorkflowPack: (pack: WorkflowPack) => void;
   onOpenConfig: () => void;
 }
 
@@ -41,8 +66,15 @@ export const FunctionsPage: React.FC<FunctionsPageProps> = ({
   onReorder,
   onPremiumClick,
   onAddCustomFunction,
+  onInstallWorkflowPack,
   onOpenConfig,
 }) => {
+  const customCount = getCustomFunctionCount(userConfig.functions);
+  const remainingSlots = getRemainingCustomFunctionSlots(userConfig.functions, isSubscribed);
+  const canAddCustomFunction = isSubscribed || remainingSlots > 0;
+  const limitCopy = getFunctionLimitCopy(userConfig.general?.language);
+  const limitLabel = isSubscribed ? limitCopy.unlimited : limitCopy.count(customCount);
+
   return (
     <div style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}>
       <div className="sl-card" style={{ marginBottom: 20 }}>
@@ -69,11 +101,15 @@ export const FunctionsPage: React.FC<FunctionsPageProps> = ({
           <button
             className="sl-btn sl-btn-secondary"
             style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
-            onClick={onAddCustomFunction}
+            onClick={canAddCustomFunction ? onAddCustomFunction : onPremiumClick}
+            title={limitLabel}
           >
             <Plus size={14} />
-            {i18nConfig.popup.functions.addCustom}
+            {canAddCustomFunction ? i18nConfig.popup.functions.addCustom : limitCopy.upgrade}
           </button>
+        </div>
+        <div style={{ margin: '-8px 0 16px 0', fontSize: 12, color: PALETTE.textSecondary }}>
+          {limitLabel}
         </div>
         <FunctionList
           userConfig={userConfig}
@@ -85,6 +121,12 @@ export const FunctionsPage: React.FC<FunctionsPageProps> = ({
           onPremiumClick={onPremiumClick}
         />
       </div>
+      <WorkflowPackLibrary
+        userConfig={userConfig}
+        isSubscribed={isSubscribed}
+        onInstallPack={onInstallWorkflowPack}
+        onPremiumClick={onPremiumClick}
+      />
       <div className="sl-card" style={{ marginBottom: 20 }}>
         <div
           style={{
