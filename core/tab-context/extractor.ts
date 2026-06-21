@@ -22,9 +22,23 @@ export const TAB_CONTEXT_BLOCK_SELECTOR = [
   'pre',
   'td',
   'th',
+  'textarea',
+  'input:not([type])',
+  'input[type="email"]',
+  'input[type="number"]',
+  'input[type="search"]',
+  'input[type="tel"]',
+  'input[type="text"]',
+  'input[type="url"]',
+  '[contenteditable="true"]',
+  '[contenteditable="plaintext-only"]',
+  '[role="textbox"]',
 ].join(',');
 
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'SVG', 'CANVAS']);
+const TEXT_INPUT_TYPES = new Set(['', 'email', 'number', 'search', 'tel', 'text', 'url']);
+const DEFAULT_MIN_BLOCK_CHARS = 24;
+const COMPACT_CONTENT_MIN_CHARS = 4;
 
 const createId = (prefix: string) =>
   `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -69,6 +83,36 @@ const getHeadingForElement = (element: Element): string | undefined => {
   return undefined;
 };
 
+const isCompactContentElement = (element: Element): boolean => {
+  if (/^H[1-4]$/.test(element.tagName)) return true;
+  if (element.tagName === 'LI') return true;
+  if (element.tagName === 'TEXTAREA') return true;
+  if (element.tagName === 'INPUT') {
+    const type = (element.getAttribute('type') || '').toLowerCase();
+    return TEXT_INPUT_TYPES.has(type);
+  }
+  return element.matches(
+    '[contenteditable="true"], [contenteditable="plaintext-only"], [role="textbox"]'
+  );
+};
+
+const readElementText = (element: Element): string => {
+  if (element.tagName === 'TEXTAREA') {
+    const value = (element as HTMLTextAreaElement).value || element.textContent || '';
+    return normalizeText(value);
+  }
+
+  if (element.tagName === 'INPUT') {
+    const type = (element.getAttribute('type') || '').toLowerCase();
+    if (!TEXT_INPUT_TYPES.has(type)) return '';
+
+    const value = (element as HTMLInputElement).value || element.getAttribute('value') || '';
+    return normalizeText(value);
+  }
+
+  return normalizeText(element.textContent || '');
+};
+
 const collectDomBlocks = (doc: Document, frameUrl?: string): TabContextBlock[] => {
   const blocks: TabContextBlock[] = [];
   const seen = new Set<string>();
@@ -77,10 +121,13 @@ const collectDomBlocks = (doc: Document, frameUrl?: string): TabContextBlock[] =
   for (const element of elements) {
     if (SKIP_TAGS.has(element.tagName) || !isElementVisible(element)) continue;
     if (element.closest('script, style, noscript, template, svg, canvas')) continue;
-    if (element.matches('input, textarea, select, button, nav, footer')) continue;
+    if (element.matches('select, button, nav, footer')) continue;
 
-    const text = normalizeText(element.textContent || '');
-    if (text.length < 24) continue;
+    const text = readElementText(element);
+    const minChars = isCompactContentElement(element)
+      ? COMPACT_CONTENT_MIN_CHARS
+      : DEFAULT_MIN_BLOCK_CHARS;
+    if (text.length < minChars) continue;
     if (seen.has(text)) continue;
     seen.add(text);
 

@@ -17,24 +17,37 @@ vi.mock('@mozilla/readability', () => ({
 class FakeElement {
   tagName: string;
   textContent: string;
+  value = '';
   hidden = false;
   previousElementSibling: FakeElement | null = null;
+  private attributes: Record<string, string>;
 
-  constructor(tagName: string, textContent: string) {
+  constructor(tagName: string, textContent: string, attributes: Record<string, string> = {}) {
     this.tagName = tagName.toUpperCase();
     this.textContent = textContent;
+    this.attributes = attributes;
+    this.value = attributes.value || '';
   }
 
-  getAttribute() {
-    return null;
+  getAttribute(name: string) {
+    return this.attributes[name] || null;
   }
 
   closest() {
     return null;
   }
 
-  matches() {
-    return false;
+  matches(selector: string) {
+    const selectors = selector.split(',').map((item) => item.trim());
+    return selectors.some((item) => {
+      if (item === this.tagName.toLowerCase()) return true;
+      if (item === '[role="textbox"]') return this.attributes.role === 'textbox';
+      if (item === '[contenteditable="true"]') return this.attributes.contenteditable === 'true';
+      if (item === '[contenteditable="plaintext-only"]') {
+        return this.attributes.contenteditable === 'plaintext-only';
+      }
+      return false;
+    });
   }
 }
 
@@ -92,6 +105,30 @@ describe('tab context extractor', () => {
     expect(selectors).not.toContain('section');
   });
 
+  it('captures focused editable task detail fields even when they are short', () => {
+    const doc = createDocument(
+      [
+        new FakeElement('textarea', '', {
+          value: '咨询桐宝走路调节',
+        }),
+        new FakeElement('input', '', {
+          type: 'text',
+          value: '置身红内',
+        }),
+        new FakeElement('div', '短标签'),
+      ],
+      '今天 - 滴答清单'
+    );
+
+    const snapshot = captureTabContextSnapshot(doc, budget);
+
+    expect(TAB_CONTEXT_BLOCK_SELECTOR).toContain('textarea');
+    expect(TAB_CONTEXT_BLOCK_SELECTOR).toContain('input[type="text"]');
+    expect(snapshot.text).toContain('咨询桐宝走路调节');
+    expect(snapshot.text).toContain('置身红内');
+    expect(snapshot.text).not.toContain('短标签');
+  });
+
   it('keeps visible task-list DOM blocks when readability returns only one item', () => {
     readabilityState.article = {
       title: 'selectly side tab',
@@ -106,6 +143,9 @@ describe('tab context extractor', () => {
           'extract 不全：side panel 应该抽取当前页面中所有可见代办事项，而不是只保留最后一条。'
         ),
         new FakeElement('li', '删功能：清理旧入口并确认抽取结果仍然包含页面上的其他任务。'),
+        new FakeElement('li', '观察 & 提醒宝宝抿嘴Waiting今天'),
+        new FakeElement('li', '打疫苗 & 桐宝手抓破了Next今天'),
+        new FakeElement('li', '置身钉内Next今天'),
         new FakeElement(
           'li',
           '【中宏保险】 尊敬的客户，您的保险合同 P000026733 本期保费5000元尚未足额交纳，逾期保险合同将发生自动贷款或效力中止，请于2026年06月28日前交纳。请点击中宏保险或绑定我司官微查看详情，如需咨询，敬请联系您的保险合同服务人员或致电我司热线95383。'
@@ -119,6 +159,9 @@ describe('tab context extractor', () => {
     expect(snapshot.source).toBe('readability');
     expect(snapshot.text).toContain('extract 不全');
     expect(snapshot.text).toContain('删功能');
+    expect(snapshot.text).toContain('观察 & 提醒宝宝抿嘴');
+    expect(snapshot.text).toContain('打疫苗 & 桐宝手抓破了');
+    expect(snapshot.text).toContain('置身钉内');
     expect(snapshot.text).toContain('中宏保险');
     expect(snapshot.blocks.length).toBeGreaterThan(1);
   });
