@@ -5,6 +5,7 @@
 
 import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
 import { AuthService } from '../auth/auth-service';
+import { isDictionaryEnabled } from '../config/feature-gates';
 import { dictionaryDB, type DictionaryEntry } from '../storage/dictionary-db';
 import {
   dictionarySyncQueueDB,
@@ -28,6 +29,8 @@ export class DictionarySyncService {
       name: 'DictionarySync',
       syncStateKey: 'dictionarySyncState',
       isSyncEnabled: async () => {
+        if (!isDictionaryEnabled()) return false;
+
         const isAuthenticated = await this.authService.isAuthenticated();
         const isSubscribed = await this.subscriptionService.isSubscriptionActive();
         return isAuthenticated && isSubscribed;

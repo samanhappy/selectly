@@ -42,6 +42,12 @@ class TabChatDB extends Dexie {
     return sessions.sort((a, b) => b.updatedAt - a.updatedAt)[0];
   }
 
+  async listByNormalizedUrl(normalizedUrl: string): Promise<TabChatSession[]> {
+    await this.cleanupExpired();
+    const sessions = await this.sessions.where('normalizedUrl').equals(normalizedUrl).toArray();
+    return sessions.sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+
   async createSession(context: TabContextSnapshot | null, model?: string): Promise<TabChatSession> {
     const now = Date.now();
     const session: TabChatSession = {

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import type { SidebarKey } from './constants';
 import { openExternal } from './constants';
 
@@ -210,15 +211,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onNavigate('collected')}
           />
         </div>
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<BookOpen className="h-4 w-4" />}
-            label={(t as any).options?.sidebar?.dictionary || 'Dictionary'}
-            collapsed={collapsed}
-            active={active === 'dictionary'}
-            onClick={() => onNavigate('dictionary')}
-          />
-        </div>
+        {isDictionaryEnabled() && (
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={<BookOpen className="h-4 w-4" />}
+              label={(t as any).options?.sidebar?.dictionary || 'Dictionary'}
+              collapsed={collapsed}
+              active={active === 'dictionary'}
+              onClick={() => onNavigate('dictionary')}
+            />
+          </div>
+        )}
         <div className="border-t border-slate-200" />
         <div className="flex justify-center">
           <SidebarItem

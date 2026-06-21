@@ -21,6 +21,7 @@ import { OptionsHeader } from './components/options/OptionsHeader';
 import { Sidebar } from './components/options/Sidebar';
 import { SubscriptionPage } from './components/options/SubscriptionPage';
 import { getAuthStateFromBackground } from './core/auth/auth-background-bridge';
+import { isDictionaryEnabled } from './core/config/feature-gates';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
@@ -85,7 +86,9 @@ const OptionsPage: React.FC = () => {
     setTimeout(() => {
       collectService.sync().catch(() => {});
       highlightService.sync().catch(() => {});
-      dictionaryService.sync().catch(() => {});
+      if (isDictionaryEnabled()) {
+        dictionaryService.sync().catch(() => {});
+      }
     }, 0);
   };
 
@@ -97,7 +100,7 @@ const OptionsPage: React.FC = () => {
       if (key === 'highlights') {
         highlightService.sync().catch(() => {});
       }
-      if (key === 'dictionary') {
+      if (key === 'dictionary' && isDictionaryEnabled()) {
         dictionaryService.sync().catch(() => {});
       }
     }, 0);
@@ -468,7 +471,7 @@ const OptionsPage: React.FC = () => {
                   }
                 />
               )}
-              {active === 'dictionary' && <DictionaryPage t={t} />}
+              {active === 'dictionary' && isDictionaryEnabled() && <DictionaryPage t={t} />}
               {active === 'functions' && (
                 <FunctionsPage
                   userConfig={userConfig}

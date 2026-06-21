@@ -59,7 +59,7 @@ export const TabModelPicker = ({
     <div ref={rootRef} className="relative min-w-0">
       <button
         type="button"
-        className="inline-flex h-8 max-w-[150px] items-center gap-1 rounded-full bg-slate-100 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-9 max-w-[150px] items-center gap-1 rounded-full bg-slate-100 px-3 text-xs font-medium text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
         disabled={disabled}
         title={`${labels.selectedModel}: ${selectedLabel}`}
         aria-label={`${labels.selectedModel}: ${selectedLabel}`}

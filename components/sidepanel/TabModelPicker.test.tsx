@@ -29,6 +29,7 @@ describe('TabModelPicker', () => {
     );
 
     expect(html).toContain('gpt-4o-mini');
+    expect(html).toContain('h-9');
     expect(html).toContain('aria-haspopup="listbox"');
   });
 
