@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 
-import type { ModelCallSettings } from '../../../core/config/llm-config';
+import type {
+  FunctionConfig,
+  FunctionShortcutConfig,
+  ModelCallSettings,
+} from '../../../core/config/llm-config';
 import { ConfigManager } from '../../../core/config/llm-config';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { IconSelector } from './IconSelector';
+import { ShortcutRecorder } from './ShortcutRecorder';
 
 interface NewFunctionFormState {
   key: string;
@@ -18,12 +23,14 @@ interface NewFunctionFormState {
     autoCloseButtons: boolean;
     autoCloseResult: boolean;
     collapsed?: boolean;
+    showInToolbar?: boolean;
     enabled: boolean;
     displayDomains?: string[];
     isPremium?: boolean;
     requiresAI?: boolean;
     isBuiltIn?: boolean;
     modelSettings?: ModelCallSettings;
+    shortcut?: FunctionShortcutConfig;
   };
 }
 
@@ -31,6 +38,7 @@ interface AddFunctionFormProps {
   state: NewFunctionFormState;
   i18n: any;
   palette: any;
+  allFunctions: Record<string, FunctionConfig>;
   onChange: (update: NewFunctionFormState) => void;
   onSubmit: () => void;
   onCancel: () => void;
@@ -40,6 +48,7 @@ export const AddFunctionForm: React.FC<AddFunctionFormProps> = ({
   state,
   i18n,
   palette,
+  allFunctions,
   onChange,
   onSubmit,
   onCancel,
@@ -151,6 +160,15 @@ export const AddFunctionForm: React.FC<AddFunctionFormProps> = ({
 
           {showAdvanced && (
             <div>
+              <ShortcutRecorder
+                value={state.config.shortcut}
+                allFunctions={allFunctions}
+                i18n={i18n}
+                onChange={(shortcut) =>
+                  onChange({ ...state, config: { ...state.config, shortcut } })
+                }
+              />
+
               {/* Execution behavior settings */}
               <label className="sl-switch-row">
                 <input
@@ -249,6 +267,26 @@ export const AddFunctionForm: React.FC<AddFunctionFormProps> = ({
               </label>
 
               {/* Display settings */}
+              <label className="sl-switch-row">
+                <input
+                  className="sl-checkbox"
+                  type="checkbox"
+                  checked={state.config.showInToolbar !== false}
+                  onChange={(e) =>
+                    onChange({
+                      ...state,
+                      config: { ...state.config, showInToolbar: e.target.checked },
+                    })
+                  }
+                />
+                <div>
+                  <div className="sl-switch-text">{i18n.popup.functions.labels.showInToolbar}</div>
+                  <div className="sl-switch-desc">
+                    {i18n.popup.functions.labels.showInToolbarHelp}
+                  </div>
+                </div>
+              </label>
+
               <label className="sl-switch-row">
                 <input
                   className="sl-checkbox"

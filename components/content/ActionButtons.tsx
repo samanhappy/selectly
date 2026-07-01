@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { shouldShowFunctionInToolbar } from '../../core/config/function-visibility';
 import { getFunctionDisplayFields, type UserConfig } from '../../core/config/llm-config';
 import {
   getPreferredPlacement,
@@ -257,7 +258,7 @@ export const ActionButtons = ({
   const collapsedButtons = [] as { key: string; icon: JSX.Element; title: string }[];
   orderedKeys.forEach((key) => {
     const config = userConfig.functions[key];
-    if (!config?.enabled) return;
+    if (!shouldShowFunctionInToolbar(config)) return;
 
     // Handle premium features logic
     // if (config.isPremium && !isSubscribed) {

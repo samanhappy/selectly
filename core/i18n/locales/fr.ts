@@ -164,6 +164,19 @@ export const fr: I18nConfig = {
           "Fermer la fenêtre de résultat automatiquement en cliquant à l'extérieur",
         collapsed: 'Replié',
         collapsedHelp: "Masquer cette fonction sous le menu ⋯ dans la barre d'outils",
+        showInToolbar: "Afficher dans la barre d'actions",
+        showInToolbarHelp:
+          "Affiche cette fonction dans la barre d'actions flottante. Les raccourcis fonctionnent même si elle est masquée.",
+        shortcut: 'Raccourci',
+        shortcutHelp: 'Exécute cette fonction sur la page actuelle quand du texte est sélectionné.',
+        shortcutPlaceholder: 'Enregistrer un raccourci',
+        shortcutRecording: 'Appuyez sur le raccourci',
+        shortcutClear: 'Effacer le raccourci',
+        shortcutDuplicate: 'Ce raccourci est déjà utilisé par une autre fonction.',
+        shortcutReserved: 'Ce raccourci est réservé par le navigateur.',
+        shortcutIncomplete: 'Utilisez au moins Ctrl/Command ou Alt avec une autre touche.',
+        shortcutConflictRisk:
+          'Ce raccourci peut entrer en conflit avec des raccourcis de sites web.',
         displayDomains: "Domaines d'Affichage",
         displayDomainsHelp:
           "Noms d'hôtes séparés par des virgules. Laisser vide pour afficher sur tous les sites. Supporte les sous-domaines (ex. docs.example.com).",

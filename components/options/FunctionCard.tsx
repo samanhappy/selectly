@@ -1,9 +1,11 @@
-import { Settings } from 'lucide-react';
+import { Keyboard, Settings } from 'lucide-react';
 import React from 'react';
 
 import type { FunctionConfig } from '../../core/config/llm-config';
+import { formatShortcut } from '../../core/content/function-shortcuts';
 import { getActionIcon, isValidIconKey } from '../../utils/icon-utils';
 import { PremiumCrown } from '../shared/PremiumCrown';
+import { ShortcutKeys } from './ShortcutKeys';
 
 interface FunctionCardProps {
   functionKey: string;
@@ -26,6 +28,7 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({
   isSubscribed = true,
 }) => {
   const isPremium = config.isPremium === true;
+  const shortcutLabel = formatShortcut(config.shortcut?.chord);
 
   const handleToggle = (enabled: boolean) => {
     onToggle(functionKey, enabled);
@@ -57,7 +60,13 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({
       </div>
       <div className="sl-fn-meta">
         <div className="sl-fn-title">
-          {title}
+          <span className="sl-fn-title-text">{title}</span>
+          {shortcutLabel && (
+            <span className="sl-shortcut-badge">
+              <Keyboard size={13} />
+              <ShortcutKeys chord={config.shortcut?.chord} />
+            </span>
+          )}
           {isPremium && (
             <PremiumCrown
               active={isSubscribed}
@@ -67,7 +76,6 @@ export const FunctionCard: React.FC<FunctionCardProps> = ({
             />
           )}
         </div>
-        <div className="sl-fn-sub"></div>
       </div>
       <button
         type="button"
