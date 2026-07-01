@@ -162,6 +162,18 @@ export const pt: I18nConfig = {
         autoCloseResultHelp: 'Fechar a janela de resultados automaticamente ao clicar fora',
         collapsed: 'Recolher',
         collapsedHelp: 'Ocultar esta função no menu ⋯ na barra de ferramentas',
+        showInToolbar: 'Mostrar na barra',
+        showInToolbarHelp:
+          'Mostra esta função na barra flutuante de ações. Atalhos continuam funcionando quando oculta.',
+        shortcut: 'Atalho',
+        shortcutHelp: 'Executa esta função na página atual quando houver texto selecionado.',
+        shortcutPlaceholder: 'Gravar atalho',
+        shortcutRecording: 'Pressione o atalho',
+        shortcutClear: 'Limpar atalho',
+        shortcutDuplicate: 'Este atalho já é usado por outra função.',
+        shortcutReserved: 'Este atalho é reservado pelo navegador.',
+        shortcutIncomplete: 'Use pelo menos Ctrl/Command ou Alt com outra tecla.',
+        shortcutConflictRisk: 'Este atalho pode conflitar com atalhos comuns de sites.',
         displayDomains: 'Domínios de Exibição',
         displayDomainsHelp:
           'Nomes de host separados por vírgula. Deixe vazio para mostrar em todos os sites. Suporta subdomínios (ex. docs.example.com)',

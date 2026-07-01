@@ -70,6 +70,7 @@ const OptionsPage: React.FC = () => {
       autoCloseButtons: true,
       autoCloseResult: true,
       collapsed: false,
+      showInToolbar: true,
       enabled: true,
       displayDomains: [],
       isPremium: true,
@@ -227,14 +228,19 @@ const OptionsPage: React.FC = () => {
     field: keyof FunctionConfig,
     value: any
   ) => {
+    const nextFunctionConfig = {
+      ...userConfig.functions[functionKey],
+      [field]: value,
+    };
+    if (value === undefined) {
+      delete (nextFunctionConfig as any)[field];
+    }
+
     const newConfig = {
       ...userConfig,
       functions: {
         ...userConfig.functions,
-        [functionKey]: {
-          ...userConfig.functions[functionKey],
-          [field]: value,
-        },
+        [functionKey]: nextFunctionConfig,
       },
     };
     saveConfig(newConfig as UserConfig);
@@ -306,6 +312,7 @@ const OptionsPage: React.FC = () => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         displayDomains: [],
         autoExecuteDomains: [],
         isPremium: true,
@@ -354,6 +361,7 @@ const OptionsPage: React.FC = () => {
           state={newFunctionForm as any}
           i18n={i18nConfig}
           palette={PALETTE}
+          allFunctions={userConfig.functions}
           onChange={(update: any) => setNewFunctionForm(update)}
           onSubmit={addCustomFunction}
           onCancel={closeDrawer}
@@ -367,6 +375,7 @@ const OptionsPage: React.FC = () => {
         <EditFunctionForm
           functionKey={editingFunction}
           config={functionConfig as any}
+          allFunctions={userConfig.functions}
           i18n={i18nConfig}
           palette={PALETTE}
           onChange={(field, value) =>

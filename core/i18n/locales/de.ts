@@ -164,6 +164,19 @@ export const de: I18nConfig = {
         autoCloseResultHelp: 'Ergebnisfenster automatisch schließen beim Klicken außerhalb',
         collapsed: 'Eingeklappt',
         collapsedHelp: 'Diese Funktion unter dem ⋯-Menü in der Symbolleiste verstecken',
+        showInToolbar: 'In Symbolleiste anzeigen',
+        showInToolbarHelp:
+          'Diese Funktion in der schwebenden Aktionsleiste anzeigen. Tastenkürzel funktionieren auch wenn sie ausgeblendet ist.',
+        shortcut: 'Tastenkürzel',
+        shortcutHelp: 'Führt diese Funktion auf der aktuellen Seite aus, wenn Text ausgewählt ist.',
+        shortcutPlaceholder: 'Tastenkürzel aufnehmen',
+        shortcutRecording: 'Tastenkürzel drücken',
+        shortcutClear: 'Tastenkürzel löschen',
+        shortcutDuplicate: 'Dieses Tastenkürzel wird bereits von einer anderen Funktion verwendet.',
+        shortcutReserved: 'Dieses Tastenkürzel ist vom Browser reserviert.',
+        shortcutIncomplete:
+          'Verwenden Sie mindestens Strg/Befehl oder Alt mit einer weiteren Taste.',
+        shortcutConflictRisk: 'Dieses Tastenkürzel kann mit Website-Tastenkürzeln kollidieren.',
         displayDomains: 'Anzeigedomänen',
         displayDomainsHelp:
           'Kommagetrennte Hostnamen. Leer lassen, um auf allen Sites anzuzeigen. Unterstützt Subdomänen (z.B. docs.example.com).',

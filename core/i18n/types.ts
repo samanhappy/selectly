@@ -158,6 +158,17 @@ export interface I18nConfig {
         autoCloseResultHelp: string;
         collapsed: string;
         collapsedHelp: string;
+        showInToolbar: string;
+        showInToolbarHelp: string;
+        shortcut: string;
+        shortcutHelp: string;
+        shortcutPlaceholder: string;
+        shortcutRecording: string;
+        shortcutClear: string;
+        shortcutDuplicate: string;
+        shortcutReserved: string;
+        shortcutIncomplete: string;
+        shortcutConflictRisk: string;
         displayDomains: string;
         displayDomainsHelp: string;
         autoExecuteDomains: string;

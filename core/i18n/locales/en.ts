@@ -159,6 +159,18 @@ export const en: I18nConfig = {
         autoCloseResultHelp: 'Close the result window automatically after clicking outside',
         collapsed: 'Collapse',
         collapsedHelp: 'Hide this function under the ⋯ menu in the toolbar',
+        showInToolbar: 'Show in Toolbar',
+        showInToolbarHelp:
+          'Show this function in the floating action toolbar. Shortcuts still work when hidden.',
+        shortcut: 'Shortcut',
+        shortcutHelp: 'Run this function from the current page when selected text is available.',
+        shortcutPlaceholder: 'Record shortcut',
+        shortcutRecording: 'Press shortcut',
+        shortcutClear: 'Clear shortcut',
+        shortcutDuplicate: 'This shortcut is already used by another function.',
+        shortcutReserved: 'This shortcut is reserved by the browser.',
+        shortcutIncomplete: 'Use at least Ctrl/Command or Alt with another key.',
+        shortcutConflictRisk: 'This shortcut may conflict with common website shortcuts.',
         displayDomains: 'Display Domains',
         displayDomainsHelp:
           'Comma-separated hostnames. Leave empty for all sites. Supports subdomains (e.g., docs.example.com)',

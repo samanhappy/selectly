@@ -160,6 +160,19 @@ export const ja: I18nConfig = {
         autoCloseResultHelp: '外側をクリックすると結果ウィンドウを自動的に閉じます',
         collapsed: '折りたたみ',
         collapsedHelp: 'この機能をツールバーの ⋯ メニューの下に隠します',
+        showInToolbar: 'ツールバーに表示',
+        showInToolbarHelp:
+          'この機能をフローティングアクションツールバーに表示します。非表示でもショートカットは動作します。',
+        shortcut: 'ショートカット',
+        shortcutHelp: '現在のページでテキストが選択されているときにこの機能を実行します。',
+        shortcutPlaceholder: 'ショートカットを記録',
+        shortcutRecording: 'ショートカットを押す',
+        shortcutClear: 'ショートカットをクリア',
+        shortcutDuplicate: 'このショートカットは別の機能で使用されています。',
+        shortcutReserved: 'このショートカットはブラウザで予約されています。',
+        shortcutIncomplete: 'Ctrl/Command または Alt と別のキーを組み合わせてください。',
+        shortcutConflictRisk:
+          'このショートカットは一般的なサイトのショートカットと競合する可能性があります。',
         displayDomains: '表示ドメイン',
         displayDomainsHelp:
           'カンマ区切りのホスト名。すべてのサイトに表示するには空のままにします。サブドメインをサポート（例: docs.example.com）。',

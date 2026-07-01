@@ -162,6 +162,18 @@ export const es: I18nConfig = {
         autoCloseResultHelp: 'Cerrar la ventana de resultados automáticamente al hacer clic fuera',
         collapsed: 'Colapsar',
         collapsedHelp: 'Ocultar esta función bajo el menú ⋯ en la barra de herramientas',
+        showInToolbar: 'Mostrar en la barra',
+        showInToolbarHelp:
+          'Muestra esta función en la barra flotante de acciones. Los atajos siguen funcionando si está oculta.',
+        shortcut: 'Atajo',
+        shortcutHelp: 'Ejecuta esta función en la página actual cuando haya texto seleccionado.',
+        shortcutPlaceholder: 'Grabar atajo',
+        shortcutRecording: 'Pulsa el atajo',
+        shortcutClear: 'Borrar atajo',
+        shortcutDuplicate: 'Este atajo ya lo usa otra función.',
+        shortcutReserved: 'Este atajo está reservado por el navegador.',
+        shortcutIncomplete: 'Usa al menos Ctrl/Command o Alt con otra tecla.',
+        shortcutConflictRisk: 'Este atajo puede entrar en conflicto con atajos de sitios web.',
         displayDomains: 'Dominios de Visualización',
         displayDomainsHelp:
           'Nombres de host separados por comas. Deja vacío para mostrar en todos los sitios. Soporta subdominios (ej. docs.example.com)',

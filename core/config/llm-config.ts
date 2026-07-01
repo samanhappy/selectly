@@ -34,6 +34,10 @@ export interface LLMConfig {
   modelMetadataOverrides?: Record<string, ModelMetadataOverride>;
 }
 
+export interface FunctionShortcutConfig {
+  chord: string;
+}
+
 export interface FunctionConfig {
   title: string;
   description: string;
@@ -45,6 +49,7 @@ export interface FunctionConfig {
   autoCloseButtons: boolean;
   autoCloseResult?: boolean;
   collapsed?: boolean;
+  showInToolbar?: boolean;
   enabled: boolean;
   displayDomains?: string[];
   isBuiltIn?: boolean;
@@ -56,6 +61,7 @@ export interface FunctionConfig {
   targetLanguage?: string;
   searchEngine?: 'google' | 'bing' | 'baidu';
   highlightColor?: string;
+  shortcut?: FunctionShortcutConfig;
 }
 
 export interface GeneralConfig {
@@ -243,6 +249,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -260,6 +267,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -277,6 +285,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -294,6 +303,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -311,6 +321,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: true,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -328,6 +339,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: false,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -344,6 +356,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: true,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -361,6 +374,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: true,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -378,6 +392,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: false,
         autoCloseResult: true,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -394,6 +409,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: false,
         collapsed: false,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,
@@ -411,6 +427,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
         autoCloseButtons: true,
         autoCloseResult: true,
         collapsed: true,
+        showInToolbar: true,
         enabled: true,
         displayDomains: [],
         isBuiltIn: true,

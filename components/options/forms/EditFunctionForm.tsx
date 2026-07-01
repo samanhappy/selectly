@@ -12,10 +12,12 @@ import { COLOR_PRESETS } from '../color-presets';
 import { EnhancedModelSelector } from './EnhancedModelSelector';
 import { parseColorToRgba, rgbaToHex, rgbaToString, type RgbaColor } from './highlight-color-utils';
 import { IconSelector } from './IconSelector';
+import { ShortcutRecorder } from './ShortcutRecorder';
 
 interface EditFunctionFormProps {
   functionKey: string;
   config: FunctionConfig;
+  allFunctions: Record<string, FunctionConfig>;
   i18n: any;
   palette: any;
   onChange: (field: keyof FunctionConfig, value: any) => void;
@@ -27,6 +29,7 @@ interface EditFunctionFormProps {
 export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
   functionKey,
   config,
+  allFunctions,
   i18n,
   palette,
   onChange,
@@ -286,6 +289,29 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
 
           {showAdvanced && (
             <div>
+              <ShortcutRecorder
+                value={config.shortcut}
+                allFunctions={allFunctions}
+                currentFunctionKey={functionKey}
+                i18n={i18n}
+                onChange={(shortcut) => onChange('shortcut', shortcut)}
+              />
+
+              <label className="sl-switch-row">
+                <input
+                  className="sl-checkbox"
+                  type="checkbox"
+                  checked={config.showInToolbar !== false}
+                  onChange={(e) => onChange('showInToolbar', e.target.checked)}
+                />
+                <div>
+                  <div className="sl-switch-text">{i18n.popup.functions.labels.showInToolbar}</div>
+                  <div className="sl-switch-desc">
+                    {i18n.popup.functions.labels.showInToolbarHelp}
+                  </div>
+                </div>
+              </label>
+
               <label className="sl-switch-row">
                 <input
                   className="sl-checkbox"

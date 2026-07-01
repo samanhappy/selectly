@@ -27,6 +27,7 @@ import {
   translatePointToDocument,
   type FloatingAnchor,
 } from './floating-position';
+import { findShortcutAction } from './function-shortcuts';
 import { observeKeyboardSelection, type KeyboardSelection } from './keyboard-selection';
 import { streamingStyles } from './streaming-styles';
 import { getTextControlSelectedText } from './text-control-selection';
@@ -800,6 +801,7 @@ export class Selectly {
     document.addEventListener('touchend', this.handleTextSelection.bind(this));
     document.addEventListener('scroll', this.handleFloatingScroll, true);
     observeKeyboardSelection(document, this.handleKeyboardSelection);
+    document.addEventListener('keydown', this.handleFunctionShortcut, true);
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -1617,6 +1619,60 @@ export class Selectly {
 
     this.lastMousePosition = null;
     this.showSelectionButtons(target, target.ownerDocument.getSelection(), selectedText);
+  };
+
+  private readShortcutSelectedText(target: EventTarget | null): string {
+    const textControlSelection = getTextControlSelectedText(target);
+    if (textControlSelection) {
+      return textControlSelection;
+    }
+
+    const targetDocument =
+      target instanceof HTMLElement ? target.ownerDocument : this.currentTarget?.ownerDocument;
+    const documentSelection = (targetDocument || document).getSelection()?.toString().trim() || '';
+    if (documentSelection) {
+      return documentSelection;
+    }
+
+    return this.getCurrentSelectedText();
+  }
+
+  private cacheShortcutSelection(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    this.currentTarget = target;
+    this.currentSelection = target.ownerDocument.getSelection();
+    this.cacheCurrentSelection();
+    this.captureCurrentAnchor();
+  }
+
+  private handleFunctionShortcut = async (event: KeyboardEvent) => {
+    const match = findShortcutAction(this.userConfig, event, window.location.hostname);
+    if (!match) {
+      return;
+    }
+
+    const selectedText = this.readShortcutSelectedText(event.target);
+    if (!selectedText) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.cacheShortcutSelection(event.target);
+
+    try {
+      const actionService = ActionService.getInstance();
+      await actionService.executeAction(match.actionKey, selectedText, match.config);
+
+      if (match.config.autoCloseButtons !== false) {
+        this.hideButtons();
+      }
+    } catch (error) {
+      this.logger.error('Failed to execute shortcut action:', error);
+    }
   };
 
   private showSelectionButtons(
