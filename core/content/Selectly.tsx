@@ -9,6 +9,7 @@ import { isReadingProgressEnabled } from '../config/feature-gates';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
+  normalizeSelectionFloatingGap,
   SYSTEM_READING_PROGRESS_BLACKLIST,
   SYSTEM_READING_PROGRESS_WHITELIST,
   type FunctionConfig,
@@ -1665,10 +1666,24 @@ export class Selectly {
 
     try {
       const actionService = ActionService.getInstance();
-      await actionService.executeAction(match.actionKey, selectedText, match.config);
-
-      if (match.config.autoCloseButtons !== false) {
+      let buttonsClosed = false;
+      const closeButtons = () => {
+        if (buttonsClosed || match.config.autoCloseButtons === false) return;
+        buttonsClosed = true;
         this.hideButtons();
+      };
+
+      const result = await actionService.executeAction(
+        match.actionKey,
+        selectedText,
+        match.config,
+        {
+          onStreamingStart: closeButtons,
+        }
+      );
+
+      if (result.closeButtonsAfterExecution) {
+        closeButtons();
       }
     } catch (error) {
       this.logger.error('Failed to execute shortcut action:', error);
@@ -1936,6 +1951,10 @@ export class Selectly {
     return this.userConfig.general?.buttonPosition || 'above';
   }
 
+  private getSelectionFloatingGap(): number {
+    return normalizeSelectionFloatingGap(this.userConfig.general?.selectionFloatingGap);
+  }
+
   private handleSelectionUpdate = (newSelectedText: string) => {
     // Update current selection and target element
     const selection = this.currentTarget?.ownerDocument.getSelection() || window.getSelection();
@@ -1951,6 +1970,7 @@ export class Selectly {
           selectedText={newSelectedText}
           anchor={this.getCurrentAnchor()}
           buttonPosition={this.getButtonPositionPreference()}
+          floatingGap={this.getSelectionFloatingGap()}
           onClose={() => this.hideButtons()}
           onSelectionUpdate={this.handleSelectionUpdate}
           userConfig={this.userConfig}
@@ -1997,6 +2017,7 @@ export class Selectly {
         selectedText={selectedText}
         anchor={this.getCurrentAnchor()}
         buttonPosition={this.getButtonPositionPreference()}
+        floatingGap={this.getSelectionFloatingGap()}
         onClose={() => this.hideButtons()}
         onSelectionUpdate={this.handleSelectionUpdate}
         userConfig={this.userConfig}
@@ -2018,7 +2039,13 @@ export class Selectly {
         setTimeout(() => {
           try {
             const actionService = ActionService.getInstance();
-            actionService.executeAction(actionKey, selectedText, functionConfig);
+            actionService.executeAction(actionKey, selectedText, functionConfig, {
+              onStreamingStart: () => {
+                if (functionConfig.autoCloseButtons !== false) {
+                  this.hideButtons();
+                }
+              },
+            });
           } catch (e) {
             // noop
           }
@@ -2165,6 +2192,7 @@ export class Selectly {
       <StreamingResult
         title={title}
         anchor={this.getCurrentAnchor()}
+        floatingGap={this.getSelectionFloatingGap()}
         actionKey={actionKey}
         selectedText={ctxSelectedText}
         selectedSentence={ctxSentence}
@@ -2205,6 +2233,7 @@ export class Selectly {
       <StreamingResult
         title={title}
         anchor={this.getCurrentAnchor()}
+        floatingGap={this.getSelectionFloatingGap()}
         actionKey="chat"
         canPaste={canPaste}
         isDialogue={true}
@@ -2290,6 +2319,7 @@ export class Selectly {
       <StreamingResult
         title={title}
         anchor={this.getCurrentAnchor()}
+        floatingGap={this.getSelectionFloatingGap()}
         canPaste={canPaste}
         onPinChange={setPinned}
         onClose={() => cleanup(true)}

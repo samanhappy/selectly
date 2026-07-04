@@ -67,6 +67,7 @@ export interface FunctionConfig {
 export interface GeneralConfig {
   language: SupportedLanguage;
   buttonPosition: 'above' | 'below';
+  selectionFloatingGap?: number;
   showTabAssistantButton?: boolean;
   tabAssistantBlacklist?: string[];
   showReadingProgressBar?: boolean;
@@ -125,6 +126,21 @@ export const getFunctionDisplayFields = (
 };
 
 export const DEFAULT_HIGHLIGHT_COLOR = 'rgba(255, 204, 0, 0.24)';
+export const DEFAULT_SELECTION_FLOATING_GAP = 10;
+export const MIN_SELECTION_FLOATING_GAP = 0;
+export const MAX_SELECTION_FLOATING_GAP = 48;
+
+export const normalizeSelectionFloatingGap = (value: unknown): number => {
+  const numericValue = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(numericValue)) {
+    return DEFAULT_SELECTION_FLOATING_GAP;
+  }
+
+  return Math.min(
+    MAX_SELECTION_FLOATING_GAP,
+    Math.max(MIN_SELECTION_FLOATING_GAP, Math.round(numericValue))
+  );
+};
 
 export const SYSTEM_READING_PROGRESS_BLACKLIST = [
   'x.com',
@@ -217,6 +233,7 @@ export const getDefaultConfig = async (): Promise<UserConfig> => {
     general: {
       language: i18n.getCurrentLanguage(),
       buttonPosition: 'above',
+      selectionFloatingGap: DEFAULT_SELECTION_FLOATING_GAP,
       showTabAssistantButton: true,
       tabAssistantBlacklist: [],
       showReadingProgressBar: true,
@@ -455,6 +472,7 @@ export const DEFAULT_CONFIG: UserConfig = {
   general: {
     language: 'en',
     buttonPosition: 'above',
+    selectionFloatingGap: DEFAULT_SELECTION_FLOATING_GAP,
     showTabAssistantButton: true,
     tabAssistantBlacklist: [],
     showReadingProgressBar: true,
@@ -738,8 +756,11 @@ export class ConfigManager {
       })
     );
 
+    const general = { ...old.general, ...override.general };
+    general.selectionFloatingGap = normalizeSelectionFloatingGap(general.selectionFloatingGap);
+
     return {
-      general: { ...old.general, ...override.general },
+      general,
       llm: {
         defaultModel: override.llm?.defaultModel ?? old.llm?.defaultModel,
         providers: mergedProviders,

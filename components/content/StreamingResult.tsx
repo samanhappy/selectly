@@ -2,13 +2,13 @@ import { BookmarkPlus, ClipboardPaste, Copy, GripVertical, Info, Pin, Send, X } 
 import Markdown from 'markdown-to-jsx';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import {
   clampFloatingPosition,
   computeAnchoredPosition,
   type FloatingAnchor,
   type FloatingPosition,
 } from '../../core/content/floating-position';
-import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import { i18n } from '../../core/i18n';
 import { getActionIcon } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
@@ -20,6 +20,7 @@ export const shouldShowDictionaryAction = (actionKey?: string) =>
 
 interface StreamingResultProps {
   anchor: FloatingAnchor;
+  floatingGap: number;
   title: string;
   actionKey?: string;
   onClose: () => void;
@@ -195,6 +196,7 @@ const MarkdownRenderer = ({ content }: { content: string }) => {
  */
 export const StreamingResult = ({
   anchor,
+  floatingGap,
   title,
   actionKey,
   onClose,
@@ -263,7 +265,7 @@ export const StreamingResult = ({
     if (!element) return;
 
     let active = true;
-    void computeAnchoredPosition(anchor, element, 'bottom-start')
+    void computeAnchoredPosition(anchor, element, 'bottom-start', floatingGap)
       .then((nextPosition) => {
         if (!active) return;
         clampPosition(nextPosition);
@@ -276,7 +278,7 @@ export const StreamingResult = ({
     return () => {
       active = false;
     };
-  }, [anchor, clampPosition]);
+  }, [anchor, clampPosition, floatingGap]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -734,9 +736,7 @@ export const StreamingResult = ({
                 const IconComponent = getActionIcon(actionKey);
                 // Safety check for IconComponent
                 if (!IconComponent) {
-                  logger.warn(
-                    `IconComponent is undefined for actionKey: ${actionKey}`
-                  );
+                  logger.warn(`IconComponent is undefined for actionKey: ${actionKey}`);
                   return <Info size={14} />;
                 }
                 return <IconComponent size={14} />;

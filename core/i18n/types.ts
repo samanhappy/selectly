@@ -194,9 +194,12 @@ export interface I18nConfig {
       title: string;
       language: string;
       theme: string;
+      selectionUiTitle: string;
       buttonPosition: string;
       buttonPositionAbove: string;
       buttonPositionBelow: string;
+      selectionFloatingGap: string;
+      selectionFloatingGapDesc: string;
       readingProgressTitle: string;
       showReadingProgressBar: string;
       autoSaveReadingProgress: string;

@@ -3,6 +3,7 @@ import React from 'react';
 
 import { isReadingProgressEnabled } from '../../../core/config/feature-gates';
 import type { GeneralConfig, UserConfig } from '../../../core/config/llm-config';
+import { SelectionFloatingGapControl } from './SelectionFloatingGapControl';
 
 interface GeneralSettingsFormProps {
   userConfig: UserConfig;
@@ -19,6 +20,7 @@ export const GeneralSettingsForm: React.FC<GeneralSettingsFormProps> = ({
 }) => {
   const config = i18n.getConfig();
   const showReadingProgressSettings = isReadingProgressEnabled();
+
   return (
     <div className="sl-drawer-body">
       <h3 style={{ margin: '0 0 24px 0', fontSize: 18, fontWeight: 600, display: 'flex', gap: 8 }}>
@@ -36,6 +38,17 @@ export const GeneralSettingsForm: React.FC<GeneralSettingsFormProps> = ({
           <option value="above">{config?.popup?.general?.buttonPositionAbove || 'Above'}</option>
           <option value="below">{config?.popup?.general?.buttonPositionBelow || 'Below'}</option>
         </select>
+      </div>
+      <div className="sl-field">
+        <SelectionFloatingGapControl
+          value={userConfig.general?.selectionFloatingGap}
+          label={config?.popup?.general?.selectionFloatingGap || 'Distance from selection'}
+          description={
+            config?.popup?.general?.selectionFloatingGapDesc ||
+            'Controls the spacing between selected text and Selectly panels.'
+          }
+          onChange={(value) => onChange('selectionFloatingGap', value)}
+        />
       </div>
       <div className="sl-field">
         <label className="sl-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
