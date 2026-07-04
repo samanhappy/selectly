@@ -464,7 +464,7 @@ export const zh: I18nConfig = {
       title: '翻译',
       description: '翻译选中文本',
       prompt:
-        '你是一名专业翻译。请将以下文本翻译成{targetLanguage}，如果文本已经是{targetLanguage}则翻译成英文。请保持原文的语调和含义。只返回翻译结果，不要任何解释或额外文字：\n\n{text}',
+        '你是一名专业翻译。请将以下文本翻译成{targetLanguage}，如果文本已经是{targetLanguage}则翻译成英文。请保持原文的语调和含义。只返回翻译结果。如果文本是单个单词，请在同一行的翻译结果后追加源单词音标，格式为“/.../”。短语或句子不要添加音标：\n\n{text}',
     },
     polish: {
       title: '润色',

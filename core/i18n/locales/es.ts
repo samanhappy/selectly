@@ -489,7 +489,7 @@ export const es: I18nConfig = {
       title: 'Traducir',
       description: 'Traducir texto seleccionado',
       prompt:
-        'Eres un traductor profesional. Por favor, traduce el siguiente texto a {targetLanguage}. Si el texto ya está en {targetLanguage}, tradúcelo al inglés en su lugar. Mantén el tono y significado original. Devuelve solo la traducción sin ninguna explicación o texto adicional:\n\n{text}',
+        'Eres un traductor profesional. Por favor, traduce el siguiente texto a {targetLanguage}. Si el texto ya está en {targetLanguage}, tradúcelo al inglés en su lugar. Mantén el tono y significado original. Devuelve solo la traducción. Si el texto es una sola palabra, añade la pronunciación de la palabra original después de la traducción en la misma línea con el formato "/.../". No añadas notación fonética para frases u oraciones:\n\n{text}',
     },
     polish: {
       title: 'Pulir',
