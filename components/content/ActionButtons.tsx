@@ -232,9 +232,21 @@ export const ActionButtons = ({
       selectlyInstance.updateCachedSelection();
     }
 
-    try {
-      await actionService.executeAction(actionKey, currentSelectedText, config);
+    let buttonsClosed = false;
+    const closeButtons = () => {
+      if (buttonsClosed || keepButtonsOpen || config.autoCloseButtons === false) return;
+      buttonsClosed = true;
+      onClose();
+    };
 
+    try {
+      const result = await actionService.executeAction(actionKey, currentSelectedText, config, {
+        onStreamingStart: closeButtons,
+      });
+
+      if (result.closeButtonsAfterExecution) {
+        closeButtons();
+      }
       // Update daily usage count after successful action
       // if (config.isPremium && !isSubscribed) {
       //   await updateDailyUsage()
@@ -243,10 +255,7 @@ export const ActionButtons = ({
       logger.error(`Error performing ${actionKey}:`, error);
     }
 
-    // Only close buttons if autoCloseButtons is enabled (default to true for backward compatibility)
-    if (!keepButtonsOpen && config.autoCloseButtons !== false) {
-      onClose();
-    }
+    // Streaming actions close via onStreamingStart. Errors keep buttons visible for retry.
   };
 
   if (!isVisible) return null;

@@ -10,6 +10,22 @@ const logger = createLogger('Action');
 // IndexedDB writes must happen in extension context to ensure options page can read them.
 // We'll send a message to background to persist collected items.
 
+export interface ActionExecutionOptions {
+  onStreamingStart?: () => void;
+}
+
+export interface ActionExecutionResult {
+  closeButtonsAfterExecution: boolean;
+}
+
+const CLOSE_BUTTONS_AFTER_EXECUTION: ActionExecutionResult = {
+  closeButtonsAfterExecution: true,
+};
+
+const STREAMING_RESULT_ACTION: ActionExecutionResult = {
+  closeButtonsAfterExecution: false,
+};
+
 export class ActionService {
   private static instance: ActionService;
   private llmService = LLMService.getInstance();
@@ -46,44 +62,52 @@ export class ActionService {
   async executeAction(
     actionKey: string,
     selectedText: string,
-    config: FunctionConfig
-  ): Promise<void> {
+    config: FunctionConfig,
+    options: ActionExecutionOptions = {}
+  ): Promise<ActionExecutionResult> {
     logger.info(`Executing action: ${actionKey}`);
 
     // Handle non-LLM functions
     if (actionKey === 'search') {
-      return this.handleSearch(selectedText);
+      await this.handleSearch(selectedText);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     if (actionKey === 'copy') {
-      return this.handleCopy(selectedText);
+      await this.handleCopy(selectedText);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     if (actionKey === 'open') {
-      return this.handleOpen(selectedText);
+      await this.handleOpen(selectedText);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     if (actionKey === 'collect') {
-      return this.handleCollect(selectedText);
+      await this.handleCollect(selectedText);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     if (actionKey === 'share') {
-      return this.handleShare(selectedText);
+      await this.handleShare(selectedText);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     if (actionKey === 'highlight') {
-      return this.handleHighlight(selectedText, config);
+      await this.handleHighlight(selectedText, config);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     // Handle chat function (dialogue mode)
     if (actionKey === 'chat') {
-      return this.handleChat(selectedText, config);
+      await this.handleChat(selectedText, config);
+      return CLOSE_BUTTONS_AFTER_EXECUTION;
     }
 
     // Get Selectly instance
     const selectlyInstance = (window as any).selectlyInstance;
     if (!selectlyInstance) {
-      return; // Cannot display any result, return directly
+      return STREAMING_RESULT_ACTION; // Cannot display any result, return directly
     }
 
     // Handle LLM functions
@@ -93,7 +117,7 @@ export class ActionService {
         `${i18n.t('errors.missingPromptConfig')}: ${actionKey}`,
         actionKey
       );
-      return;
+      return STREAMING_RESULT_ACTION;
     }
 
     // Show streaming result window (use localized title for built-in functions)
@@ -101,6 +125,7 @@ export class ActionService {
     selectlyInstance.showStreamingResult(title, actionKey);
 
     try {
+      let streamingStarted = false;
       // Prepare translation variables for smart language detection
       const variables: Record<string, string> = {};
       const targetLanguage = this.getTranslationTargetLanguage(config);
@@ -123,6 +148,10 @@ export class ActionService {
           if (updateFn) {
             updateFn(chunk, model, false);
           }
+          if (!streamingStarted) {
+            streamingStarted = true;
+            options.onStreamingStart?.();
+          }
         },
         config.model,
         effectiveThinkingMode.mode,
@@ -141,6 +170,8 @@ export class ActionService {
         updateFn(error.message || i18n.t('errors.unknownError'), '', true, true);
       }
     }
+
+    return STREAMING_RESULT_ACTION;
   }
 
   private getEffectiveThinkingMode(actionKey: string, config: FunctionConfig) {

@@ -1666,10 +1666,24 @@ export class Selectly {
 
     try {
       const actionService = ActionService.getInstance();
-      await actionService.executeAction(match.actionKey, selectedText, match.config);
-
-      if (match.config.autoCloseButtons !== false) {
+      let buttonsClosed = false;
+      const closeButtons = () => {
+        if (buttonsClosed || match.config.autoCloseButtons === false) return;
+        buttonsClosed = true;
         this.hideButtons();
+      };
+
+      const result = await actionService.executeAction(
+        match.actionKey,
+        selectedText,
+        match.config,
+        {
+          onStreamingStart: closeButtons,
+        }
+      );
+
+      if (result.closeButtonsAfterExecution) {
+        closeButtons();
       }
     } catch (error) {
       this.logger.error('Failed to execute shortcut action:', error);
@@ -2025,7 +2039,13 @@ export class Selectly {
         setTimeout(() => {
           try {
             const actionService = ActionService.getInstance();
-            actionService.executeAction(actionKey, selectedText, functionConfig);
+            actionService.executeAction(actionKey, selectedText, functionConfig, {
+              onStreamingStart: () => {
+                if (functionConfig.autoCloseButtons !== false) {
+                  this.hideButtons();
+                }
+              },
+            });
           } catch (e) {
             // noop
           }
