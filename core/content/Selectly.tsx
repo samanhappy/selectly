@@ -9,6 +9,7 @@ import { isReadingProgressEnabled } from '../config/feature-gates';
 import {
   ConfigManager,
   DEFAULT_CONFIG,
+  normalizeSelectionFloatingGap,
   SYSTEM_READING_PROGRESS_BLACKLIST,
   SYSTEM_READING_PROGRESS_WHITELIST,
   type FunctionConfig,
@@ -1936,6 +1937,10 @@ export class Selectly {
     return this.userConfig.general?.buttonPosition || 'above';
   }
 
+  private getSelectionFloatingGap(): number {
+    return normalizeSelectionFloatingGap(this.userConfig.general?.selectionFloatingGap);
+  }
+
   private handleSelectionUpdate = (newSelectedText: string) => {
     // Update current selection and target element
     const selection = this.currentTarget?.ownerDocument.getSelection() || window.getSelection();
@@ -1951,6 +1956,7 @@ export class Selectly {
           selectedText={newSelectedText}
           anchor={this.getCurrentAnchor()}
           buttonPosition={this.getButtonPositionPreference()}
+          floatingGap={this.getSelectionFloatingGap()}
           onClose={() => this.hideButtons()}
           onSelectionUpdate={this.handleSelectionUpdate}
           userConfig={this.userConfig}
@@ -1997,6 +2003,7 @@ export class Selectly {
         selectedText={selectedText}
         anchor={this.getCurrentAnchor()}
         buttonPosition={this.getButtonPositionPreference()}
+        floatingGap={this.getSelectionFloatingGap()}
         onClose={() => this.hideButtons()}
         onSelectionUpdate={this.handleSelectionUpdate}
         userConfig={this.userConfig}
@@ -2165,6 +2172,7 @@ export class Selectly {
       <StreamingResult
         title={title}
         anchor={this.getCurrentAnchor()}
+        floatingGap={this.getSelectionFloatingGap()}
         actionKey={actionKey}
         selectedText={ctxSelectedText}
         selectedSentence={ctxSentence}
@@ -2205,6 +2213,7 @@ export class Selectly {
       <StreamingResult
         title={title}
         anchor={this.getCurrentAnchor()}
+        floatingGap={this.getSelectionFloatingGap()}
         actionKey="chat"
         canPaste={canPaste}
         isDialogue={true}
@@ -2290,6 +2299,7 @@ export class Selectly {
       <StreamingResult
         title={title}
         anchor={this.getCurrentAnchor()}
+        floatingGap={this.getSelectionFloatingGap()}
         canPaste={canPaste}
         onPinChange={setPinned}
         onClose={() => cleanup(true)}

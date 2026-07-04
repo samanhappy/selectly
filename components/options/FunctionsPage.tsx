@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 
 import {
   getFunctionDisplayFields,
+  normalizeSelectionFloatingGap,
   type FunctionConfig,
   type UserConfig,
 } from '../../core/config/llm-config';
@@ -43,6 +44,10 @@ export const FunctionsPage: React.FC<FunctionsPageProps> = ({
   onAddCustomFunction,
   onOpenConfig,
 }) => {
+  const selectionFloatingGap = normalizeSelectionFloatingGap(
+    userConfig.general?.selectionFloatingGap
+  );
+
   return (
     <div style={{ padding: '12px', background: PALETTE.surfaceAlt, minHeight: '100%' }}>
       <div className="sl-card" style={{ marginBottom: 20 }}>
@@ -142,6 +147,24 @@ export const FunctionsPage: React.FC<FunctionsPageProps> = ({
                 {(userConfig.general?.buttonPosition || 'above') === 'above'
                   ? i18nConfig.popup.general.buttonPositionAbove
                   : i18nConfig.popup.general.buttonPositionBelow}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <MousePointer size={20} style={{ color: PALETTE.primary }} />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+                {i18nConfig.popup.general.selectionFloatingGap || 'Distance from selection'}
+              </div>
+              <div style={{ fontSize: 12, color: PALETTE.textSecondary }}>
+                {selectionFloatingGap}px
               </div>
             </div>
           </div>

@@ -53,11 +53,12 @@ interface ObserveAnchoredPositionOptions {
   anchor: FloatingAnchor;
   floatingElement: HTMLElement;
   placement: Placement;
+  gap?: number;
   onPosition: (position: FloatingPosition) => void;
 }
 
 const DEFAULT_POINT = { x: 100, y: 100 };
-const FLOATING_GAP = 10;
+const DEFAULT_FLOATING_GAP = 10;
 const VIEWPORT_PADDING = 10;
 
 function createRect(left: number, top: number, width: number, height: number): DOMRect {
@@ -243,14 +244,15 @@ export function getPreferredPlacement(position: 'above' | 'below'): Placement {
 export async function computeAnchoredPosition(
   anchor: FloatingAnchor,
   floatingElement: HTMLElement,
-  placement: Placement
+  placement: Placement,
+  gap = DEFAULT_FLOATING_GAP
 ): Promise<FloatingPosition> {
   const { x, y } = await computePosition(anchor, floatingElement, {
     placement,
     strategy: 'fixed',
     middleware: [
       inline(anchor.pointer ? { x: anchor.pointer.x, y: anchor.pointer.y } : undefined),
-      offset(FLOATING_GAP),
+      offset(gap),
       flip({ padding: VIEWPORT_PADDING }),
       shift({ padding: VIEWPORT_PADDING }),
     ],
@@ -263,11 +265,12 @@ export function observeAnchoredPosition({
   anchor,
   floatingElement,
   placement,
+  gap,
   onPosition,
 }: ObserveAnchoredPositionOptions): () => void {
   let active = true;
   const update = () => {
-    void computeAnchoredPosition(anchor, floatingElement, placement)
+    void computeAnchoredPosition(anchor, floatingElement, placement, gap)
       .then((position) => {
         if (active) {
           onPosition(position);

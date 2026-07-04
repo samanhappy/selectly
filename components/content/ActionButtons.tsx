@@ -21,6 +21,7 @@ interface ActionButtonsProps {
   selectedText: string;
   anchor: FloatingAnchor;
   buttonPosition: 'above' | 'below';
+  floatingGap: number;
   onClose: () => void;
   onSelectionUpdate?: (newSelectedText: string) => void;
   userConfig: UserConfig;
@@ -34,6 +35,7 @@ export const ActionButtons = ({
   selectedText,
   anchor,
   buttonPosition,
+  floatingGap,
   onClose,
   onSelectionUpdate,
   userConfig,
@@ -70,9 +72,10 @@ export const ActionButtons = ({
       anchor,
       floatingElement,
       placement: getPreferredPlacement(buttonPosition),
+      gap: floatingGap,
       onPosition: setPosition,
     });
-  }, [anchor, buttonPosition]);
+  }, [anchor, buttonPosition, floatingGap]);
 
   // Initialize internationalization
   useEffect(() => {

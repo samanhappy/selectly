@@ -202,9 +202,13 @@ export const es: I18nConfig = {
       title: 'Configuración',
       language: 'Idioma',
       theme: 'Tema',
+      selectionUiTitle: 'UI de selección',
       buttonPosition: 'Posición del Botón',
       buttonPositionAbove: 'Arriba',
       buttonPositionBelow: 'Abajo',
+      selectionFloatingGap: 'Distancia desde la selección',
+      selectionFloatingGapDesc:
+        'Ajusta el espacio entre el texto seleccionado y los paneles de acciones o resultados.',
       readingProgressTitle: 'Progreso de lectura',
       showReadingProgressBar: 'Mostrar barra de progreso',
       autoSaveReadingProgress: 'Guardar progreso automáticamente',

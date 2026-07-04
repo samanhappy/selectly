@@ -204,9 +204,13 @@ export const de: I18nConfig = {
       title: 'Konfiguration',
       language: 'Sprache',
       theme: 'Design',
+      selectionUiTitle: 'Auswahl-UI',
       buttonPosition: 'Schaltflächenposition',
       buttonPositionAbove: 'Oben',
       buttonPositionBelow: 'Unten',
+      selectionFloatingGap: 'Abstand zur Auswahl',
+      selectionFloatingGapDesc:
+        'Passe den Abstand zwischen ausgewähltem Text und Aktions- oder Ergebnisfenstern an.',
       readingProgressTitle: 'Leseverlauf',
       showReadingProgressBar: 'Fortschrittsleiste anzeigen',
       autoSaveReadingProgress: 'Leseverlauf automatisch speichern',

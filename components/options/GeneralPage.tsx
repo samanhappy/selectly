@@ -3,7 +3,7 @@
  * Single responsibility: Display and manage general settings (data import/export)
  */
 
-import { Download, Upload } from 'lucide-react';
+import { Download, MousePointer, Upload } from 'lucide-react';
 import React from 'react';
 
 import { isReadingProgressEnabled } from '../../core/config/feature-gates';
@@ -18,6 +18,7 @@ import {
   rgbaToString,
   type RgbaColor,
 } from './forms/highlight-color-utils';
+import { SelectionFloatingGapControl } from './forms/SelectionFloatingGapControl';
 
 const logger = createLogger('GeneralPage');
 
@@ -92,6 +93,45 @@ export const GeneralPage: React.FC<GeneralPageProps> = ({ t, onReload, userConfi
 
   return (
     <div style={{ padding: '12px', minHeight: '100%' }}>
+      <div className="sl-card" style={{ marginTop: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>
+            {t.popup?.general?.selectionUiTitle || 'Selection UI'}
+          </h3>
+        </div>
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div
+            className="sl-fn-card"
+            style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}
+          >
+            <div>
+              <label className="sl-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <MousePointer size={16} />
+                {t.popup?.general?.buttonPosition || 'Button Position'}
+              </label>
+              <select
+                className="sl-input"
+                value={userConfig.general?.buttonPosition || 'above'}
+                onChange={(event) =>
+                  onChange('buttonPosition', event.target.value as 'above' | 'below')
+                }
+              >
+                <option value="above">{t.popup?.general?.buttonPositionAbove || 'Above'}</option>
+                <option value="below">{t.popup?.general?.buttonPositionBelow || 'Below'}</option>
+              </select>
+            </div>
+            <SelectionFloatingGapControl
+              value={userConfig.general?.selectionFloatingGap}
+              label={t.popup?.general?.selectionFloatingGap || 'Distance from selection'}
+              description={
+                t.popup?.general?.selectionFloatingGapDesc ||
+                'Controls the spacing between selected text and Selectly panels.'
+              }
+              onChange={(value) => onChange('selectionFloatingGap', value)}
+            />
+          </div>
+        </div>
+      </div>
       {showReadingProgressSettings ? (
         <div className="sl-card" style={{ marginTop: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
