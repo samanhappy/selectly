@@ -4,6 +4,7 @@
  * Single responsibility: coordinate local storage and cloud sync for collected items
  */
 
+import { normalizePageUrl } from '../page-url';
 import { collectDB, type CollectedItem } from '../storage/collect-db';
 import { collectSyncService } from './collect-sync-service';
 
@@ -23,7 +24,10 @@ export class CollectService {
    * Add a new collected item
    */
   async addItem(item: CollectedItem): Promise<string> {
-    const itemId = await collectDB.addItem(item);
+    const itemId = await collectDB.addItem({
+      ...item,
+      url: normalizePageUrl(item.url),
+    });
     await collectSyncService.queueForSync(itemId, 'create');
     return itemId;
   }
@@ -32,7 +36,10 @@ export class CollectService {
    * Update an existing collected item
    */
   async updateItem(id: string, updates: CollectedItem): Promise<void> {
-    await collectDB.updateItem(id, updates);
+    await collectDB.updateItem(id, {
+      ...updates,
+      url: normalizePageUrl(updates.url),
+    });
     await collectSyncService.queueForSync(id, 'update');
   }
 

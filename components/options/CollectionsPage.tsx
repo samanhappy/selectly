@@ -6,13 +6,14 @@
 import { Copy, Search, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
+import { groupItemsByPageUrl } from '../../core/page-url';
 import { collectDB, type CollectedItem } from '../../core/storage/collect-db';
 import { createLogger } from '../../utils/logger';
 import { Button } from '../ui/button';
-
-const logger = createLogger('Collections');
 import { Input } from '../ui/input';
 import { PALETTE } from './constants';
+
+const logger = createLogger('Collections');
 
 interface CollectionsPageProps {
   t: any; // i18n translations
@@ -94,18 +95,7 @@ export const CollectionsPage: React.FC<CollectionsPageProps> = ({ t }) => {
   }, [items, q]);
 
   const groups = useMemo(() => {
-    const map = new Map<string, CollectedItem[]>();
-    for (const it of filtered) {
-      if (!map.has(it.url)) map.set(it.url, []);
-      map.get(it.url)!.push(it);
-    }
-    const arr = Array.from(map.entries()).map(([url, arr]) => {
-      const latest = Math.max(...arr.map((a) => a.created_at));
-      const first = arr[0];
-      return { url, items: arr, latest, title: first.title, hostname: first.hostname };
-    });
-    arr.sort((a, b) => b.latest - a.latest);
-    return arr;
+    return groupItemsByPageUrl<CollectedItem>(filtered);
   }, [filtered]);
 
   const remove = async (id: string) => {

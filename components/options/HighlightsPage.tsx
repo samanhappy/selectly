@@ -7,6 +7,7 @@ import { Copy, Search, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { DEFAULT_HIGHLIGHT_COLOR } from '../../core/config/llm-config';
+import { groupItemsByPageUrl } from '../../core/page-url';
 import { highlightDB, type HighlightItem } from '../../core/storage/highlight-db';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -76,18 +77,7 @@ export const HighlightsPage: React.FC<HighlightsPageProps> = ({ t, highlightColo
   }, [items, q]);
 
   const groups = useMemo(() => {
-    const map = new Map<string, HighlightItem[]>();
-    for (const it of filtered) {
-      if (!map.has(it.url)) map.set(it.url, []);
-      map.get(it.url)!.push(it);
-    }
-    const arr = Array.from(map.entries()).map(([url, arr]) => {
-      const latest = Math.max(...arr.map((a) => a.created_at || 0));
-      const first = arr[0];
-      return { url, items: arr, latest, title: first.title, hostname: first.hostname };
-    });
-    arr.sort((a, b) => b.latest - a.latest);
-    return arr;
+    return groupItemsByPageUrl<HighlightItem>(filtered);
   }, [filtered]);
 
   const remove = async (id: string) => {

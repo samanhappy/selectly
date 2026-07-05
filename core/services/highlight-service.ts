@@ -1,3 +1,4 @@
+import { normalizePageUrl } from '../page-url';
 import { highlightDB, type HighlightItem } from '../storage/highlight-db';
 import { highlightSyncService } from './highlight-sync-service';
 
@@ -16,6 +17,7 @@ export class HighlightService {
   async addItem(item: HighlightItem): Promise<string> {
     const itemId = await highlightDB.addItem({
       ...item,
+      url: normalizePageUrl(item.url),
       source: 'self',
     });
     await highlightSyncService.queueForSync(itemId, 'create');
