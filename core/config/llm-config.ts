@@ -104,6 +104,35 @@ const BUILT_IN_FUNCTION_KEYS = new Set([
   'highlight',
 ]);
 
+const LEGACY_DEFAULT_TRANSLATE_PROMPTS = new Set([
+  'You are a professional translator. Please translate the following text to {targetLanguage}. If the text is already in {targetLanguage}, translate it to English instead. Maintain the original tone and meaning. Return only the translation without any explanation or additional text:\n\n{text}',
+  '你是一名专业翻译。请将以下文本翻译成{targetLanguage}，如果文本已经是{targetLanguage}则翻译成英文。请保持原文的语调和含义。只返回翻译结果，不要任何解释或额外文字：\n\n{text}',
+  'Sie sind ein professioneller Übersetzer. Bitte übersetzen Sie den folgenden Text ins {targetLanguage}. Wenn der Text bereits auf {targetLanguage} ist, übersetzen Sie ihn stattdessen ins Englische. Bewahren Sie den ursprünglichen Ton und die Bedeutung. Geben Sie nur die Übersetzung ohne Erklärung oder zusätzlichen Text zurück:\n\n{text}',
+  'Eres un traductor profesional. Por favor, traduce el siguiente texto a {targetLanguage}. Si el texto ya está en {targetLanguage}, tradúcelo al inglés en su lugar. Mantén el tono y significado original. Devuelve solo la traducción sin ninguna explicación o texto adicional:\n\n{text}',
+  'Vous êtes un traducteur professionnel. Veuillez traduire le texte suivant en {targetLanguage}. Si le texte est déjà en {targetLanguage}, traduisez-le en anglais à la place. Maintenez le ton et le sens original. Ne retournez que la traduction sans aucune explication ou texte supplémentaire :\n\n{text}',
+  'あなたはプロの翻訳者です。次のテキストを{targetLanguage}に翻訳してください。テキストが既に{targetLanguage}の場合は、代わりに英語に翻訳してください。元のトーンと意味を保ってください。説明や追加テキストなしで翻訳のみを返してください:\n\n{text}',
+  'Você é um tradutor profissional. Por favor, traduza o seguinte texto para {targetLanguage}. Se o texto já estiver em {targetLanguage}, traduza para o inglês. Mantenha o tom e significado original. Retorne apenas a tradução sem nenhuma explicação ou texto adicional:\n\n{text}',
+]);
+
+const migrateBuiltInFunctionPrompt = (
+  functionKey: string,
+  baseFunc: FunctionConfig | undefined,
+  overrideFunc: FunctionConfig
+): FunctionConfig => {
+  if (
+    functionKey === 'translate' &&
+    baseFunc?.prompt &&
+    LEGACY_DEFAULT_TRANSLATE_PROMPTS.has(overrideFunc.prompt)
+  ) {
+    return {
+      ...overrideFunc,
+      prompt: baseFunc.prompt,
+    };
+  }
+
+  return overrideFunc;
+};
+
 export const getFunctionDisplayFields = (
   functionKey: string,
   config: FunctionConfig,
@@ -872,10 +901,10 @@ function mergeFunction(old: UserConfig, override: any, forceReplace: boolean) {
           return acc;
         }
 
-        acc[key] = {
+        acc[key] = migrateBuiltInFunctionPrompt(key, baseFunc, {
           ...baseFunc,
           ...overrideFunc,
-        };
+        });
 
         return acc;
       },

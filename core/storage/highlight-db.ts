@@ -3,6 +3,7 @@ import Dexie from 'dexie';
 import type { Table } from 'dexie';
 
 import { authService } from '~core/auth/auth-service';
+import { normalizePageUrl } from '~core/page-url';
 
 export interface HighlightAnchor {
   startXPath: string;
@@ -127,11 +128,12 @@ class HighlightDB extends Dexie {
   async getByUrlSelf(url: string) {
     await authService.initialize();
     const user_id = authService.getState()?.user?.uuid;
+    const pageUrl = normalizePageUrl(url);
     return this.items
       .filter(
         (item) =>
           !item.deleted_at &&
-          item.url === url &&
+          normalizePageUrl(item.url) === pageUrl &&
           item.source !== 'others' &&
           (!user_id || !item.user_id || item.user_id === user_id)
       )
@@ -142,11 +144,12 @@ class HighlightDB extends Dexie {
   async getByUrlIncludingOthers(url: string) {
     await authService.initialize();
     const user_id = authService.getState()?.user?.uuid;
+    const pageUrl = normalizePageUrl(url);
     return this.items
       .filter(
         (item) =>
           !item.deleted_at &&
-          item.url === url &&
+          normalizePageUrl(item.url) === pageUrl &&
           (item.source === 'others' || !user_id || !item.user_id || item.user_id === user_id)
       )
       .sortBy('created_at')
@@ -172,8 +175,9 @@ class HighlightDB extends Dexie {
   }
 
   async replaceAggregatesForUrl(url: string, items: HighlightItem[]) {
+    const pageUrl = normalizePageUrl(url);
     const existing = await this.items
-      .filter((item) => item.url === url && item.source === 'others')
+      .filter((item) => normalizePageUrl(item.url) === pageUrl && item.source === 'others')
       .toArray();
 
     const nextIds = new Set(items.map((item) => item.id).filter(Boolean) as string[]);
@@ -187,7 +191,7 @@ class HighlightDB extends Dexie {
     }
 
     if (items.length > 0) {
-      await this.items.bulkPut(items);
+      await this.items.bulkPut(items.map((item) => ({ ...item, url: normalizePageUrl(item.url) })));
     }
 
     this.notifyChange();

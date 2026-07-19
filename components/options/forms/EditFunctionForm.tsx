@@ -40,6 +40,25 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
   const [localPrompt, setLocalPrompt] = useState(config.prompt || '');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const saveTimer = useRef<number | null>(null);
+  const activeFunctionKey = useRef(functionKey);
+  const isPromptFocused = useRef(false);
+  const promptDraft = useRef(config.prompt || '');
+  const savedPrompt = useRef(config.prompt || '');
+  const onChangeRef = useRef(onChange);
+
+  const clearPendingPromptSave = () => {
+    if (saveTimer.current) {
+      window.clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+  };
+
+  const commitPrompt = (value: string) => {
+    clearPendingPromptSave();
+    if (value === savedPrompt.current) return;
+    savedPrompt.current = value;
+    onChangeRef.current('prompt', value);
+  };
 
   const highlightFallback: RgbaColor = { r: 255, g: 204, b: 0, a: 0.24 };
   const highlightColorValue = config.highlightColor || DEFAULT_HIGHLIGHT_COLOR;
@@ -68,15 +87,34 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
   );
 
   useEffect(() => {
-    setLocalPrompt(config.prompt || '');
-  }, [config.prompt]);
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
-  const scheduleSave = (value: string) => {
-    if (saveTimer.current) {
-      window.clearTimeout(saveTimer.current);
+  useEffect(() => {
+    return () => clearPendingPromptSave();
+  }, []);
+
+  useEffect(() => {
+    const nextPrompt = config.prompt || '';
+    const functionChanged = activeFunctionKey.current !== functionKey;
+    activeFunctionKey.current = functionKey;
+    savedPrompt.current = nextPrompt;
+
+    if (functionChanged) {
+      clearPendingPromptSave();
     }
+
+    // Rewriting a focused textarea value can collapse the caret to the end.
+    if (functionChanged || !isPromptFocused.current) {
+      promptDraft.current = nextPrompt;
+      setLocalPrompt(nextPrompt);
+    }
+  }, [functionKey, config.prompt]);
+
+  const scheduleSave = () => {
+    clearPendingPromptSave();
     saveTimer.current = window.setTimeout(() => {
-      onChange('prompt', value);
+      commitPrompt(promptDraft.current);
     }, 300);
   };
 
@@ -225,12 +263,19 @@ export const EditFunctionForm: React.FC<EditFunctionFormProps> = ({
               <textarea
                 className="sl-textarea"
                 value={localPrompt}
+                onFocus={() => {
+                  isPromptFocused.current = true;
+                }}
                 onChange={(e) => {
                   const v = e.target.value;
+                  promptDraft.current = v;
                   setLocalPrompt(v);
-                  scheduleSave(v);
+                  scheduleSave();
                 }}
-                onBlur={() => onChange('prompt', localPrompt)}
+                onBlur={() => {
+                  isPromptFocused.current = false;
+                  commitPrompt(promptDraft.current);
+                }}
                 rows={5}
               />
               <div className="sl-helper">{i18n.popup.functions.labels.promptHelp}</div>

@@ -490,7 +490,7 @@ export const de: I18nConfig = {
       title: 'Übersetzen',
       description: 'Ausgewählten Text übersetzen',
       prompt:
-        'Sie sind ein professioneller Übersetzer. Bitte übersetzen Sie den folgenden Text ins {targetLanguage}. Wenn der Text bereits auf {targetLanguage} ist, übersetzen Sie ihn stattdessen ins Englische. Bewahren Sie den ursprünglichen Ton und die Bedeutung. Geben Sie nur die Übersetzung ohne Erklärung oder zusätzlichen Text zurück:\n\n{text}',
+        'Sie sind ein professioneller Übersetzer. Bitte übersetzen Sie den folgenden Text ins {targetLanguage}. Wenn der Text bereits auf {targetLanguage} ist, übersetzen Sie ihn stattdessen ins Englische. Bewahren Sie den ursprünglichen Ton und die Bedeutung. Geben Sie nur die Übersetzung zurück. Wenn der Text ein einzelnes Wort ist, fügen Sie die Aussprache des Ausgangsworts nach der Übersetzung in derselben Zeile im Format "/.../" hinzu. Fügen Sie keine Lautschrift für Phrasen oder Sätze hinzu:\n\n{text}',
     },
     polish: {
       title: 'Polieren',
