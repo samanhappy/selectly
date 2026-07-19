@@ -25,7 +25,7 @@ describe('global action drag utilities', () => {
     ).toBe(true);
   });
 
-  it('moves from the initial fixed point and clamps inside the viewport', () => {
+  it('moves from the initial fixed point and clamps inside the viewport without padding', () => {
     expect(
       getGlobalActionDragPoint({
         startPointer: { x: 100, y: 100 },
@@ -35,8 +35,8 @@ describe('global action drag utilities', () => {
         size: { width: 44, height: 44 },
       })
     ).toEqual({
-      x: 940,
-      y: 16,
+      x: 956,
+      y: 0,
     });
   });
 });

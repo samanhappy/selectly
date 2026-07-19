@@ -62,7 +62,7 @@ export const GlobalActionBar = ({
     onClick: () => void;
     className?: string;
   }>;
-  const { rootRef, point, expandDirection, isDragging, dragTargetProps } =
+  const { rootRef, point, expandDirection, isDragging, savedPosition, dragTargetProps } =
     useGlobalActionBarPosition(actions.length);
 
   if (actions.length === 0) return null;
@@ -71,6 +71,7 @@ export const GlobalActionBar = ({
     'selectly-global-actions',
     `is-expand-${expandDirection}`,
     isDragging ? 'is-dragging' : '',
+    savedPosition.snapEdge ? `is-snapped-${savedPosition.snapEdge}` : '',
   ]
     .filter(Boolean)
     .join(' ');

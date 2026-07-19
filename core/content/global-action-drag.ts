@@ -34,6 +34,7 @@ export function getGlobalActionDragPoint(input: DragPointInput): GlobalActionPoi
       y: input.startPoint.y + deltaY,
     },
     input.viewport,
-    input.size
+    input.size,
+    0
   );
 }

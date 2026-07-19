@@ -8,6 +8,7 @@ import {
 import {
   getDefaultGlobalActionPosition,
   getGlobalActionExpandDirection,
+  getSnappedPosition,
   pointToGlobalActionPosition,
   positionToPoint,
   type GlobalActionExpandDirection,
@@ -40,6 +41,7 @@ interface UseGlobalActionBarPositionResult {
   point: GlobalActionPoint | null;
   expandDirection: GlobalActionExpandDirection;
   isDragging: boolean;
+  savedPosition: GlobalActionPosition;
   dragTargetProps: {
     onPointerDown: (event: React.PointerEvent<HTMLButtonElement>) => void;
     onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => void;
@@ -196,23 +198,37 @@ export function useGlobalActionBarPosition(layoutKey: unknown): UseGlobalActionB
     if (!activeDrag || activeDrag.pointerId !== event.pointerId) return;
 
     event.currentTarget.releasePointerCapture?.(event.pointerId);
+
+    if (activeDrag.dragging) {
+      event.currentTarget.blur?.();
+    }
+
     dragRef.current = null;
     setIsDragging(false);
 
     if (!activeDrag.dragging) return;
 
-    const nextPosition = pointToGlobalActionPosition(
-      activeDrag.lastPoint,
+    // Calculate unclamped drag end point to allow snapping even at very small thresholds (< 16px)
+    const deltaX = event.clientX - activeDrag.startPointer.x;
+    const deltaY = event.clientY - activeDrag.startPointer.y;
+    const unclampedPoint = {
+      x: activeDrag.startPoint.x + deltaX,
+      y: activeDrag.startPoint.y + deltaY,
+    };
+
+    const snappedPosition = getSnappedPosition(
+      unclampedPoint,
       activeDrag.layout.viewport,
-      activeDrag.layout.size
+      activeDrag.layout.size,
+      15
     );
-    savedPositionRef.current = nextPosition;
-    setSavedPosition(nextPosition);
+    savedPositionRef.current = snappedPosition;
+    setSavedPosition(snappedPosition);
     suppressClickRef.current = true;
     window.setTimeout(() => {
       suppressClickRef.current = false;
     }, 150);
-    void saveGlobalActionPosition(nextPosition).catch(() => {});
+    void saveGlobalActionPosition(snappedPosition).catch(() => {});
     event.preventDefault();
   }, []);
 
@@ -228,6 +244,7 @@ export function useGlobalActionBarPosition(layoutKey: unknown): UseGlobalActionB
     point,
     expandDirection,
     isDragging,
+    savedPosition,
     dragTargetProps: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
