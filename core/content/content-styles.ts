@@ -110,7 +110,149 @@ export const contentStyles = `
     align-items: center;
     gap: 8px;
     width: max-content;
-    will-change: left, top;
+    will-change: left, top, transform, opacity;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .selectly-global-actions.is-dragging {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
+
+  /* Snapping adsorption styles */
+  .selectly-global-actions.is-snapped-left {
+    transform: translateX(-70%);
+    opacity: 0.65;
+  }
+  .selectly-global-actions.is-snapped-left .selectly-global-action-btn {
+    border-left-width: 0px !important;
+    box-shadow:
+      0 0 14px rgba(15, 23, 42, 0.08),
+      inset -4px 0 8px rgba(0, 0, 0, 0.04),
+      0 0 8px rgba(148, 163, 184, 0.35); /* Elegant accent edge highlight glow */
+  }
+  .selectly-global-actions.is-snapped-left:hover,
+  .selectly-global-actions.is-snapped-left:focus-within {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .selectly-global-actions.is-snapped-left:hover .selectly-global-action-btn,
+  .selectly-global-actions.is-snapped-left:focus-within .selectly-global-action-btn {
+    box-shadow:
+      0 6px 14px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-left-width: 1px !important;
+  }
+
+  .selectly-global-actions.is-snapped-right {
+    transform: translateX(70%);
+    opacity: 0.65;
+  }
+  .selectly-global-actions.is-snapped-right .selectly-global-action-btn {
+    border-right-width: 0px !important;
+    box-shadow:
+      0 0 14px rgba(15, 23, 42, 0.08),
+      inset 4px 0 8px rgba(0, 0, 0, 0.04),
+      0 0 8px rgba(148, 163, 184, 0.35); /* Elegant accent edge highlight glow */
+  }
+  .selectly-global-actions.is-snapped-right:hover,
+  .selectly-global-actions.is-snapped-right:focus-within {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .selectly-global-actions.is-snapped-right:hover .selectly-global-action-btn,
+  .selectly-global-actions.is-snapped-right:focus-within .selectly-global-action-btn {
+    box-shadow:
+      0 6px 14px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-right-width: 1px !important;
+  }
+
+  .selectly-global-actions.is-snapped-top {
+    transform: translateY(-70%);
+    opacity: 0.65;
+  }
+  .selectly-global-actions.is-snapped-top .selectly-global-action-btn {
+    border-top-width: 0px !important;
+    box-shadow:
+      0 0 14px rgba(15, 23, 42, 0.08),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.04),
+      0 0 8px rgba(148, 163, 184, 0.35); /* Elegant accent edge highlight glow */
+  }
+  .selectly-global-actions.is-snapped-top:hover,
+  .selectly-global-actions.is-snapped-top:focus-within {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .selectly-global-actions.is-snapped-top:hover .selectly-global-action-btn,
+  .selectly-global-actions.is-snapped-top:focus-within .selectly-global-action-btn {
+    box-shadow:
+      0 6px 14px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-top-width: 1px !important;
+  }
+
+  .selectly-global-actions.is-snapped-bottom {
+    transform: translateY(70%);
+    opacity: 0.65;
+  }
+  .selectly-global-actions.is-snapped-bottom .selectly-global-action-btn {
+    border-bottom-width: 0px !important;
+    box-shadow:
+      0 0 14px rgba(15, 23, 42, 0.08),
+      inset 0 4px 8px rgba(0, 0, 0, 0.04),
+      0 0 8px rgba(148, 163, 184, 0.35); /* Elegant accent edge highlight glow */
+  }
+  .selectly-global-actions.is-snapped-bottom:hover,
+  .selectly-global-actions.is-snapped-bottom:focus-within {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .selectly-global-actions.is-snapped-bottom:hover .selectly-global-action-btn,
+  .selectly-global-actions.is-snapped-bottom:focus-within .selectly-global-action-btn {
+    box-shadow:
+      0 6px 14px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-bottom-width: 1px !important;
+  }
+
+  /* Avoid overflowing of expand-menu when near screen edges */
+  .selectly-global-actions.is-snapped-left .selectly-global-action-menu {
+    left: 0;
+    transform: translate(0, 8px) scale(0.96);
+  }
+  .selectly-global-actions.is-snapped-left.is-expand-up .selectly-global-action-menu {
+    bottom: calc(100% + 8px);
+    transform: translate(0, 8px) scale(0.96);
+  }
+  .selectly-global-actions.is-snapped-left.is-expand-down .selectly-global-action-menu {
+    top: calc(100% + 8px);
+    transform: translate(0, -8px) scale(0.96);
+  }
+  .selectly-global-actions.is-snapped-left .selectly-global-action-cluster:hover .selectly-global-action-menu,
+  .selectly-global-actions.is-snapped-left .selectly-global-action-cluster:focus-within .selectly-global-action-menu,
+  .selectly-global-actions.is-snapped-left .selectly-global-action-cluster.is-expanded .selectly-global-action-menu {
+    transform: translate(0, 0) scale(1);
+  }
+
+  .selectly-global-actions.is-snapped-right .selectly-global-action-menu {
+    left: auto;
+    right: 0;
+    transform: translate(0, 8px) scale(0.96);
+  }
+  .selectly-global-actions.is-snapped-right.is-expand-up .selectly-global-action-menu {
+    bottom: calc(100% + 8px);
+    transform: translate(0, 8px) scale(0.96);
+  }
+  .selectly-global-actions.is-snapped-right.is-expand-down .selectly-global-action-menu {
+    top: calc(100% + 8px);
+    transform: translate(0, -8px) scale(0.96);
+  }
+  .selectly-global-actions.is-snapped-right .selectly-global-action-cluster:hover .selectly-global-action-menu,
+  .selectly-global-actions.is-snapped-right .selectly-global-action-cluster:focus-within .selectly-global-action-menu,
+  .selectly-global-actions.is-snapped-right .selectly-global-action-cluster.is-expanded .selectly-global-action-menu {
+    transform: translate(0, 0) scale(1);
   }
 
   .selectly-global-action-cluster {
@@ -219,7 +361,6 @@ export const contentStyles = `
       0 8px 16px rgba(34, 197, 94, 0.25),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
-
 
   /* Glass morphism button base styles */
   .selectly-buttons .action-btn {

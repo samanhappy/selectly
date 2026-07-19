@@ -1,6 +1,7 @@
 export interface GlobalActionPosition {
   xRatio: number;
   yRatio: number;
+  snapEdge?: 'left' | 'right' | 'top' | 'bottom' | null;
 }
 
 export interface GlobalActionPoint {
@@ -27,10 +28,18 @@ export function getDefaultGlobalActionPosition(): GlobalActionPosition {
   return { xRatio: 1, yRatio: 1 };
 }
 
+export const GLOBAL_ACTION_SNAP_THRESHOLD = 15;
+
 export function isGlobalActionPosition(value: unknown): value is GlobalActionPosition {
   if (!value || typeof value !== 'object') return false;
   const position = value as GlobalActionPosition;
-  return isValidRatio(position.xRatio) && isValidRatio(position.yRatio);
+  return (
+    isValidRatio(position.xRatio) &&
+    isValidRatio(position.yRatio) &&
+    (position.snapEdge === undefined ||
+      position.snapEdge === null ||
+      ['left', 'right', 'top', 'bottom'].includes(position.snapEdge))
+  );
 }
 
 export function positionToPoint(
@@ -39,14 +48,25 @@ export function positionToPoint(
   size: GlobalActionSize
 ): GlobalActionPoint {
   const track = getGlobalActionTrack(viewport, size);
-  return clampGlobalActionPoint(
-    {
-      x: Math.round(VIEWPORT_PADDING + track.width * position.xRatio),
-      y: Math.round(VIEWPORT_PADDING + track.height * position.yRatio),
-    },
-    viewport,
-    size
-  );
+  let x = Math.round(VIEWPORT_PADDING + track.width * position.xRatio);
+  let y = Math.round(VIEWPORT_PADDING + track.height * position.yRatio);
+
+  if (position.snapEdge === 'left') {
+    x = 0;
+  } else if (position.snapEdge === 'right') {
+    x = viewport.width - size.width;
+  }
+
+  if (position.snapEdge === 'top') {
+    y = 0;
+  } else if (position.snapEdge === 'bottom') {
+    y = viewport.height - size.height;
+  }
+
+  return {
+    x: Math.max(0, Math.min(viewport.width - size.width, x)),
+    y: Math.max(0, Math.min(viewport.height - size.height, y)),
+  };
 }
 
 export function pointToGlobalActionPosition(
@@ -66,26 +86,63 @@ export function pointToGlobalActionPosition(
 export function clampGlobalActionPoint(
   point: GlobalActionPoint,
   viewport: GlobalActionViewport,
-  size: GlobalActionSize
+  size: GlobalActionSize,
+  padding = VIEWPORT_PADDING
 ): GlobalActionPoint {
   return {
     x: clamp(
       point.x,
-      VIEWPORT_PADDING,
-      Math.max(VIEWPORT_PADDING, viewport.width - size.width - VIEWPORT_PADDING)
+      padding,
+      Math.max(padding, viewport.width - size.width - padding)
     ),
     y: clamp(
       point.y,
-      VIEWPORT_PADDING,
-      Math.max(VIEWPORT_PADDING, viewport.height - size.height - VIEWPORT_PADDING)
+      padding,
+      Math.max(padding, viewport.height - size.height - padding)
     ),
   };
 }
 
 export function getGlobalActionExpandDirection(
-  position: Pick<GlobalActionPosition, 'yRatio'>
+  position: Pick<GlobalActionPosition, 'yRatio' | 'snapEdge'>
 ): GlobalActionExpandDirection {
+  if (position.snapEdge === 'top') return 'down';
+  if (position.snapEdge === 'bottom') return 'up';
   return position.yRatio > 0.5 ? 'up' : 'down';
+}
+
+export function getSnappedPosition(
+  point: GlobalActionPoint,
+  viewport: GlobalActionViewport,
+  size: GlobalActionSize,
+  snapThreshold = GLOBAL_ACTION_SNAP_THRESHOLD
+): GlobalActionPosition {
+  const distLeft = point.x;
+  const distRight = viewport.width - (point.x + size.width);
+  const distTop = point.y;
+  const distBottom = viewport.height - (point.y + size.height);
+
+  const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+  let snapEdge: 'left' | 'right' | 'top' | 'bottom' | null = null;
+  if (minDist <= snapThreshold) {
+    if (minDist === distLeft) {
+      snapEdge = 'left';
+    } else if (minDist === distRight) {
+      snapEdge = 'right';
+    } else if (minDist === distTop) {
+      snapEdge = 'top';
+    } else if (minDist === distBottom) {
+      snapEdge = 'bottom';
+    }
+  }
+
+  const basePosition = pointToGlobalActionPosition(point, viewport, size);
+
+  return {
+    ...basePosition,
+    snapEdge,
+  };
 }
 
 function getGlobalActionTrack(
