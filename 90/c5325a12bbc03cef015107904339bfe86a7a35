@@ -1,0 +1,75 @@
+core/content/touch-selection.test.ts
+  s_414383406f2e81::t_2e0b43e8ae69a1 1-32,34-39,42-69
+  s_414383406f2e81::t_0228b2aae958d1 33,40-41
+core/i18n/locales/fr.ts
+  s_414383406f2e81::t_8efd24eefc71ce 304-305
+core/content/touch-selection-reproduction.test.ts
+  s_414383406f2e81::t_831ea2a23b7c58 10-13
+  s_414383406f2e81::t_7e78258a56b323 14
+  s_414383406f2e81::t_e4bc605224c58a 6-9
+  s_414383406f2e81::t_5e9b22e11c5835 4,20-21,25-31,44-48,56,59
+  s_414383406f2e81::t_a43e21466d1951 1-3,5,15-19,22-24,32-43,49-55,57-58,60-61
+core/i18n/locales/es.ts
+  s_414383406f2e81::t_8efd24eefc71ce 302-303
+core/services/action-service.test.ts
+  s_414383406f2e81::t_1f449bc8936f74 39,57-62
+core/i18n/locales/ja.ts
+  s_414383406f2e81::t_8efd24eefc71ce 297-298
+core/i18n/locales/pt.ts
+  s_414383406f2e81::t_8efd24eefc71ce 300-301
+core/services/inline-dialogue.ts
+  s_414383406f2e81::t_27a137fc7f75f1 1-13,16,18,22-24,27-29,31-33
+  s_414383406f2e81::t_411f3405b73026 14-15,17,19-21,25-26,30
+core/content/content-styles.ts
+  s_414383406f2e81::t_d39c7a124c8272 541
+core/i18n/locales/zh.ts
+  s_414383406f2e81::t_8efd24eefc71ce 284-285
+core/content/Selectly.tsx
+  s_414383406f2e81::t_5e9b22e11c5835 36,807,2409
+  s_414383406f2e81::t_041b367cf3f5ac 21,2218,2225,2234-2251,2262
+core/services/inline-dialogue.test.ts
+  s_414383406f2e81::t_27a137fc7f75f1 1-44
+components/content/ChatDisplayToggle.tsx
+  s_414383406f2e81::t_d39c7a124c8272 1-28
+components/content/ChatDisplayToggle.test.tsx
+  s_414383406f2e81::t_c08b99a4506bcc 1-23
+core/i18n/types.ts
+  s_414383406f2e81::t_d39c7a124c8272 289-290
+components/content/StreamingResult.test.ts
+  s_414383406f2e81::t_69b65d24bc69f5 3,6-11,49
+  s_414383406f2e81::t_9a24bf511a1770 1-2,18,41-48
+  s_414383406f2e81::t_67cd0f4cffe9d5 5,19-40
+core/content/touch-selection.ts
+  s_414383406f2e81::t_5e9b22e11c5835 1-44
+core/i18n/locales/en.ts
+  s_414383406f2e81::t_8efd24eefc71ce 296-297
+core/i18n/locales/de.ts
+  s_414383406f2e81::t_8efd24eefc71ce 304-305
+core/services/action-service.ts
+  s_414383406f2e81::t_0bbbba8fb6ae42 225,227,229-230
+core/content/streaming-styles.ts
+  s_414383406f2e81::t_d39c7a124c8272 6-19
+components/content/StreamingResult.tsx
+  s_414383406f2e81::t_1ca3c671c72aa9 13,34,217,237,441-442,575-576,578,580,582,587,589-604,606-610,614,908,991-992
+  s_414383406f2e81::t_67cd0f4cffe9d5 16,225-227,291,293,305,318-319,324,328,330,387,628,643-646,651-661,669,675,686-688,714,737,788-797,836-837,972,1047
+  s_414383406f2e81::t_9a24bf511a1770 3
+  s_414383406f2e81::t_4ae3de59259df6 635-638,803-804
+  s_414383406f2e81::t_680052227d2949 1015
+  s_414383406f2e81::t_c4f245f5b0e369 605,798
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "90c5325a12bbc03cef015107904339bfe86a7a35",
+  "prompts": {},
+  "sessions": {
+    "s_414383406f2e81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a163db-ca3a-76f3-9a4a-84804e905de4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
