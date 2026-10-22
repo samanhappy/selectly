@@ -301,6 +301,8 @@ export const de: I18nConfig = {
     error: 'Verarbeitung fehlgeschlagen',
     noTextSelected: 'Kein Text ausgewählt',
     dialoguePlaceholder: 'Geben Sie Ihre Nachricht ein...',
+    switchToSidebar: 'Zur Seitenleiste wechseln',
+    switchToFloating: 'Zum schwebenden Fenster wechseln',
     selectedText: 'Ausgewählter Text',
     chatWelcome: 'Fragen Sie mich alles über den ausgewählten Text...',
     pin: 'Anheften',

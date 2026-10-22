@@ -1,6 +1,6 @@
 import { BookmarkPlus, ClipboardPaste, Copy, GripVertical, Info, Pin, Send, X } from 'lucide-react';
 import Markdown from 'markdown-to-jsx';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import {
@@ -10,8 +10,10 @@ import {
   type FloatingPosition,
 } from '../../core/content/floating-position';
 import { i18n } from '../../core/i18n';
+import type { DialogueChunkHandler } from '../../core/services/inline-dialogue';
 import { getActionIcon } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
+import { ChatDisplayToggle } from './ChatDisplayToggle';
 
 const logger = createLogger('StreamingResult');
 
@@ -29,7 +31,7 @@ interface StreamingResultProps {
   isDialogue?: boolean;
   selectedText?: string;
   selectedSentence?: string;
-  onSendMessage?: (message: string) => void;
+  onSendMessage?: (message: string, onChunk: DialogueChunkHandler) => Promise<string>;
   autoFocusInput?: boolean;
   /** Optional callback when pin state changes */
   onPinChange?: (pinned: boolean) => void;
@@ -212,7 +214,7 @@ export const StreamingResult = ({
   costUsd: costUsdProp,
 }: StreamingResultProps) => {
   const [content, setContent] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
+  const [isComplete, setIsComplete] = useState(isDialogue);
   const [isError, setIsError] = useState(false);
   const [i18nConfig, setI18nConfig] = useState(i18n.getConfig());
   const [inputValue, setInputValue] = useState('');
@@ -220,6 +222,9 @@ export const StreamingResult = ({
     Array<{ role: 'user' | 'assistant'; content: string }>
   >([]);
   const [pinned, setPinned] = useState(false);
+  const [sidebar, setSidebar] = useState(false);
+  const isSidebar = isDialogue && sidebar;
+  const isPinned = pinned || isSidebar;
   const [dicStatus, setDicStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [pasteStatus, setPasteStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -229,6 +234,7 @@ export const StreamingResult = ({
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [elapsedMs, setElapsedMs] = useState<number>(0);
   const timerRef = useRef<number | null>(null);
+  const sendingRef = useRef(false);
 
   // Dragging state
   const [position, setPosition] = useState<FloatingPosition | null>(null);
@@ -282,8 +288,9 @@ export const StreamingResult = ({
 
   useEffect(() => {
     const element = containerRef.current;
-    if (!element) return;
+    if (!element || isSidebar) return;
 
+    clampPosition();
     const handleResize = () => clampPosition();
     window.addEventListener('resize', handleResize);
 
@@ -295,7 +302,7 @@ export const StreamingResult = ({
       window.removeEventListener('resize', handleResize);
       resizeObserver?.disconnect();
     };
-  }, [clampPosition]);
+  }, [clampPosition, isSidebar]);
 
   // Initialize conversation with selected text if in dialogue mode
   useEffect(() => {
@@ -308,19 +315,19 @@ export const StreamingResult = ({
 
   // Expose and notify pin state externally
   useEffect(() => {
-    (window as any).isStreamingResultPinned = () => pinned;
-    (window as any).selectlyStreamingPinned = pinned;
+    (window as any).isStreamingResultPinned = () => isPinned;
+    (window as any).selectlyStreamingPinned = isPinned;
     return () => {
       delete (window as any).isStreamingResultPinned;
       delete (window as any).selectlyStreamingPinned;
     };
-  }, [pinned]);
+  }, [isPinned]);
 
   useEffect(() => {
     if (onPinChange) {
-      onPinChange(pinned);
+      onPinChange(isPinned);
     }
-  }, [pinned, onPinChange]);
+  }, [isPinned, onPinChange]);
 
   // Sync footer meta from props changes
   useEffect(() => {
@@ -377,7 +384,7 @@ export const StreamingResult = ({
 
   // Dragging event handlers
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return; // only left click
+    if (isSidebar || e.button !== 0) return; // Docked conversations do not drag.
     const target = e.target as HTMLElement;
     // Treat any obvious interactive element as non-draggable
     const isInteractive = target.closest('input, textarea, button, .glass-button, .send-btn');
@@ -431,6 +438,8 @@ export const StreamingResult = ({
 
   // Expose methods for external calls
   useEffect(() => {
+    if (isDialogue) return;
+
     (window as any).updateStreamingResult = (
       chunk: string,
       model: string,
@@ -464,32 +473,6 @@ export const StreamingResult = ({
         setContent(chunk);
         setIsError(true);
         setIsComplete(true);
-      } else if (isDialogue && isNewMessage) {
-        // For dialogue mode, add to conversation history
-        setConversationHistory((prev) => [...prev, { role: 'assistant', content: chunk }]);
-        setContent('');
-        setIsComplete(true);
-      } else if (isDialogue && !complete) {
-        // For dialogue streaming, update current content
-        setContent((prev) => prev + chunk);
-        setIsComplete(false);
-        setIsError(false);
-      } else if (isDialogue && complete) {
-        // Complete the current streaming message and add to history
-        setConversationHistory((prev) => {
-          const newHistory = [...prev];
-          if (newHistory.length > 0 && newHistory[newHistory.length - 1].role === 'assistant') {
-            // Update the last assistant message
-            newHistory[newHistory.length - 1].content = content + chunk;
-          } else {
-            // Add new assistant message
-            newHistory.push({ role: 'assistant', content: content + chunk });
-          }
-          return newHistory;
-        });
-        setContent('');
-        setIsComplete(true);
-        setIsError(false);
       } else {
         // Regular mode
         setContent((prev) => prev + chunk);
@@ -503,10 +486,6 @@ export const StreamingResult = ({
           setElapsedMs(Date.now() - startedAt);
         }
       }
-    };
-
-    (window as any).appendToConversation = (role: 'user' | 'assistant', content: string) => {
-      setConversationHistory((prev) => [...prev, { role, content }]);
     };
 
     // Allow external code to update footer meta
@@ -525,7 +504,6 @@ export const StreamingResult = ({
 
     return () => {
       delete (window as any).updateStreamingResult;
-      delete (window as any).appendToConversation;
       delete (window as any).updateStreamingMeta;
     };
   }, [isDialogue, content, startedAt, elapsedMs]);
@@ -594,22 +572,46 @@ export const StreamingResult = ({
     }
   };
 
-  const handleSendMessage = () => {
-    if (!inputValue.trim() || !onSendMessage) return;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || !onSendMessage || sendingRef.current) return;
 
+    sendingRef.current = true;
     const userMessage = inputValue.trim();
+    const started = Date.now();
     setInputValue('');
+    setConversationHistory((previous) => [...previous, { role: 'user', content: userMessage }]);
     setContent('');
     setIsComplete(false);
     setIsError(false);
     setElapsedMs(0);
-    setStartedAt(Date.now());
+    setStartedAt(started);
 
-    onSendMessage(userMessage);
+    try {
+      const response = await onSendMessage(userMessage, (chunk, model) => {
+        setContent((previous) => previous + chunk);
+        if (model)
+          setModelName(
+            model
+              .replace(/:free$/, '')
+              .split('/')
+              .pop()
+          );
+      });
+      setConversationHistory((previous) => [...previous, { role: 'assistant', content: response }]);
+      setContent('');
+    } catch (error) {
+      setContent(error instanceof Error ? error.message : i18n.t('errors.unknownError'));
+      setIsError(true);
+      setInputValue((draft) => draft || userMessage);
+    } finally {
+      sendingRef.current = false;
+      setIsComplete(true);
+      setElapsedMs(Date.now() - started);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -623,28 +625,40 @@ export const StreamingResult = ({
     <div
       ref={containerRef}
       className="selectly-streaming-result"
+      data-display-mode={isSidebar ? 'sidebar' : 'floating'}
       onMouseDown={(e) => {
         handleMouseDown(e);
         e.stopPropagation();
       }}
       onKeyDown={(e) => {
         e.stopPropagation();
+        if (isDialogue && e.key === 'Escape' && !e.nativeEvent.isComposing) {
+          e.preventDefault();
+          onClose();
+        }
       }}
       onClick={(e) => e.stopPropagation()}
       style={{
         position: 'fixed',
-        left: `${position?.x || 0}px`,
-        top: `${position?.y || 0}px`,
-        visibility: position ? 'visible' : 'hidden',
+        left: isSidebar ? 'auto' : `${position?.x || 0}px`,
+        right: isSidebar ? 0 : undefined,
+        top: isSidebar ? 0 : `${position?.y || 0}px`,
+        visibility: isSidebar || position ? 'visible' : 'hidden',
         zIndex: 10002,
         background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(16px)',
         border: '1px solid rgba(0, 0, 0, 0.1)',
-        borderRadius: '16px',
-        width: isDialogue ? '480px' : '420px',
-        minWidth: 'min(300px, calc(100vw - 20px))',
-        maxWidth: 'calc(100vw - 20px)',
-        maxHeight: isDialogue ? 'min(500px, calc(100vh - 20px))' : 'min(420px, calc(100vh - 20px))',
+        borderRadius: isSidebar ? 0 : '16px',
+        boxSizing: 'border-box',
+        width: isSidebar ? 'min(420px, 100vw)' : isDialogue ? '480px' : '420px',
+        minWidth: isSidebar ? 0 : 'min(300px, calc(100vw - 20px))',
+        maxWidth: isSidebar ? '100vw' : 'calc(100vw - 20px)',
+        height: isSidebar ? '100dvh' : undefined,
+        maxHeight: isSidebar
+          ? '100dvh'
+          : isDialogue
+            ? 'min(500px, calc(100vh - 20px))'
+            : 'min(420px, calc(100vh - 20px))',
         minHeight: isDialogue ? 'auto' : 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -652,13 +666,13 @@ export const StreamingResult = ({
           0 12px 32px -8px rgba(0, 0, 0, 0.18)
         `,
         animation:
-          isDragging || hasBeenDragged
+          isSidebar || isDragging || hasBeenDragged
             ? 'none'
             : 'sl-selectlySlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         userSelect: isDragging ? 'none' : 'auto',
         transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-        cursor: isDragging ? 'grabbing' : 'grab',
+        cursor: isSidebar ? 'default' : isDragging ? 'grabbing' : 'grab',
       }}
     >
       {/* Header */}
@@ -669,8 +683,9 @@ export const StreamingResult = ({
           alignItems: 'center',
           padding: '1px 12px',
           background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9))',
-          borderRadius: '16px 16px 0 0',
-          cursor: isDragging ? 'grabbing' : 'grab',
+          borderRadius: isSidebar ? 0 : '16px 16px 0 0',
+          flexShrink: 0,
+          cursor: isSidebar ? 'default' : isDragging ? 'grabbing' : 'grab',
         }}
       >
         {/* Drag handle */}
@@ -696,7 +711,7 @@ export const StreamingResult = ({
           <GripVertical size={12} />
         </div> */}
         {/* Pin toggle moved to top-left */}
-        {
+        {!isSidebar && (
           <button
             onClick={() => setPinned((p) => !p)}
             className="pin-btn glass-button"
@@ -719,7 +734,7 @@ export const StreamingResult = ({
           >
             <Pin size={12} style={{ transform: pinned ? 'scale(1.05)' : 'none' }} />
           </button>
-        }
+        )}
 
         <div
           style={{
@@ -770,10 +785,23 @@ export const StreamingResult = ({
           {/* {title} */}
         </span>
 
+        {isDialogue && (
+          <ChatDisplayToggle
+            sidebar={isSidebar}
+            labels={i18nConfig.content}
+            onToggle={() => {
+              setIsDragging(false);
+              setSidebar((value) => !value);
+            }}
+          />
+        )}
+
         {/* Action buttons moved to footer */}
 
         <button
           onClick={onClose}
+          aria-label={i18nConfig.common.close}
+          title={i18nConfig.common.close}
           className="glass-button"
           style={{
             background: 'none',
@@ -805,7 +833,8 @@ export const StreamingResult = ({
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',
           overflowY: 'auto',
-          maxHeight: isDialogue ? '280px' : '320px',
+          maxHeight: isSidebar ? 'none' : isDialogue ? '280px' : '320px',
+          minHeight: 0,
           // background: 'rgba(248, 250, 252, 0.5)',
           flex: isDialogue ? 1 : 'none',
         }}
@@ -876,6 +905,7 @@ export const StreamingResult = ({
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div
                   className="sl-message-bubble sl-streaming-bubble"
+                  role={isError ? 'alert' : 'status'}
                   style={{
                     background: 'rgba(255, 255, 255, 0.9)',
                     color: '#374151',
@@ -939,6 +969,7 @@ export const StreamingResult = ({
         <div
           style={{
             padding: '12px',
+            flexShrink: 0,
             borderTop: '1px solid rgba(0, 0, 0, 0.1)',
             background:
               'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9))',
@@ -957,7 +988,8 @@ export const StreamingResult = ({
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
+              aria-label={i18nConfig.content?.dialoguePlaceholder || 'Type your message...'}
               placeholder={i18nConfig.content?.dialoguePlaceholder || 'Type your message...'}
               style={{
                 flex: 1,
@@ -980,6 +1012,7 @@ export const StreamingResult = ({
               }}
             />
             <button
+              aria-label={i18nConfig.tabAssistant.send}
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || !isComplete}
               className="send-btn glass-button"
@@ -1011,6 +1044,7 @@ export const StreamingResult = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          flexShrink: 0,
           gap: '8px',
           padding: '1px 12px',
           // background: 'rgba(255, 255, 255, 0.8)',

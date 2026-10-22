@@ -301,6 +301,8 @@ export const fr: I18nConfig = {
     error: 'Échec du traitement',
     noTextSelected: 'Aucun texte sélectionné',
     dialoguePlaceholder: 'Tapez votre message...',
+    switchToSidebar: 'Passer à la barre latérale de la page',
+    switchToFloating: 'Passer à la fenêtre flottante',
     selectedText: 'Texte Sélectionné',
     chatWelcome: "Demandez-moi n'importe quoi sur le texte sélectionné...",
     pin: 'Épingler',

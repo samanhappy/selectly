@@ -293,6 +293,8 @@ export const en: I18nConfig = {
     error: 'Processing failed',
     noTextSelected: 'No text selected',
     dialoguePlaceholder: 'Type your message...',
+    switchToSidebar: 'Switch to page sidebar',
+    switchToFloating: 'Switch to floating window',
     selectedText: 'Selected Text',
     chatWelcome: 'Ask me anything about the selected text...',
     pin: 'Pin',

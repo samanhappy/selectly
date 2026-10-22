@@ -286,6 +286,8 @@ export interface I18nConfig {
     error: string;
     noTextSelected: string;
     dialoguePlaceholder: string;
+    switchToSidebar: string;
+    switchToFloating: string;
     selectedText: string;
     chatWelcome: string;
     pin: string;

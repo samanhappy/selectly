@@ -299,6 +299,8 @@ export const es: I18nConfig = {
     error: 'Procesamiento fallido',
     noTextSelected: 'Ningún texto seleccionado',
     dialoguePlaceholder: 'Escribe tu mensaje...',
+    switchToSidebar: 'Cambiar a la barra lateral de la página',
+    switchToFloating: 'Cambiar a la ventana flotante',
     selectedText: 'Texto Seleccionado',
     chatWelcome: 'Pregúntame cualquier cosa sobre el texto seleccionado...',
     pin: 'Anclar',

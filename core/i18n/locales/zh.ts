@@ -281,6 +281,8 @@ export const zh: I18nConfig = {
     error: '处理失败',
     noTextSelected: '未选择文本',
     dialoguePlaceholder: '输入你的消息...',
+    switchToSidebar: '切换到网页侧栏',
+    switchToFloating: '切换到页内浮窗',
     selectedText: '选中的文本',
     chatWelcome: '对选中的文本进行提问...',
     pin: '固定',

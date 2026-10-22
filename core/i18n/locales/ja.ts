@@ -294,6 +294,8 @@ export const ja: I18nConfig = {
     error: '処理に失敗しました',
     noTextSelected: 'テキストが選択されていません',
     dialoguePlaceholder: 'メッセージを入力してください...',
+    switchToSidebar: 'ページのサイドバーに切り替え',
+    switchToFloating: 'フローティングウィンドウに切り替え',
     selectedText: '選択されたテキスト',
     chatWelcome: '選択されたテキストについて何でもお尋ねください...',
     pin: 'ピン留め',

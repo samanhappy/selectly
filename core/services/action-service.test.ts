@@ -36,7 +36,7 @@ describe('ActionService', () => {
     llmMocks.chatStream.mockReset();
   });
 
-  it('opens the side panel with the selected text', async () => {
+  it('opens an inline conversation with the selected text', async () => {
     const sendMessage = vi.fn().mockResolvedValue({ success: true });
     vi.stubGlobal('chrome', {
       runtime: {
@@ -54,11 +54,12 @@ describe('ActionService', () => {
       enabled: true,
     } as FunctionConfig);
 
-    expect(sendMessage).toHaveBeenCalledWith({
-      action: 'tabContext:openSidePanel',
-      selectedText: 'selected text',
-    });
-    expect((window as any).selectlyInstance.showDialogueResult).not.toHaveBeenCalled();
+    expect(sendMessage).not.toHaveBeenCalled();
+    expect((window as any).selectlyInstance.showDialogueResult).toHaveBeenCalledWith(
+      expect.any(String),
+      'selected text',
+      { enabled: true }
+    );
   });
 
   it('notifies when LLM streaming successfully starts', async () => {

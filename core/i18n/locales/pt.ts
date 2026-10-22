@@ -297,6 +297,8 @@ export const pt: I18nConfig = {
     error: 'Processamento falhou',
     noTextSelected: 'Nenhum texto selecionado',
     dialoguePlaceholder: 'Digite sua mensagem...',
+    switchToSidebar: 'Mudar para a barra lateral da página',
+    switchToFloating: 'Mudar para a janela flutuante',
     selectedText: 'Texto Selecionado',
     chatWelcome: 'Pergunte-me qualquer coisa sobre o texto selecionado...',
     pin: 'Fixar',
