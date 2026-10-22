@@ -14,10 +14,13 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings as SettingsIcon,
+  User,
 } from 'lucide-react';
 import React from 'react';
 
 import { isDictionaryEnabled } from '../../core/config/feature-gates';
+import { isPaidUiEnabled } from '../../core/config/monetization';
+import { SupportLink } from '../shared/SupportLink';
 import type { SidebarKey } from './constants';
 import { openExternal } from './constants';
 
@@ -234,14 +237,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div className="flex justify-center">
           <SidebarItem
-            icon={<Crown className="h-4 w-4" />}
-            label={i18nConfig.popup.tabs.subscription}
+            icon={isPaidUiEnabled() ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />}
+            label={
+              isPaidUiEnabled()
+                ? i18nConfig.popup.tabs.subscription
+                : i18nConfig.common.cloudAccount
+            }
             collapsed={collapsed}
             active={active === 'subscription'}
             onClick={() => onNavigate('subscription')}
           />
         </div>
       </nav>
+
+      <div className="flex justify-center p-2">
+        <SupportLink label={i18nConfig.common.supportProject} compact={collapsed} />
+      </div>
 
       {/* Sidebar Footer (pinned to bottom, hidden when collapsed) */}
       {!collapsed && (

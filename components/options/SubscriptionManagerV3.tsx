@@ -18,6 +18,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 import { authService } from '../../core/auth/auth-service';
+import { isPaidUiEnabled } from '../../core/config/monetization';
 import { useI18n } from '../../core/i18n/hooks/useI18n';
 import { redeemSubscriptionCode, type RedeemCodeResponse } from '../../core/premium-api-v2';
 import { collectService } from '../../core/services/collect-service';
@@ -34,6 +35,7 @@ interface Props {
 
 export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
   const { t } = useI18n();
+  const paidUiEnabled = isPaidUiEnabled();
   const subscriptionService = SubscriptionServiceV2.getInstance();
 
   // Simple state - only what we need
@@ -154,6 +156,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
   };
 
   const handleSubscribe = async (plan: 'monthly' | 'lifetime') => {
+    if (!paidUiEnabled) return;
     try {
       const pricingLink = process.env.PLASMO_PUBLIC_PRICING_LINK;
       if (pricingLink) {
@@ -192,7 +195,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
   };
 
   const handleRedeemSubmit = async () => {
-    if (!redeemCode.trim()) return;
+    if (!paidUiEnabled || !redeemCode.trim()) return;
 
     setRedeemSubmitting(true);
     setRedeemResult(null);
@@ -287,7 +290,11 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
                   }}
                 >
                   {t
-                    ? t('popup.subscription.signInToAccess')
+                    ? t(
+                        paidUiEnabled
+                          ? 'popup.subscription.signInToAccess'
+                          : 'common.cloudAccountDescription'
+                      )
                     : 'Sign in to access premium features'}
                 </p>
               )}
@@ -366,7 +373,10 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
                   size={18}
                   inactiveColor={palette.textSecondary}
                 />
-                {t ? t('popup.subscription.title') : 'Premium Subscription'}&nbsp;(
+                {t
+                  ? t(paidUiEnabled ? 'popup.subscription.title' : 'common.cloudAccount')
+                  : 'Cloud account'}
+                &nbsp;(
                 {(t ? t('popup.subscription.credits') : 'Credits') +
                   ': $' +
                   (subscriptionStatus?.credits?.limit_remaining ?? 0)}
@@ -432,34 +442,36 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
                   {t ? t('popup.subscription.refreshStatus') : 'Refresh'}
                 </button>
               )}
-              <button
-                onClick={async () => {
-                  setRedeemResult(null);
-                  if (!authState.isAuthenticated) {
-                    await handleSignIn();
-                    if (!authState.isAuthenticated) return;
-                  }
-                  setRedeemOpen(true);
-                }}
-                className="sl-btn sl-btn-secondary"
-                style={{
-                  fontSize: '12px',
-                  padding: '4px 8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <Gift size={14} />
-                {t ? t('popup.subscription.redeemEntry') : 'Redeem Code'}
-              </button>
+              {paidUiEnabled && (
+                <button
+                  onClick={async () => {
+                    setRedeemResult(null);
+                    if (!authState.isAuthenticated) {
+                      await handleSignIn();
+                      if (!authState.isAuthenticated) return;
+                    }
+                    setRedeemOpen(true);
+                  }}
+                  className="sl-btn sl-btn-secondary"
+                  style={{
+                    fontSize: '12px',
+                    padding: '4px 8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <Gift size={14} />
+                  {t ? t('popup.subscription.redeemEntry') : 'Redeem Code'}
+                </button>
+              )}
             </div>
           </div>
         </div>
 
         {
           <>
-            {(!authState.isAuthenticated || !isActive) && (
+            {paidUiEnabled && (!authState.isAuthenticated || !isActive) && (
               <div
                 style={{
                   display: 'flex',
@@ -554,7 +566,7 @@ export const SubscriptionManagerV3: React.FC<Props> = ({ palette }) => {
 
       {/* Redeem Drawer */}
       <Drawer
-        open={redeemOpen}
+        open={paidUiEnabled && redeemOpen}
         title={t ? t('popup.subscription.redeemTitle') : 'Redeem Membership Code'}
         onClose={() => setRedeemOpen(false)}
       >

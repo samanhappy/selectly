@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const en: I18nConfig = {
   common: {
+    cloudAccount: 'Cloud account',
+    cloudAccountDescription: 'Sign in to use cloud services and sync your data.',
+    supportProject: 'Support this project',
     save: 'Save',
     cancel: 'Cancel',
     confirm: 'Confirm',

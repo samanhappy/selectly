@@ -3,6 +3,9 @@ export type SupportedLanguage = 'en' | 'zh' | 'es' | 'pt' | 'ja' | 'de' | 'fr';
 export interface I18nConfig {
   // Common UI text
   common: {
+    cloudAccount: string;
+    cloudAccountDescription: string;
+    supportProject: string;
     save: string;
     cancel: string;
     confirm: string;

@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const ja: I18nConfig = {
   common: {
+    cloudAccount: 'クラウドアカウント',
+    cloudAccountDescription: 'ログインしてクラウドサービスとデータ同期を利用します。',
+    supportProject: 'プロジェクトを支援',
     save: '保存',
     cancel: 'キャンセル',
     confirm: '確認',

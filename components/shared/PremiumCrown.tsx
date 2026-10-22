@@ -1,6 +1,8 @@
 import { Crown } from 'lucide-react';
 import React from 'react';
 
+import { isPaidUiEnabled } from '../../core/config/monetization';
+
 /**
  * PremiumCrown
  * Unified crown icon highlighting logic.
@@ -28,6 +30,7 @@ export const PremiumCrown: React.FC<PremiumCrownProps> = ({
   title,
   ariaLabel,
 }) => {
+  if (!isPaidUiEnabled()) return null;
   return (
     <span
       role="img"

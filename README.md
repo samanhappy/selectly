@@ -111,3 +111,21 @@ MIT — [LICENSE](LICENSE)
 ## Support
 
 [Issues](https://github.com/samanhappy/selectly/issues) · [Discussions](https://github.com/samanhappy/selectly/discussions)
+
+### Payment UI and support link switches
+
+Cloud models, sign-in, subscription checks, and sync remain available. Purchase,
+upgrade badges, and redemption entry points are hidden by default. Configure these
+public build variables in `.env.development.local` or `.env.production.local`:
+
+```dotenv
+PLASMO_PUBLIC_PAID_UI_ENABLED=false
+PLASMO_PUBLIC_SUPPORT_ENABLED=true
+PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
+```
+
+Set `PAID_UI_ENABLED` to `true` (with the full prefix above) to restore paid entry
+points. Disable `SUPPORT_ENABLED` to hide the donation link, or replace `SUPPORT_URL`
+with your HTTPS support page. The default link follows `.github/FUNDING.yml`.
+Restart the dev server or rebuild the extension after changing these variables.
+These switches only control UI; they do not grant paid entitlements or change quotas.

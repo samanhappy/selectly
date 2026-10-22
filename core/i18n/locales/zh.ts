@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const zh: I18nConfig = {
   common: {
+    cloudAccount: '云端账户',
+    cloudAccountDescription: '登录以使用云端服务和同步数据。',
+    supportProject: '赞赏支持',
     save: '保存',
     cancel: '取消',
     confirm: '确认',

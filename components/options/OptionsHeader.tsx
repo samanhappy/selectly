@@ -6,6 +6,7 @@
 import { Globe } from 'lucide-react';
 import React from 'react';
 
+import { isPaidUiEnabled } from '../../core/config/monetization';
 import { i18n } from '../../core/i18n';
 import type { SidebarKey } from './constants';
 
@@ -37,7 +38,9 @@ export const OptionsHeader: React.FC<OptionsHeaderProps> = ({
       case 'llm':
         return i18nConfig.popup.tabs.llm;
       case 'subscription':
-        return i18nConfig.popup.tabs.subscription;
+        return isPaidUiEnabled()
+          ? i18nConfig.popup.tabs.subscription
+          : i18nConfig.common.cloudAccount;
       default:
         return '';
     }
