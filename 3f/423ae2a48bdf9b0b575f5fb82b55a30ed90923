@@ -1,0 +1,56 @@
+core/i18n/locales/de.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+core/i18n/locales/zh.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+core/i18n/locales/fr.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-8
+core/config/monetization.test.ts
+  s_414383406f2e81::t_82db75fe472ba2 1-39
+core/i18n/locales/pt.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+core/i18n/locales/en.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+core/config/monetization.ts
+  s_414383406f2e81::t_82db75fe472ba2 1-14
+core/i18n/locales/es.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-8
+core/i18n/types.ts
+  s_414383406f2e81::t_5e8fd535ac2459 6-8
+components/shared/SupportLink.tsx
+  s_414383406f2e81::t_82db75fe472ba2 1-23
+core/i18n/locales/ja.ts
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+components/shared/SupportLink.test.tsx
+  s_414383406f2e81::t_fdb0fdb912c30f 1-31
+components/options/SubscriptionManagerV3.test.tsx
+  s_414383406f2e81::t_fdb0fdb912c30f 1-27,29-39,41-43
+  s_414383406f2e81::t_ac3b39e733465e 28,40
+README.md
+  s_414383406f2e81::t_a0e06c69e69cbd 114-131
+README_CN.md
+  s_414383406f2e81::t_471a9beea5510a 114-130
+components/options/OptionsHeader.tsx
+  s_414383406f2e81::t_ae5679a8aa81c0 9,41-43
+components/options/Sidebar.tsx
+  s_414383406f2e81::t_0f9642ba262cf0 17,22-23,240-245,253-256
+components/options/SubscriptionManagerV3.tsx
+  s_414383406f2e81::t_f4dac3d3521108 21,38,159,198,293-297,376-379,445-467,474,569
+components/shared/PremiumCrown.tsx
+  s_414383406f2e81::t_99a329afc3b056 4-5,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3f423ae2a48bdf9b0b575f5fb82b55a30ed90923",
+  "prompts": {},
+  "sessions": {
+    "s_414383406f2e81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a163db-ca3a-76f3-9a4a-84804e905de4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
