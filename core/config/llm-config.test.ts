@@ -15,7 +15,7 @@ describe('ConfigManager', () => {
     const manager = new ConfigManager();
 
     expect(manager.getConfig().llm.defaultModel).toBe('');
-    expect(manager.getEnabledProviders()).toEqual([CLOUD_PROVIDER]);
+    expect(manager.getEnabledProviders()).toEqual([]);
     expect(manager.getConfig().general.selectionFloatingGap).toBe(DEFAULT_SELECTION_FLOATING_GAP);
   });
 

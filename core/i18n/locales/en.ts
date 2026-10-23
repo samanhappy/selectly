@@ -438,6 +438,8 @@ export const en: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled:
+      'Official cloud services are disabled. Configure your own model endpoint to use AI actions.',
     systemError: 'System Error',
     cannotShowResultWindow: 'Cannot show result window',
     copyFailed: 'Copy Failed',

@@ -112,20 +112,29 @@ MIT — [LICENSE](LICENSE)
 
 [Issues](https://github.com/samanhappy/selectly/issues) · [Discussions](https://github.com/samanhappy/selectly/discussions)
 
-### Payment UI and support link switches
+### Local mode, payment UI, and support links
 
-Cloud models, sign-in, subscription checks, and sync remain available. Purchase,
-upgrade badges, and redemption entry points are hidden by default. Configure these
-public build variables in `.env.development.local` or `.env.production.local`:
+Official Selectly services are disabled by default. The extension does not initialize
+cloud authentication, query subscriptions, synchronize data, or offer official cloud
+models. Settings are stored in `chrome.storage.local`; existing settings are copied
+once from Chrome sync storage without overwriting local values or deleting the old copy.
+Collections, highlights, and chat history remain in local IndexedDB.
+
+AI actions require a model endpoint you configure yourself. For offline inference,
+use a local OpenAI-compatible endpoint; configuring a remote provider will send
+requests to that provider. Empty or saved cloud model selections cannot call the
+official cloud service. The support link opens only when clicked.
+
+Public build switches can be set in `.env.development.local` or `.env.production.local`:
 
 ```dotenv
+PLASMO_PUBLIC_CLOUD_ENABLED=false
 PLASMO_PUBLIC_PAID_UI_ENABLED=false
 PLASMO_PUBLIC_SUPPORT_ENABLED=true
 PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
 ```
 
-Set `PAID_UI_ENABLED` to `true` (with the full prefix above) to restore paid entry
-points. Disable `SUPPORT_ENABLED` to hide the donation link, or replace `SUPPORT_URL`
-with your HTTPS support page. The default link follows `.github/FUNDING.yml`.
-Restart the dev server or rebuild the extension after changing these variables.
-These switches only control UI; they do not grant paid entitlements or change quotas.
+Cloud features require explicit `PLASMO_PUBLIC_CLOUD_ENABLED=true`; paid entry points
+also require `PLASMO_PUBLIC_PAID_UI_ENABLED=true`. Donation visibility and its HTTPS
+URL are independent. Restart development or rebuild after changing these variables.
+UI switches do not grant subscriptions or bypass server quotas.

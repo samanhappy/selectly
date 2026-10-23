@@ -446,6 +446,8 @@ export const de: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled:
+      'Offizielle Cloud-Dienste sind deaktiviert. Konfigurieren Sie einen eigenen Modell-Endpunkt.',
     systemError: 'Systemfehler',
     cannotShowResultWindow: 'Ergebnisfenster kann nicht angezeigt werden',
     copyFailed: 'Kopieren fehlgeschlagen',

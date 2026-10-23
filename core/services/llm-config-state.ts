@@ -1,3 +1,4 @@
+import { isCloudEnabled } from '../config/cloud-services';
 import { CLOUD_PROVIDER, type UserConfig } from '../config/llm-config';
 import { parseModelString } from '../config/model-resolution';
 
@@ -9,7 +10,7 @@ export const isLLMModelUsable = (config: UserConfig, model?: string): boolean =>
   try {
     const { providerId, modelName } = parseModelString(modelString);
     if (!modelName) return false;
-    if (providerId === CLOUD_PROVIDER.id) return true;
+    if (providerId === CLOUD_PROVIDER.id) return isCloudEnabled();
 
     const provider = config.llm.providers?.[providerId];
     return Boolean(provider?.enabled && provider.apiKey);

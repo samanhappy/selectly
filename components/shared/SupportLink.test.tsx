@@ -1,10 +1,11 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PremiumCrown } from './PremiumCrown';
 import { SupportLink } from './SupportLink';
 
+beforeEach(() => vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true'));
 afterEach(() => vi.unstubAllEnvs());
 
 describe('support and paid UI', () => {

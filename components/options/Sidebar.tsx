@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+import { isCloudEnabled } from '../../core/config/cloud-services';
 import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import { isPaidUiEnabled } from '../../core/config/monetization';
 import { SupportLink } from '../shared/SupportLink';
@@ -235,19 +236,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onNavigate('general')}
           />
         </div>
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={isPaidUiEnabled() ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />}
-            label={
-              isPaidUiEnabled()
-                ? i18nConfig.popup.tabs.subscription
-                : i18nConfig.common.cloudAccount
-            }
-            collapsed={collapsed}
-            active={active === 'subscription'}
-            onClick={() => onNavigate('subscription')}
-          />
-        </div>
+        {isCloudEnabled() && (
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={
+                isPaidUiEnabled() ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />
+              }
+              label={
+                isPaidUiEnabled()
+                  ? i18nConfig.popup.tabs.subscription
+                  : i18nConfig.common.cloudAccount
+              }
+              collapsed={collapsed}
+              active={active === 'subscription'}
+              onClick={() => onNavigate('subscription')}
+            />
+          </div>
+        )}
       </nav>
 
       <div className="flex justify-center p-2">

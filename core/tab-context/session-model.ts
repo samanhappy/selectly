@@ -1,9 +1,10 @@
+import { isCloudEnabled } from '../config/cloud-services';
 import type { TabChatSession, TabMessage } from './types';
 
 export const CLOUD_DEFAULT_TAB_MODEL = 'cloud/default';
 
 export const normalizeTabSessionModel = (model?: string) =>
-  model?.trim() || CLOUD_DEFAULT_TAB_MODEL;
+  model?.trim() || (isCloudEnabled() ? CLOUD_DEFAULT_TAB_MODEL : '');
 
 const getFirstMessageModel = (messages: TabMessage[] = []) =>
   messages.find((message) => message.model?.trim())?.model;

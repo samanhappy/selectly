@@ -424,6 +424,7 @@ export const zh: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled: '官方云端服务已关闭，请配置自己的模型接口以使用 AI 功能。',
     systemError: '系统错误',
     cannotShowResultWindow: '无法显示结果窗口',
     copyFailed: '复制失败',

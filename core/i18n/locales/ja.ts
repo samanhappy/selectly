@@ -440,6 +440,7 @@ export const ja: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled: '公式クラウドは無効です。AI 機能には独自のモデル接続先を設定してください。',
     systemError: 'システムエラー',
     cannotShowResultWindow: '結果ウィンドウを表示できません',
     copyFailed: 'コピーに失敗しました',

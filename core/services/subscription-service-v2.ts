@@ -3,12 +3,13 @@
  */
 
 import { modelService } from '../../core/services/model-service';
+import { createLogger } from '../../utils/logger';
 import { authService } from '../auth/auth-service';
+import { isCloudEnabled } from '../config/cloud-services';
 import { CLOUD_PROVIDER } from '../config/llm-config';
 import type { SubscriptionStatus as ApiSubscriptionStatus } from '../premium-api-v2';
 import { checkSubscription, initiateAuthentication, isAuthenticated } from '../premium-api-v2';
 import { secureStorage } from '../storage/secure-storage';
-import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('Subscription');
 
@@ -55,6 +56,7 @@ class SubscriptionServiceV2 {
   private cachedStateLoaded = false;
 
   private constructor() {
+    if (!isCloudEnabled()) return;
     // Load cached subscription state synchronously on construction
     this.status = SubscriptionServiceV2.cachedStatus;
     this.lastChecked = SubscriptionServiceV2.cachedLastChecked;
@@ -157,6 +159,7 @@ class SubscriptionServiceV2 {
   }
 
   async initialize(): Promise<void> {
+    if (!isCloudEnabled()) return;
     if (this.initialized) return;
     if (!this.initializing) {
       this.initializing = (async () => {
@@ -297,6 +300,7 @@ class SubscriptionServiceV2 {
   }
 
   enableAutoRefresh(): void {
+    if (!isCloudEnabled()) return;
     this.autoRefreshEnabled = true;
     this.maybeEnsureAutoRefresh();
   }
@@ -311,6 +315,7 @@ class SubscriptionServiceV2 {
 
   // Status checking
   isSubscriptionActive(): boolean {
+    if (!isCloudEnabled()) return false;
     if (!this.status) return false;
     if (!this.status.active) return false;
 
@@ -341,6 +346,7 @@ class SubscriptionServiceV2 {
 
   // Refresh logic
   async refresh(options: { force?: boolean; reason?: string } = {}): Promise<void> {
+    if (!isCloudEnabled()) return;
     await this.initialize();
 
     const { force = false, reason = 'manual' } = options;

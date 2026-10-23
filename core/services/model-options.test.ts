@@ -4,10 +4,10 @@ import { CLOUD_PROVIDER } from '../config/llm-config';
 import { buildModelChoices, getModelChoiceLabel } from './model-options';
 
 describe('model options', () => {
-  it('keeps the required session model available even when model loading is empty', () => {
+  it('does not offer a legacy cloud model when official services are disabled', () => {
     const choices = buildModelChoices([{ provider: CLOUD_PROVIDER, models: [] }], 'cloud/default');
 
-    expect(choices[0]).toMatchObject({ value: 'cloud/default', providerName: 'Cloud' });
+    expect(choices).toEqual([]);
   });
 
   it('formats a missing selected model from the model string', () => {

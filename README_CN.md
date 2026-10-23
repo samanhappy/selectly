@@ -112,19 +112,28 @@ MIT — [LICENSE](LICENSE)
 
 [Issues](https://github.com/samanhappy/selectly/issues) · [Discussions](https://github.com/samanhappy/selectly/discussions)
 
-### 付费入口与赞赏链接开关
+### 本地模式、付费入口与赞赏开关
 
-云端模型、登录、订阅查询及同步保持可用；购买、升级标识和兑换入口默认隐藏。
-在 `.env.development.local` 或 `.env.production.local` 配置以下构建变量：
+默认关闭 Selectly 官方云端服务：不初始化云端登录、不查询订阅、不进行云同步，
+也不提供官方云端模型。配置写入 `chrome.storage.local`；首次使用会复制原有
+Chrome 同步存储中的设置，不覆盖已有本地值，也不删除旧副本。
+收藏、高亮及聊天记录继续存放于本地 IndexedDB。
+
+AI 功能需要自行配置模型接口。完全离线使用时，请配置本机的 OpenAI 兼容接口；
+如果自行配置第三方远程服务商，请求仍会发送给该服务商。
+未配置模型或保留旧云端模型时，不会调用或回退到官方云端。
+赞赏链接仅在主动点击时打开。
+
+在 `.env.development.local` 或 `.env.production.local` 设置构建开关：
 
 ```dotenv
+PLASMO_PUBLIC_CLOUD_ENABLED=false
 PLASMO_PUBLIC_PAID_UI_ENABLED=false
 PLASMO_PUBLIC_SUPPORT_ENABLED=true
 PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
 ```
 
-将 `PLASMO_PUBLIC_PAID_UI_ENABLED` 设为 `true` 可恢复付费入口；将
-`PLASMO_PUBLIC_SUPPORT_ENABLED` 设为 `false` 可隐藏赞赏入口；
-`PLASMO_PUBLIC_SUPPORT_URL` 可替换为自己的 HTTPS 赞赏页面，默认沿用
-`.github/FUNDING.yml` 中的 Ko-fi 账户。修改后需重启开发服务或重新构建扩展。
-这些开关只控制界面，不授予付费权益，也不改变服务端额度限制。
+仅在明确设为 `PLASMO_PUBLIC_CLOUD_ENABLED=true` 后恢复官方云端；
+付费入口还需单独设为 `PLASMO_PUBLIC_PAID_UI_ENABLED=true`。
+赞赏开关和 HTTPS 链接可独立配置。修改后需重启开发服务或重新构建。
+这些开关不授予会员权益，也不绕过服务端额度限制。

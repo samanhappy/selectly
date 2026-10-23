@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getSupportUrl, isPaidUiEnabled } from './monetization';
 
+beforeEach(() => vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true'));
 afterEach(() => vi.unstubAllEnvs());
 
 describe('monetization UI switches', () => {

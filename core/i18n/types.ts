@@ -432,6 +432,7 @@ export interface I18nConfig {
 
   // Error messages
   errors: {
+    cloudDisabled: string;
     systemError: string;
     cannotShowResultWindow: string;
     copyFailed: string;

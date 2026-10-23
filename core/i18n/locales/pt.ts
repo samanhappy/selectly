@@ -442,6 +442,7 @@ export const pt: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled: 'Os serviços oficiais na nuvem estão desativados. Configure seu próprio modelo.',
     systemError: 'Erro do Sistema',
     cannotShowResultWindow: 'Não é possível mostrar a janela de resultados',
     copyFailed: 'Cópia Falhou',

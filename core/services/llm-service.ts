@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 
-import { authService } from '~core/auth/auth-service';
-
 import { createLogger } from '../../utils/logger';
+import { authService } from '../auth/auth-service';
+import { assertCloudEnabled, isCloudEnabled } from '../config/cloud-services';
 import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
 import { i18n, t } from '../i18n';
@@ -40,7 +40,7 @@ export class LLMService {
 
     // Create clients for all enabled providers
     Object.values(config.providers).forEach((provider) => {
-      if (provider.enabled && provider.apiKey) {
+      if (provider.enabled && provider.apiKey && provider.id !== 'cloud') {
         this.clients.set(
           provider.id,
           new OpenAI({
@@ -51,6 +51,8 @@ export class LLMService {
         );
       }
     });
+
+    if (!isCloudEnabled()) return;
 
     // await authService.initialize();
     const token = await authService.getAccessToken();
@@ -69,6 +71,7 @@ export class LLMService {
    * Get OpenAI client for a specific provider
    */
   private getClient(providerId: string): OpenAI {
+    if (providerId === 'cloud') assertCloudEnabled();
     const client = this.clients.get(providerId);
     if (!client) {
       throw new Error(`Provider ${providerId} is not configured or enabled`);
@@ -268,6 +271,7 @@ export class LLMService {
    * Test connection to a specific provider
    */
   async testProvider(provider: LLMProvider): Promise<boolean> {
+    if (provider.id === 'cloud' && !isCloudEnabled()) return false;
     try {
       const client = new OpenAI({
         apiKey: provider.apiKey,
