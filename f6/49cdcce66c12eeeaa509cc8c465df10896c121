@@ -1,0 +1,123 @@
+options.tsx
+  s_414383406f2e81::t_85313339ec5995 3
+  s_414383406f2e81::t_291009b419aac8 89,100,124,354,520
+  s_414383406f2e81::t_4954ce7938a6ed 4
+core/services/model-service.ts
+  s_414383406f2e81::t_85313339ec5995 4
+  s_414383406f2e81::t_7782cd1ca636e2 5,38
+core/services/sync-core.ts
+  s_414383406f2e81::t_7782cd1ca636e2 2-3,66,83,103,134,173
+core/i18n/locales/fr.ts
+  s_414383406f2e81::t_291009b419aac8 452
+core/premium-api-v2.ts
+  s_414383406f2e81::t_7782cd1ca636e2 18,103,145
+  s_414383406f2e81::t_85313339ec5995 5,7
+core/i18n/locales/de.ts
+  s_414383406f2e81::t_85313339ec5995 449-450
+core/config/llm-config.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 18
+core/services/model-options.ts
+  s_414383406f2e81::t_7782cd1ca636e2 1,53
+  s_414383406f2e81::t_85313339ec5995 20,32-34,45-48
+background.ts
+  s_414383406f2e81::t_85313339ec5995 2
+  s_414383406f2e81::t_291009b419aac8 105-106,140-141,199
+  s_414383406f2e81::t_dddf68ff6b90fb 200
+components/options/SubscriptionPage.tsx
+  s_414383406f2e81::t_291009b419aac8 14
+  s_414383406f2e81::t_85313339ec5995 8
+core/services/local-mode.test.ts
+  s_414383406f2e81::t_be9f82b5fcd521 1-14,18-22,26-78,92,96-118
+  s_414383406f2e81::t_85313339ec5995 15-17,23-25,79-91,93-95
+core/i18n/locales/es.ts
+  s_414383406f2e81::t_85313339ec5995 449-450
+core/i18n/types.ts
+  s_414383406f2e81::t_291009b419aac8 435
+core/storage/secure-storage.ts
+  s_414383406f2e81::t_85313339ec5995 1,8,361-363,460
+  s_414383406f2e81::t_b12b8c98bd042f 213,228,289,312,315,318,425,447,487
+core/services/llm-service.ts
+  s_414383406f2e81::t_7782cd1ca636e2 5,43,55-56,74,274
+  s_414383406f2e81::t_85313339ec5995 4
+components/options/Sidebar.tsx
+  s_414383406f2e81::t_291009b419aac8 239,255
+  s_414383406f2e81::t_85313339ec5995 21,240-254
+core/i18n/locales/pt.ts
+  s_414383406f2e81::t_291009b419aac8 445
+core/i18n/locales/ja.ts
+  s_414383406f2e81::t_291009b419aac8 443
+core/config/llm-config.ts
+  s_414383406f2e81::t_7782cd1ca636e2 6,840-841,845
+  s_414383406f2e81::t_85313339ec5995 842-844
+components/options/SubscriptionManagerV3.tsx
+  s_414383406f2e81::t_85313339ec5995 21
+  s_414383406f2e81::t_291009b419aac8 37-40
+components/options/SubscriptionManagerV3.test.tsx
+  s_414383406f2e81::t_b12b8c98bd042f 3,20
+  s_414383406f2e81::t_31221ebee6cfde 24-28
+core/storage/storage-area.ts
+  s_414383406f2e81::t_195008156e2cec 31-37
+  s_414383406f2e81::t_843d355a382d7b 1-30
+core/services/llm-config-state.ts
+  s_414383406f2e81::t_7782cd1ca636e2 1,13
+core/services/llm-service.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 7-8
+core/storage/storage-area.test.ts
+  s_414383406f2e81::t_85313339ec5995 7-12,20-23
+  s_414383406f2e81::t_cf4347ede9cafb 48-62
+  s_414383406f2e81::t_be9f82b5fcd521 1-6,13-19,24-47,63-64
+core/services/subscription-service-v2.ts
+  s_414383406f2e81::t_7782cd1ca636e2 8,59,162,303,318,349
+  s_414383406f2e81::t_85313339ec5995 6
+core/tab-context/session-model.test.ts
+  s_414383406f2e81::t_85313339ec5995 8
+  s_414383406f2e81::t_b12b8c98bd042f 25-26
+core/i18n/locales/zh.ts
+  s_414383406f2e81::t_291009b419aac8 427
+core/storage/migration.ts
+  s_414383406f2e81::t_85313339ec5995 1,9,139
+  s_414383406f2e81::t_b12b8c98bd042f 42,96,115,124
+core/i18n/locales/en.ts
+  s_414383406f2e81::t_85313339ec5995 441-442
+components/shared/SupportLink.test.tsx
+  s_414383406f2e81::t_b12b8c98bd042f 3,8
+core/tab-context/session-model.ts
+  s_414383406f2e81::t_7782cd1ca636e2 1,7
+core/config/cloud-services.ts
+  s_414383406f2e81::t_843d355a382d7b 2,5
+  s_414383406f2e81::t_e041cbedeaa1e2 1,3-4,6-9
+core/services/model-options.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 7,10
+core/config/monetization.ts
+  s_414383406f2e81::t_85313339ec5995 4-5
+  s_414383406f2e81::t_7782cd1ca636e2 1-2
+core/config/monetization.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 1,5
+core/config/feature-gates.ts
+  s_414383406f2e81::t_843d355a382d7b 3
+core/auth/auth-service.ts
+  s_414383406f2e81::t_85313339ec5995 8
+  s_414383406f2e81::t_7782cd1ca636e2 51,99,174,190,219,497
+README.md
+  s_414383406f2e81::t_a283040e493822 115,117-128,131,137-140
+README_CN.md
+  s_414383406f2e81::t_e15519c4b8eba5 115,117-127,130,136-139
+components/options/forms/EnhancedModelSelector.tsx
+  s_414383406f2e81::t_99786db3756fed 4,118-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f649cdcce66c12eeeaa509cc8c465df10896c121",
+  "prompts": {},
+  "sessions": {
+    "s_414383406f2e81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a163db-ca3a-76f3-9a4a-84804e905de4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
