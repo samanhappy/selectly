@@ -1,0 +1,31 @@
+components/shared/SupportLink.tsx
+  s_61228986887d7a::t_21d840c97f541a 17-21
+  s_61228986887d7a::t_5126976b738cfb 22
+.env.production
+  h_18676a549cd52a 12-14
+components/options/Sidebar.tsx
+  s_61228986887d7a::t_5126976b738cfb 258-262,268
+.env.development
+  h_18676a549cd52a 12-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7aa02551c9a244efc56eca15d5605ee7bfb9c22b",
+  "prompts": {},
+  "humans": {
+    "h_18676a549cd52a": {
+      "author": "samanhappy <samanhappy@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_61228986887d7a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a16d25-2f7e-7e42-b1e1-31db2981f2fa",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
