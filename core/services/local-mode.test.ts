@@ -3,14 +3,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { authService } from '../auth/auth-service';
 import { isCloudEnabled } from '../config/cloud-services';
 import { CLOUD_PROVIDER, ConfigManager, DEFAULT_CONFIG } from '../config/llm-config';
+import { isPaidUiEnabled } from '../config/monetization';
 import { callAPI, checkSubscription } from '../premium-api-v2';
+import { isLLMConfigUsable } from './llm-config-state';
 import { LLMService } from './llm-service';
+import { buildModelChoices } from './model-options';
 import { modelService } from './model-service';
 import SubscriptionService from './subscription-service-v2';
 import { SyncCore, type SyncAdapter, type SyncQueueItemBase } from './sync-core';
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
+  completion: vi.fn(async () => ({ choices: [{ message: { content: 'Cloud reply' } }] })),
   listModels: vi.fn(async () => ({ data: [] })),
   getStorage: vi.fn(async () => ({
     authTokenData: { accessToken: 'cached', refreshToken: 'cached', expiresAt: 1 },
@@ -20,6 +24,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('openai', () => ({
   default: class {
     models = { list: mocks.listModels };
+    chat = { completions: { create: mocks.completion } };
     constructor(options: unknown) {
       mocks.createClient(options);
     }
@@ -114,5 +119,29 @@ describe('official cloud disabled', () => {
     expect(ConfigManager.getInstance().getEnabledProviders()).not.toContainEqual(CLOUD_PROVIDER);
     vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true');
     expect(ConfigManager.getInstance().getEnabledProviders()).toContainEqual(CLOUD_PROVIDER);
+  });
+});
+
+describe('official cloud enabled with paid UI hidden', () => {
+  it('keeps cloud models selectable and calls the cloud client with the access token', async () => {
+    vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true');
+    vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'false');
+    vi.spyOn(authService, 'getAccessToken').mockResolvedValue('cloud-token');
+    expect(isPaidUiEnabled()).toBe(false);
+    expect(ConfigManager.getInstance().getEnabledProviders()).toContainEqual(CLOUD_PROVIDER);
+    expect(isLLMConfigUsable(DEFAULT_CONFIG)).toBe(true);
+    expect(buildModelChoices([{ provider: CLOUD_PROVIDER, models: [] }])).toEqual(
+      expect.arrayContaining([expect.objectContaining({ value: 'cloud/default' })])
+    );
+    const llm = new LLMService();
+    await llm.configure(DEFAULT_CONFIG.llm);
+    expect(mocks.createClient).toHaveBeenCalledWith(
+      expect.objectContaining({ apiKey: 'cloud-token', baseURL: CLOUD_PROVIDER.baseURL })
+    );
+    await expect(llm.chat('Hello', 'cloud/default')).resolves.toBe('Cloud reply');
+    expect(mocks.completion).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'default', messages: [{ role: 'user', content: 'Hello' }] }),
+      expect.objectContaining({ timeout: expect.any(Number) })
+    );
   });
 });

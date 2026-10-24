@@ -114,27 +114,29 @@ MIT — [LICENSE](LICENSE)
 
 ### Local mode, payment UI, and support links
 
-Official Selectly services are disabled by default. The extension does not initialize
-cloud authentication, query subscriptions, synchronize data, or offer official cloud
-models. Settings are stored in `chrome.storage.local`; existing settings are copied
-once from Chrome sync storage without overwriting local values or deleting the old copy.
-Collections, highlights, and chat history remain in local IndexedDB.
+Development and production builds enable official Selectly cloud models, authentication,
+subscription checks, and synchronization by default. Cloud model calls still require
+sign-in and remain subject to server-side entitlement and quota checks. Paid entry
+points stay hidden by default; the cloud account entry remains available for sign-in.
+Settings use Chrome sync storage; collections, highlights, and chat history remain
+in local IndexedDB.
 
-AI actions require a model endpoint you configure yourself. For offline inference,
-use a local OpenAI-compatible endpoint; configuring a remote provider will send
-requests to that provider. Empty or saved cloud model selections cannot call the
-official cloud service. The support link opens only when clicked.
+For local-only operation, set `PLASMO_PUBLIC_CLOUD_ENABLED=false`. This disables
+official cloud services and requires a custom model endpoint. Settings then use
+`chrome.storage.local`, with a one-time copy from Chrome sync storage that preserves
+existing local values and leaves the old copy untouched. A local OpenAI-compatible
+endpoint enables offline inference; remote providers still receive requests.
+The support link opens only when clicked.
 
 Public build switches can be set in `.env.development.local` or `.env.production.local`:
 
 ```dotenv
-PLASMO_PUBLIC_CLOUD_ENABLED=false
+PLASMO_PUBLIC_CLOUD_ENABLED=true
 PLASMO_PUBLIC_PAID_UI_ENABLED=false
 PLASMO_PUBLIC_SUPPORT_ENABLED=true
 PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
 ```
 
-Cloud features require explicit `PLASMO_PUBLIC_CLOUD_ENABLED=true`; paid entry points
-also require `PLASMO_PUBLIC_PAID_UI_ENABLED=true`. Donation visibility and its HTTPS
+Paid entry points additionally require `PLASMO_PUBLIC_PAID_UI_ENABLED=true`. Donation visibility and its HTTPS
 URL are independent. Restart development or rebuild after changing these variables.
 UI switches do not grant subscriptions or bypass server quotas.
