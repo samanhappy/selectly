@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import type { TabChatSession } from './types';
 import {
   CLOUD_DEFAULT_TAB_MODEL,
   getTabSessionModel,
   normalizeTabSessionModel,
 } from './session-model';
+import type { TabChatSession } from './types';
 
 const createSession = (overrides: Partial<TabChatSession>): TabChatSession => ({
   id: 'session-1',
@@ -22,8 +22,8 @@ const createSession = (overrides: Partial<TabChatSession>): TabChatSession => ({
 });
 
 describe('tab session model', () => {
-  it('normalizes an empty model to the cloud default', () => {
-    expect(normalizeTabSessionModel('')).toBe(CLOUD_DEFAULT_TAB_MODEL);
+  it('leaves an empty model unconfigured in local mode', () => {
+    expect(normalizeTabSessionModel('')).toBe('');
   });
 
   it('prefers the session model over the current default model', () => {

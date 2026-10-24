@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const pt: I18nConfig = {
   common: {
+    cloudAccount: 'Conta na nuvem',
+    cloudAccountDescription: 'Entre para usar os serviços na nuvem e sincronizar seus dados.',
+    supportProject: 'Apoiar este projeto',
     save: 'Salvar',
     cancel: 'Cancelar',
     confirm: 'Confirmar',
@@ -297,6 +300,8 @@ export const pt: I18nConfig = {
     error: 'Processamento falhou',
     noTextSelected: 'Nenhum texto selecionado',
     dialoguePlaceholder: 'Digite sua mensagem...',
+    switchToSidebar: 'Mudar para a barra lateral da página',
+    switchToFloating: 'Mudar para a janela flutuante',
     selectedText: 'Texto Selecionado',
     chatWelcome: 'Pergunte-me qualquer coisa sobre o texto selecionado...',
     pin: 'Fixar',
@@ -437,6 +442,7 @@ export const pt: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled: 'Os serviços oficiais na nuvem estão desativados. Configure seu próprio modelo.',
     systemError: 'Erro do Sistema',
     cannotShowResultWindow: 'Não é possível mostrar a janela de resultados',
     copyFailed: 'Cópia Falhou',

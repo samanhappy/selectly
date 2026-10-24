@@ -4,8 +4,8 @@ import { BUILT_IN_PROVIDERS, DEFAULT_CONFIG } from '../config/llm-config';
 import { isLLMConfigUsable, isLLMModelUsable } from './llm-config-state';
 
 describe('isLLMConfigUsable', () => {
-  it('treats the implicit cloud default model as configured', () => {
-    expect(isLLMConfigUsable(DEFAULT_CONFIG)).toBe(true);
+  it('requires model configuration instead of falling back to official cloud', () => {
+    expect(isLLMConfigUsable(DEFAULT_CONFIG)).toBe(false);
   });
 
   it('requires an enabled API-key-backed provider for non-cloud models', () => {

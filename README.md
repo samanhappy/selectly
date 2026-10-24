@@ -111,3 +111,32 @@ MIT — [LICENSE](LICENSE)
 ## Support
 
 [Issues](https://github.com/samanhappy/selectly/issues) · [Discussions](https://github.com/samanhappy/selectly/discussions)
+
+### Local mode, payment UI, and support links
+
+Development and production builds enable official Selectly cloud models, authentication,
+subscription checks, and synchronization by default. Cloud model calls still require
+sign-in and remain subject to server-side entitlement and quota checks. Paid entry
+points stay hidden by default; the cloud account entry remains available for sign-in.
+Settings use Chrome sync storage; collections, highlights, and chat history remain
+in local IndexedDB.
+
+For local-only operation, set `PLASMO_PUBLIC_CLOUD_ENABLED=false`. This disables
+official cloud services and requires a custom model endpoint. Settings then use
+`chrome.storage.local`, with a one-time copy from Chrome sync storage that preserves
+existing local values and leaves the old copy untouched. A local OpenAI-compatible
+endpoint enables offline inference; remote providers still receive requests.
+The support link opens only when clicked.
+
+Public build switches can be set in `.env.development.local` or `.env.production.local`:
+
+```dotenv
+PLASMO_PUBLIC_CLOUD_ENABLED=true
+PLASMO_PUBLIC_PAID_UI_ENABLED=false
+PLASMO_PUBLIC_SUPPORT_ENABLED=true
+PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
+```
+
+Paid entry points additionally require `PLASMO_PUBLIC_PAID_UI_ENABLED=true`. Donation visibility and its HTTPS
+URL are independent. Restart development or rebuild after changing these variables.
+UI switches do not grant subscriptions or bypass server quotas.

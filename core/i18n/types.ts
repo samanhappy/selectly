@@ -3,6 +3,9 @@ export type SupportedLanguage = 'en' | 'zh' | 'es' | 'pt' | 'ja' | 'de' | 'fr';
 export interface I18nConfig {
   // Common UI text
   common: {
+    cloudAccount: string;
+    cloudAccountDescription: string;
+    supportProject: string;
     save: string;
     cancel: string;
     confirm: string;
@@ -286,6 +289,8 @@ export interface I18nConfig {
     error: string;
     noTextSelected: string;
     dialoguePlaceholder: string;
+    switchToSidebar: string;
+    switchToFloating: string;
     selectedText: string;
     chatWelcome: string;
     pin: string;
@@ -427,6 +432,7 @@ export interface I18nConfig {
 
   // Error messages
   errors: {
+    cloudDisabled: string;
     systemError: string;
     cannotShowResultWindow: string;
     copyFailed: string;

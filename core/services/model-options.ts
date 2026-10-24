@@ -1,3 +1,4 @@
+import { isCloudEnabled } from '../config/cloud-services';
 import type { LLMProvider } from '../config/llm-config';
 import { CLOUD_DEFAULT_TAB_MODEL } from '../tab-context/session-model';
 import type { ModelInfo } from './model-service';
@@ -16,8 +17,7 @@ export const getModelNameFromString = (modelString: string) => {
 
 const createFallbackChoice = (modelString: string, providers: LLMProvider[]): ModelChoice => {
   const providerId = modelString.split('/')[0] || 'cloud';
-  const providerName =
-    providers.find((provider) => provider.id === providerId)?.name || providerId;
+  const providerName = providers.find((provider) => provider.id === providerId)?.name || providerId;
   return {
     value: modelString,
     label: getModelNameFromString(modelString),
@@ -29,6 +29,9 @@ export const buildModelChoices = (
   providerModels: Array<{ provider: LLMProvider; models: ModelInfo[] }>,
   requiredModel?: string
 ): ModelChoice[] => {
+  providerModels = providerModels.filter(
+    ({ provider }) => provider.id !== 'cloud' || isCloudEnabled()
+  );
   const providers = providerModels.map(({ provider }) => provider);
   const choices: ModelChoice[] = providerModels.flatMap(({ provider, models }) =>
     models.map((model) => ({
@@ -39,12 +42,15 @@ export const buildModelChoices = (
     }))
   );
 
-  const required = requiredModel || CLOUD_DEFAULT_TAB_MODEL;
+  const required =
+    requiredModel?.startsWith('cloud/') && !isCloudEnabled()
+      ? ''
+      : requiredModel || (isCloudEnabled() ? CLOUD_DEFAULT_TAB_MODEL : '');
   if (required && !choices.some((choice) => choice.value === required)) {
     choices.unshift(createFallbackChoice(required, providers));
   }
 
-  if (choices.length === 0) {
+  if (choices.length === 0 && isCloudEnabled()) {
     choices.push(createFallbackChoice(CLOUD_DEFAULT_TAB_MODEL, providers));
   }
 

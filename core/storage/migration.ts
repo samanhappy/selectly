@@ -1,3 +1,4 @@
+import { createLogger } from '../../utils/logger';
 /**
  * Storage Migration Utility
  * Handles migration from old unencrypted storage to new encrypted storage
@@ -5,7 +6,7 @@
 
 import { AdvancedCrypto } from './crypto';
 import { secureStorage } from './secure-storage';
-import { createLogger } from '../../utils/logger';
+import { clearStorageArea, getStorageArea } from './storage-area';
 
 const logger = createLogger('StorageMigration');
 
@@ -38,7 +39,7 @@ export class StorageMigration {
       logger.info('Checking for legacy data...');
 
       // Get all data from legacy storage
-      const legacyData = await chrome.storage.sync.get();
+      const legacyData = await (await getStorageArea()).get();
 
       if (!legacyData || Object.keys(legacyData).length === 0) {
         logger.info('No legacy data found');
@@ -92,7 +93,7 @@ export class StorageMigration {
 
         // Remove legacy data after successful migration
         logger.info('Removing legacy data...');
-        await chrome.storage.sync.remove(foundLegacyKeys);
+        await (await getStorageArea()).remove(foundLegacyKeys);
 
         logger.info('Migration completed successfully');
       }
@@ -111,7 +112,7 @@ export class StorageMigration {
         return false;
       }
 
-      const legacyData = await chrome.storage.sync.get(['userConfig', 'userLanguage']);
+      const legacyData = await (await getStorageArea()).get(['userConfig', 'userLanguage']);
       const legacyKeys = Object.keys(legacyData).filter(
         (key) => ['userConfig', 'userLanguage'].includes(key) && legacyData[key] !== undefined
       );
@@ -120,7 +121,7 @@ export class StorageMigration {
       const obfuscatedKeys = ['userConfig', 'userLanguage'].map((key) =>
         AdvancedCrypto.generateObfuscatedKey(key)
       );
-      const encryptedData = await chrome.storage.sync.get(obfuscatedKeys);
+      const encryptedData = await (await getStorageArea()).get(obfuscatedKeys);
       const hasEncryptedData = Object.keys(encryptedData).length > 0;
 
       return legacyKeys.length > 0 && !hasEncryptedData;
@@ -135,7 +136,7 @@ export class StorageMigration {
    */
   static async clearAllStorage(): Promise<void> {
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      await chrome.storage.sync.clear();
+      await clearStorageArea();
       logger.info('All storage cleared');
     }
   }

@@ -14,10 +14,14 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Settings as SettingsIcon,
+  User,
 } from 'lucide-react';
 import React from 'react';
 
+import { isCloudEnabled } from '../../core/config/cloud-services';
 import { isDictionaryEnabled } from '../../core/config/feature-gates';
+import { isPaidUiEnabled } from '../../core/config/monetization';
+import { SupportLink } from '../shared/SupportLink';
 import type { SidebarKey } from './constants';
 import { openExternal } from './constants';
 
@@ -232,21 +236,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onNavigate('general')}
           />
         </div>
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<Crown className="h-4 w-4" />}
-            label={i18nConfig.popup.tabs.subscription}
-            collapsed={collapsed}
-            active={active === 'subscription'}
-            onClick={() => onNavigate('subscription')}
-          />
-        </div>
+        {isCloudEnabled() && (
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={
+                isPaidUiEnabled() ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />
+              }
+              label={
+                isPaidUiEnabled()
+                  ? i18nConfig.popup.tabs.subscription
+                  : i18nConfig.common.cloudAccount
+              }
+              collapsed={collapsed}
+              active={active === 'subscription'}
+              onClick={() => onNavigate('subscription')}
+            />
+          </div>
+        )}
       </nav>
+
+      {collapsed && (
+        <div className="flex justify-center p-2">
+          <SupportLink label={i18nConfig.common.supportProject} compact />
+        </div>
+      )}
 
       {/* Sidebar Footer (pinned to bottom, hidden when collapsed) */}
       {!collapsed && (
         <div className="p-2 border-t border-slate-200 bg-white">
           <div className="flex items-center justify-center gap-1 px-1">
+            <SupportLink label={i18nConfig.common.supportProject} compact />
             {socialActions.map((a) => (
               <button
                 key={a.label}

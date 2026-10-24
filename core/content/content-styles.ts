@@ -538,7 +538,7 @@ export const contentStyles = `
       height: 40px !important;
     }
 
-    .selectly-streaming-result {
+    .selectly-streaming-result:not([data-display-mode='sidebar']) {
       min-width: 280px !important;
       max-width: calc(100vw - 40px) !important;
       left: 20px !important;

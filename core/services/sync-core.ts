@@ -1,5 +1,6 @@
-import { secureStorage } from '../storage/secure-storage';
 import { createLogger } from '../../utils/logger';
+import { isCloudEnabled } from '../config/cloud-services';
+import { secureStorage } from '../storage/secure-storage';
 
 const logger = createLogger('SyncCore');
 
@@ -62,6 +63,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   ) {}
 
   async initialize(): Promise<void> {
+    if (!isCloudEnabled()) return;
     if (this.initialized) return;
 
     const stored = await secureStorage.get(this.adapter.syncStateKey);
@@ -78,6 +80,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   }
 
   startPeriodicSync(): void {
+    if (!isCloudEnabled()) return;
     if (this.syncInterval) return;
 
     logger.info(`[${this.adapter.name}] Starting periodic sync every`, this.intervalMs, 'ms');
@@ -97,6 +100,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   }
 
   async sync(): Promise<void> {
+    if (!isCloudEnabled()) return;
     const isEnabled = await this.adapter.isSyncEnabled();
     if (!isEnabled) return;
 
@@ -127,6 +131,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   }
 
   async fullSync(): Promise<void> {
+    if (!isCloudEnabled()) return;
     const isEnabled = await this.adapter.isSyncEnabled();
     if (!isEnabled) return;
 
@@ -165,6 +170,7 @@ export class SyncCore<TItem, TQueueItem extends SyncQueueItemBase> {
   }
 
   async queueForSync(itemId: string, operation: SyncOperation): Promise<void> {
+    if (!isCloudEnabled()) return;
     await this.adapter.enqueue(itemId, operation);
     logger.debug(`[${this.adapter.name}] Queued ${operation} for item: ${itemId}`);
   }

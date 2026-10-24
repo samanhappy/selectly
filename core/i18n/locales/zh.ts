@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const zh: I18nConfig = {
   common: {
+    cloudAccount: '云端账户',
+    cloudAccountDescription: '登录以使用云端服务和同步数据。',
+    supportProject: '赞赏支持',
     save: '保存',
     cancel: '取消',
     confirm: '确认',
@@ -281,6 +284,8 @@ export const zh: I18nConfig = {
     error: '处理失败',
     noTextSelected: '未选择文本',
     dialoguePlaceholder: '输入你的消息...',
+    switchToSidebar: '切换到网页侧栏',
+    switchToFloating: '切换到页内浮窗',
     selectedText: '选中的文本',
     chatWelcome: '对选中的文本进行提问...',
     pin: '固定',
@@ -419,6 +424,7 @@ export const zh: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled: '官方云端服务已关闭，请配置自己的模型接口以使用 AI 功能。',
     systemError: '系统错误',
     cannotShowResultWindow: '无法显示结果窗口',
     copyFailed: '复制失败',

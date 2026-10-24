@@ -18,6 +18,7 @@ import {
 import { getEffectiveThinkingMode } from '../config/thinking-mode';
 import { i18n } from '../i18n';
 import { ActionService } from '../services/action-service';
+import { InlineDialogue, type DialogueMessage } from '../services/inline-dialogue';
 import { LLMService, processText } from '../services/llm-service';
 import { secureStorage } from '../storage/secure-storage';
 import { captureTabContextSnapshot } from '../tab-context/extractor';
@@ -32,6 +33,7 @@ import { findShortcutAction } from './function-shortcuts';
 import { observeKeyboardSelection, type KeyboardSelection } from './keyboard-selection';
 import { streamingStyles } from './streaming-styles';
 import { getTextControlSelectedText } from './text-control-selection';
+import { observeTouchSelection } from './touch-selection';
 
 /**
  * Main content script logic
@@ -802,6 +804,7 @@ export class Selectly {
     document.addEventListener('touchend', this.handleTextSelection.bind(this));
     document.addEventListener('scroll', this.handleFloatingScroll, true);
     observeKeyboardSelection(document, this.handleKeyboardSelection);
+    observeTouchSelection(document, this.handleTextSelection.bind(this));
     document.addEventListener('keydown', this.handleFunctionShortcut, true);
 
     document.addEventListener('keydown', (e) => {
@@ -2212,15 +2215,14 @@ export class Selectly {
     );
   }
 
-  showDialogueResult(title: string, selectedText: string, config: any) {
+  showDialogueResult(title: string, selectedText: string, config: FunctionConfig) {
     this.hideStreamingResult();
     const canPaste = this.currentTarget ? this.isEditableElement(this.currentTarget) : false;
     const shouldAutoFocus = !(this.currentTarget && canPaste);
 
     const { root, setPinned, cleanup } = this.mountStreamingHost('chat');
 
-    const conversationContext: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> =
-      [];
+    const conversationContext: DialogueMessage[] = [];
     if (config?.prompt) {
       const variables: Record<string, string> = {};
       conversationContext.push({
@@ -2228,6 +2230,24 @@ export class Selectly {
         content: processText(selectedText, config.prompt, variables),
       });
     }
+
+    conversationContext.push({ role: 'user', content: selectedText });
+    const effectiveThinkingMode = getEffectiveThinkingMode({
+      functionKey: 'chat',
+      isBuiltIn: config.isBuiltIn ?? true,
+      functionModel: config.model || 'default',
+      functionModelSettings: config.modelSettings,
+      defaultModelSettings: this.configManager.getConfig().llm.defaultModelSettings,
+    });
+    const dialogue = new InlineDialogue(conversationContext, (messages, onChunk) =>
+      this.llmService.chatStream(
+        messages,
+        onChunk,
+        config.model,
+        effectiveThinkingMode.mode,
+        effectiveThinkingMode.allowFallback
+      )
+    );
 
     root.render(
       <StreamingResult
@@ -2239,9 +2259,7 @@ export class Selectly {
         isDialogue={true}
         selectedText={selectedText}
         autoFocusInput={shouldAutoFocus}
-        onSendMessage={(message: string) => {
-          this.handleDialogueMessage(message, config, conversationContext, selectedText);
-        }}
+        onSendMessage={(message, onChunk) => dialogue.send(message, onChunk)}
         onPaste={
           canPaste
             ? (content: string) => {
@@ -2254,59 +2272,6 @@ export class Selectly {
         onClose={() => cleanup(true)}
       />
     );
-  }
-
-  private async handleDialogueMessage(
-    message: string,
-    config: any,
-    conversationContext: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
-    selectedText?: string
-  ) {
-    const llmService = LLMService.getInstance();
-
-    conversationContext.push({ role: 'user', content: message });
-
-    const appendFn = (window as any).appendToConversation;
-    if (appendFn) {
-      appendFn('user', message);
-    }
-
-    try {
-      let assistantResponse = '';
-      const effectiveThinkingMode = getEffectiveThinkingMode({
-        functionKey: 'chat',
-        isBuiltIn: config.isBuiltIn ?? true,
-        functionModel: config.model || 'default',
-        functionModelSettings: config.modelSettings,
-        defaultModelSettings: this.configManager.getConfig().llm.defaultModelSettings,
-      });
-
-      await llmService.chatStream(
-        conversationContext.map((m) => ({ role: m.role, content: m.content })),
-        (chunk: string, model: string) => {
-          assistantResponse += chunk;
-          const updateFn = (window as any).updateStreamingResult;
-          if (updateFn) {
-            updateFn(chunk, model, false, false, false);
-          }
-        },
-        config.model,
-        effectiveThinkingMode.mode,
-        effectiveThinkingMode.allowFallback
-      );
-
-      conversationContext.push({ role: 'assistant', content: assistantResponse });
-
-      const updateFn = (window as any).updateStreamingResult;
-      if (updateFn) {
-        updateFn('', '', true, false, false);
-      }
-    } catch (error: any) {
-      const updateFn = (window as any).updateStreamingResult;
-      if (updateFn) {
-        updateFn(error.message || 'Unknown error', '', true, true, false);
-      }
-    }
   }
 
   showErrorResult(title: string, message: string, actionKey?: string) {
@@ -2441,6 +2406,7 @@ export class Selectly {
         iframeDoc.addEventListener('touchend', boundHandler);
         iframeDoc.addEventListener('scroll', this.handleFloatingScroll, true);
         observeKeyboardSelection(iframeDoc, this.handleKeyboardSelection);
+        observeTouchSelection(iframeDoc, boundHandler);
 
         this.logger.debug('Attached listeners to iframe:', iframe.src || 'about:blank');
         return true;

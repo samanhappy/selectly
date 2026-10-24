@@ -1,10 +1,11 @@
+import { createLogger } from '../../utils/logger';
 /**
  * Secure Storage Manager
  * Provides encryption and obfuscation for Chrome storage data
  */
 
 import { AdvancedCrypto } from './crypto';
-import { createLogger } from '../../utils/logger';
+import { clearStorageArea, getStorageArea, getStorageNamespace } from './storage-area';
 
 const logger = createLogger('SecureStorage');
 
@@ -209,7 +210,7 @@ class SecureStorageManager {
       return;
     }
 
-    const existing = await chrome.storage.sync.get([obfuscatedKey]);
+    const existing = await (await getStorageArea()).get([obfuscatedKey]);
     const existingValue = existing[obfuscatedKey];
 
     if (!existingValue || !this.isEncryptedData(existingValue)) {
@@ -224,7 +225,7 @@ class SecureStorageManager {
           this.buildChunkKey(obfuscatedKey, i)
         );
         if (chunkKeys.length > 0) {
-          await chrome.storage.sync.remove(chunkKeys);
+          await (await getStorageArea()).remove(chunkKeys);
         }
       }
     } catch (error) {
@@ -285,7 +286,7 @@ class SecureStorageManager {
       }
 
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        await chrome.storage.sync.set(encryptedData);
+        await (await getStorageArea()).set(encryptedData);
       }
     } catch (error) {
       logger.error('Failed to encrypt and store data:', error);
@@ -308,13 +309,13 @@ class SecureStorageManager {
 
       if (typeof keys === 'string') {
         obfuscatedKeys = [this.getObfuscatedKey(keys)];
-        encryptedData = await chrome.storage.sync.get(obfuscatedKeys);
+        encryptedData = await (await getStorageArea()).get(obfuscatedKeys);
       } else if (Array.isArray(keys)) {
         obfuscatedKeys = keys.map((key) => this.getObfuscatedKey(key));
-        encryptedData = await chrome.storage.sync.get(obfuscatedKeys);
+        encryptedData = await (await getStorageArea()).get(obfuscatedKeys);
       } else {
         // Get all data
-        encryptedData = await chrome.storage.sync.get();
+        encryptedData = await (await getStorageArea()).get();
         obfuscatedKeys = Object.keys(encryptedData);
       }
 
@@ -357,7 +358,9 @@ class SecureStorageManager {
           this.buildChunkKey(baseKey, i)
         );
         const chunkSource =
-          typeof keys === 'undefined' ? encryptedData : await chrome.storage.sync.get(chunkKeys);
+          typeof keys === 'undefined'
+            ? encryptedData
+            : await (await getStorageArea()).get(chunkKeys);
 
         let combined = '';
         let failed = false;
@@ -419,7 +422,7 @@ class SecureStorageManager {
         keysToRemove.add(obfuscatedKey);
 
         try {
-          const existing = await chrome.storage.sync.get([obfuscatedKey]);
+          const existing = await (await getStorageArea()).get([obfuscatedKey]);
           const existingValue = existing[obfuscatedKey];
 
           if (existingValue && this.isEncryptedData(existingValue)) {
@@ -441,7 +444,7 @@ class SecureStorageManager {
         }
       }
 
-      await chrome.storage.sync.remove(Array.from(keysToRemove));
+      await (await getStorageArea()).remove(Array.from(keysToRemove));
     } catch (error) {
       logger.error('Failed to remove data:', error);
       throw error;
@@ -454,7 +457,7 @@ class SecureStorageManager {
   async clear(): Promise<void> {
     try {
       if (typeof chrome !== 'undefined' && chrome.storage) {
-        await chrome.storage.sync.clear();
+        await clearStorageArea();
       }
     } catch (error) {
       logger.error('Failed to clear storage:', error);
@@ -481,7 +484,7 @@ class SecureStorageManager {
   onChanged(callback: (changes: Record<string, { oldValue?: any; newValue?: any }>) => void): void {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.onChanged.addListener(async (changes, namespace) => {
-        if (namespace === 'sync') {
+        if (namespace === getStorageNamespace()) {
           const realChanges: Record<string, { oldValue?: any; newValue?: any }> = {};
 
           for (const [obfuscatedKey, change] of Object.entries(changes)) {
