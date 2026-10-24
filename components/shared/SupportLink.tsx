@@ -14,7 +14,12 @@ export const SupportLink = ({ label, compact = false }: { label: string; compact
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white p-2 text-sm text-slate-700 hover:bg-slate-50"
+      style={
+        compact
+          ? { width: 28, height: 28, padding: 0, boxSizing: 'border-box', flexShrink: 0 }
+          : undefined
+      }
+      className={`inline-flex items-center justify-center rounded-md border border-slate-200 bg-white text-sm text-slate-700 hover:bg-slate-50 ${compact ? 'h-7 w-7' : 'gap-2 p-2'}`}
     >
       <Heart size={16} aria-hidden="true" />
       {!compact && label}
