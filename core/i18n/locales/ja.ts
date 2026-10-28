@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const ja: I18nConfig = {
   common: {
+    cloudAccount: 'クラウドアカウント',
+    cloudAccountDescription: 'ログインしてクラウドサービスとデータ同期を利用します。',
+    supportProject: 'プロジェクトを支援',
     save: '保存',
     cancel: 'キャンセル',
     confirm: '確認',
@@ -294,6 +297,8 @@ export const ja: I18nConfig = {
     error: '処理に失敗しました',
     noTextSelected: 'テキストが選択されていません',
     dialoguePlaceholder: 'メッセージを入力してください...',
+    switchToSidebar: 'ページのサイドバーに切り替え',
+    switchToFloating: 'フローティングウィンドウに切り替え',
     selectedText: '選択されたテキスト',
     chatWelcome: '選択されたテキストについて何でもお尋ねください...',
     pin: 'ピン留め',
@@ -435,6 +440,7 @@ export const ja: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled: '公式クラウドは無効です。AI 機能には独自のモデル接続先を設定してください。',
     systemError: 'システムエラー',
     cannotShowResultWindow: '結果ウィンドウを表示できません',
     copyFailed: 'コピーに失敗しました',

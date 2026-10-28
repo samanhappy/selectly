@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import { isCloudEnabled } from './core/config/cloud-services';
+
 import './style.css';
 
 import { Bot, Plus, Settings as SettingsIcon } from 'lucide-react';
@@ -84,6 +86,7 @@ const OptionsPage: React.FC = () => {
   const subscriptionService = SubscriptionServiceV2.getInstance();
 
   const triggerSyncAll = () => {
+    if (!isCloudEnabled()) return;
     setTimeout(() => {
       collectService.sync().catch(() => {});
       highlightService.sync().catch(() => {});
@@ -94,6 +97,7 @@ const OptionsPage: React.FC = () => {
   };
 
   const triggerSyncForKey = (key: SidebarKey) => {
+    if (!isCloudEnabled()) return;
     setTimeout(() => {
       if (key === 'collected') {
         collectService.sync().catch(() => {});
@@ -117,6 +121,7 @@ const OptionsPage: React.FC = () => {
     };
     init();
 
+    if (!isCloudEnabled()) return;
     triggerSyncAll();
 
     subscriptionService.initialize();
@@ -346,7 +351,7 @@ const OptionsPage: React.FC = () => {
   const handleNavigate = (key: SidebarKey) => {
     setActive(key);
     triggerSyncForKey(key);
-    if (key === 'subscription') {
+    if (key === 'subscription' && isCloudEnabled()) {
       subscriptionService.refresh({ force: true, reason: 'tab' });
       getAuthStateFromBackground()
         .then((auth) => setIsAuthenticated(!!auth.isAuthenticated))
@@ -512,7 +517,7 @@ const OptionsPage: React.FC = () => {
                   onOpenDrawer={handleProviderDrawer}
                 />
               )}
-              {active === 'subscription' && <SubscriptionPage />}
+              {active === 'subscription' && isCloudEnabled() && <SubscriptionPage />}
             </div>
           </main>
         </div>

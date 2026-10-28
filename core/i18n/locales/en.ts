@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const en: I18nConfig = {
   common: {
+    cloudAccount: 'Cloud account',
+    cloudAccountDescription: 'Sign in to use cloud services and sync your data.',
+    supportProject: 'Support this project',
     save: 'Save',
     cancel: 'Cancel',
     confirm: 'Confirm',
@@ -293,6 +296,8 @@ export const en: I18nConfig = {
     error: 'Processing failed',
     noTextSelected: 'No text selected',
     dialoguePlaceholder: 'Type your message...',
+    switchToSidebar: 'Switch to page sidebar',
+    switchToFloating: 'Switch to floating window',
     selectedText: 'Selected Text',
     chatWelcome: 'Ask me anything about the selected text...',
     pin: 'Pin',
@@ -433,6 +438,8 @@ export const en: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled:
+      'Official cloud services are disabled. Configure your own model endpoint to use AI actions.',
     systemError: 'System Error',
     cannotShowResultWindow: 'Cannot show result window',
     copyFailed: 'Copy Failed',

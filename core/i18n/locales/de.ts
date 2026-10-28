@@ -2,6 +2,9 @@ import type { I18nConfig } from '../types';
 
 export const de: I18nConfig = {
   common: {
+    cloudAccount: 'Cloud-Konto',
+    cloudAccountDescription: 'Anmelden, um Cloud-Dienste und Datensynchronisierung zu nutzen.',
+    supportProject: 'Projekt unterstützen',
     save: 'Speichern',
     cancel: 'Abbrechen',
     confirm: 'Bestätigen',
@@ -301,6 +304,8 @@ export const de: I18nConfig = {
     error: 'Verarbeitung fehlgeschlagen',
     noTextSelected: 'Kein Text ausgewählt',
     dialoguePlaceholder: 'Geben Sie Ihre Nachricht ein...',
+    switchToSidebar: 'Zur Seitenleiste wechseln',
+    switchToFloating: 'Zum schwebenden Fenster wechseln',
     selectedText: 'Ausgewählter Text',
     chatWelcome: 'Fragen Sie mich alles über den ausgewählten Text...',
     pin: 'Anheften',
@@ -441,6 +446,8 @@ export const de: I18nConfig = {
   },
 
   errors: {
+    cloudDisabled:
+      'Offizielle Cloud-Dienste sind deaktiviert. Konfigurieren Sie einen eigenen Modell-Endpunkt.',
     systemError: 'Systemfehler',
     cannotShowResultWindow: 'Ergebnisfenster kann nicht angezeigt werden',
     copyFailed: 'Kopieren fehlgeschlagen',

@@ -3,6 +3,20 @@
  */
 
 export const streamingStyles = `
+  .sl-chat-display-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
   .selectly-streaming-result pre {
     margin: 12px 0;
     padding: 12px;

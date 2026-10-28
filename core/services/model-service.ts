@@ -1,8 +1,8 @@
 import OpenAI from 'openai';
 
-import { authService } from '~core/auth/auth-service';
-
 import { createLogger } from '../../utils/logger';
+import { authService } from '../auth/auth-service';
+import { isCloudEnabled } from '../config/cloud-services';
 import type { LLMProvider } from '../config/llm-config';
 import { ConfigManager } from '../config/llm-config';
 
@@ -35,6 +35,7 @@ export class ModelService {
    * Load available models from a provider's /models endpoint
    */
   async loadModels(provider: LLMProvider): Promise<ModelInfo[]> {
+    if (provider.id === 'cloud' && !isCloudEnabled()) return [];
     const overrides = this.configManager.getConfig().llm.modelMetadataOverrides || {};
     const overrideKey = JSON.stringify(
       Object.fromEntries(

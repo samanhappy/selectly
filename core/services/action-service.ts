@@ -222,31 +222,12 @@ export class ActionService {
     }
   }
 
-  private async handleChat(selectedText: string, _config: FunctionConfig): Promise<void> {
+  private async handleChat(selectedText: string, config: FunctionConfig): Promise<void> {
     const selectlyInstance = (window as any).selectlyInstance;
-    try {
-      if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
-        throw new Error('Side panel is not available in this browser');
-      }
+    if (!selectlyInstance) return;
 
-      const res = await chrome.runtime.sendMessage({
-        action: 'tabContext:openSidePanel',
-        selectedText,
-      });
-
-      if (!res?.success) {
-        throw new Error(res?.error || 'Failed to open side panel');
-      }
-    } catch (error: any) {
-      logger.error('Failed to open chat side panel:', error);
-      if (selectlyInstance?.showErrorResult) {
-        selectlyInstance.showErrorResult(
-          i18n.t('errors.configError'),
-          error?.message || i18n.t('errors.unknownError'),
-          'chat'
-        );
-      }
-    }
+    const { title } = getFunctionDisplayFields('chat', config, i18n.getConfig());
+    selectlyInstance.showDialogueResult(title, selectedText, config);
   }
 
   private async handleSearch(text: string): Promise<void> {

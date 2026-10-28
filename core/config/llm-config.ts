@@ -3,6 +3,7 @@ import { i18n } from '../i18n';
 import type { I18nConfig, SupportedLanguage } from '../i18n/types';
 import { secureStorage } from '../storage/secure-storage';
 import type { ModelMetadataOverride } from '../tab-context/types';
+import { isCloudEnabled } from './cloud-services';
 import { parseModelString, resolveModelString } from './model-resolution';
 import {
   migrateFunctionModelSettings,
@@ -836,7 +837,12 @@ export class ConfigManager {
    */
   getEnabledProviders(): LLMProvider[] {
     // add cloud provider into the list header
-    return [CLOUD_PROVIDER, ...Object.values(this.config.llm.providers).filter((p) => p.enabled)];
+    return [
+      ...(isCloudEnabled() ? [CLOUD_PROVIDER] : []),
+      ...Object.values(this.config.llm.providers).filter(
+        (p) => p.enabled && (p.id !== 'cloud' || isCloudEnabled())
+      ),
+    ];
   }
 
   /**

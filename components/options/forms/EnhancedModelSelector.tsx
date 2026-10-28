@@ -1,6 +1,7 @@
 import { ChevronDown, Loader2, Search } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { isCloudEnabled } from '../../../core/config/feature-gates';
 import type { LLMProvider, ModelCallSettings } from '../../../core/config/llm-config';
 import type { ModelInfo } from '../../../core/services/model-service';
 import { modelService } from '../../../core/services/model-service';
@@ -114,6 +115,9 @@ export const EnhancedModelSelector: React.FC<EnhancedModelSelectorProps> = ({
   }, [providerModels, selectedProvider, searchQuery]);
 
   const getDisplayText = (modelString: string): string => {
+    if (!modelString || (!isCloudEnabled() && modelString.startsWith('cloud/'))) {
+      return i18n.popup.models.noAvailableModels;
+    }
     if (modelString === 'default') {
       return `${i18n.popup.models.default}`;
     }
