@@ -1,0 +1,74 @@
+components/options/OptionsHeader.tsx
+  s_4114c5ab5d2aed::t_db0214ef5bc494 40-41
+core/i18n/locales/es.ts
+  s_4114c5ab5d2aed::t_1c87f89c494d21 8
+  s_4114c5ab5d2aed::t_db0214ef5bc494 9-10
+scripts/mobile/verify-ui.cjs
+  s_4114c5ab5d2aed::t_2bfa675061a5ad 72-75
+  s_4114c5ab5d2aed::t_ca5511e0591df2 67
+  s_4114c5ab5d2aed::t_3932eac9426904 81
+  s_4114c5ab5d2aed::t_543fd9da0f9c4a 68-71
+  s_4114c5ab5d2aed::t_5c095d075632e0 76-80
+  s_4114c5ab5d2aed::t_1f48776c17a8f1 82-84
+  s_4114c5ab5d2aed::t_ccbab8f564deb9 85-100
+components/shared/SupportLink.tsx
+  s_4114c5ab5d2aed::t_b944b7eba864cb 17
+  s_4114c5ab5d2aed::t_2bfa675061a5ad 6,12
+  s_4114c5ab5d2aed::t_8fa6e206f72572 20
+core/i18n/locales/pt.ts
+  s_4114c5ab5d2aed::t_1c87f89c494d21 7
+  s_4114c5ab5d2aed::t_db0214ef5bc494 8-9
+options.tsx
+  s_4114c5ab5d2aed::t_db0214ef5bc494 26,528
+components/options/SupportPage.tsx
+  s_4114c5ab5d2aed::t_b944b7eba864cb 8,14-15,17-20,25,32,35-36
+  s_4114c5ab5d2aed::t_e7dec0175a486f 1-7,9-13,22,24,26-31,33-34,37-38
+  s_4114c5ab5d2aed::t_2bfa675061a5ad 16,21,23
+core/config/monetization.ts
+  s_4114c5ab5d2aed::t_db0214ef5bc494 10-11
+core/i18n/locales/zh.ts
+  s_4114c5ab5d2aed::t_1c87f89c494d21 7
+  s_4114c5ab5d2aed::t_db0214ef5bc494 8-9
+core/config/monetization.test.ts
+  s_4114c5ab5d2aed::t_db0214ef5bc494 21
+core/i18n/locales/fr.ts
+  s_4114c5ab5d2aed::t_1c87f89c494d21 8
+  s_4114c5ab5d2aed::t_db0214ef5bc494 9-10
+core/i18n/locales/de.ts
+  s_4114c5ab5d2aed::t_1c87f89c494d21 7
+  s_4114c5ab5d2aed::t_db0214ef5bc494 8-9
+components/options/constants.ts
+  s_4114c5ab5d2aed::t_db0214ef5bc494 37-38
+core/i18n/locales/en.ts
+  s_4114c5ab5d2aed::t_db0214ef5bc494 8-9
+  s_4114c5ab5d2aed::t_ca5511e0591df2 7
+core/i18n/locales/ja.ts
+  s_4114c5ab5d2aed::t_1c87f89c494d21 7
+  s_4114c5ab5d2aed::t_db0214ef5bc494 8-9
+core/i18n/types.ts
+  s_4114c5ab5d2aed::t_db0214ef5bc494 9-10
+components/options/Sidebar.tsx
+  s_4114c5ab5d2aed::t_db0214ef5bc494 13,24,265-275
+README.md
+  s_4114c5ab5d2aed::t_e148fdcec33684 134
+README_CN.md
+  s_4114c5ab5d2aed::t_123e3711d48df2 132
+components/shared/SupportLink.test.tsx
+  s_4114c5ab5d2aed::t_51e07abcb5c6fb 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "dd01f6ad402cb0be2ef6b8fe3431b6296058e144",
+  "prompts": {},
+  "sessions": {
+    "s_4114c5ab5d2aed": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1855c-92ee-7312-b769-8fa00b502bed",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
