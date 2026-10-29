@@ -1,0 +1,22 @@
+scripts/mobile/verify-ui.cjs
+  s_4114c5ab5d2aed::t_3edb68385a1488 49,53-63
+  s_4114c5ab5d2aed::t_b6b89b0c0e5b43 50-52
+components/options/Sidebar.tsx
+  s_4114c5ab5d2aed::t_d3868568e34c62 170,178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "33c27a33619bebda5748850e71d39572b587cc36",
+  "prompts": {},
+  "sessions": {
+    "s_4114c5ab5d2aed": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1855c-92ee-7312-b769-8fa00b502bed",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
