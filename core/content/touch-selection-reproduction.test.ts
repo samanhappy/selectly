@@ -74,18 +74,29 @@ describe('touch selection timing regression', () => {
     cleanup();
   });
 
-  it('handles a held selection and its release only once', async () => {
+  it('shows a stable held selection and does not repeat it on release', async () => {
     const { instance, emit, select, cleanup } = setup();
     emit('touchstart');
     select('Held selection');
     emit('selectionchange');
     await vi.advanceTimersByTimeAsync(500);
-    expect(instance.showSelectionButtons).not.toHaveBeenCalled();
+    expect(instance.showSelectionButtons).toHaveBeenCalledOnce();
     emit('touchend');
     await vi.advanceTimersByTimeAsync(100);
     expect(instance.showSelectionButtons).toHaveBeenCalledOnce();
     emit('selectionchange');
     await vi.advanceTimersByTimeAsync(500);
+    expect(instance.showSelectionButtons).toHaveBeenCalledOnce();
+    cleanup();
+  });
+
+  it('shows a native selection after touchcancel without another gesture', async () => {
+    const { instance, emit, select, cleanup } = setup();
+    emit('touchstart');
+    emit('touchcancel');
+    select('Native Android selection');
+    emit('selectionchange');
+    await vi.advanceTimersByTimeAsync(100);
     expect(instance.showSelectionButtons).toHaveBeenCalledOnce();
     cleanup();
   });

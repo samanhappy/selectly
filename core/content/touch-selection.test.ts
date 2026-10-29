@@ -34,17 +34,18 @@ describe('observeTouchSelection', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
-  it('waits for release and processes an unchanged touch selection once', () => {
+  it('processes a stable native selection without waiting for touchend', () => {
     const { emit, callback } = setup();
     emit('touchstart');
     emit('selectionchange');
-    vi.advanceTimersByTime(500);
+    vi.advanceTimersByTime(99);
     expect(callback).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(callback).toHaveBeenCalledOnce();
     const end = { type: 'touchend' };
     emit('touchend', end);
     vi.advanceTimersByTime(100);
     expect(callback).toHaveBeenCalledOnce();
-    expect(callback).toHaveBeenCalledWith(end);
     emit('selectionchange');
     vi.advanceTimersByTime(500);
     expect(callback).toHaveBeenCalledOnce();
@@ -90,18 +91,41 @@ describe('observeTouchSelection', () => {
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
-  it.each(['mousedown', 'keydown', 'touchcancel'])(
-    'stops handling selection updates after %s',
-    (type) => {
+  it.each(['mousedown', 'keydown'])('stops handling selection updates after %s', (type) => {
+    const { emit, callback } = setup();
+    emit('touchstart');
+    emit('selectionchange');
+    emit(type);
+    emit('selectionchange');
+    vi.runAllTimers();
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    'preserves native selection after touchcancel (selected before: %s)',
+    (before) => {
       const { emit, callback } = setup();
       emit('touchstart');
+      if (before) emit('selectionchange');
+      emit('touchcancel');
+      if (!before) emit('selectionchange');
+      vi.advanceTimersByTime(100);
+      expect(callback).toHaveBeenCalledOnce();
       emit('selectionchange');
-      emit(type);
-      emit('selectionchange');
-      vi.runAllTimers();
-      expect(callback).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(100);
+      expect(callback).toHaveBeenCalledOnce();
     }
   );
+
+  it('ignores touch-generated mousedown while waiting for a native selection', () => {
+    const { emit, callback } = setup();
+    emit('touchstart');
+    emit('touchend');
+    emit('mousedown', { sourceCapabilities: { firesTouchEvents: true } });
+    emit('selectionchange');
+    vi.advanceTimersByTime(100);
+    expect(callback).toHaveBeenCalledOnce();
+  });
 
   it('cancels pending updates and removes all listeners on cleanup', () => {
     const { emit, callback, cleanup, source } = setup();
