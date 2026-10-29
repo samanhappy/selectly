@@ -7,3 +7,10 @@ export { isCloudEnabled };
 export const assertCloudEnabled = () => {
   if (!isCloudEnabled()) throw new Error(i18n.t('errors.cloudDisabled'));
 };
+
+// Official models remain available anonymously; account services are retired.
+export const isCloudAccountEnabled = () => false;
+
+export const assertCloudAccountEnabled = () => {
+  throw new Error('Cloud account services are disabled');
+};

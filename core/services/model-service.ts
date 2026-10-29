@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 
 import { createLogger } from '../../utils/logger';
-import { authService } from '../auth/auth-service';
 import { isCloudEnabled } from '../config/cloud-services';
 import type { LLMProvider } from '../config/llm-config';
 import { ConfigManager } from '../config/llm-config';
@@ -51,14 +50,12 @@ export class ModelService {
       return this.modelCache.get(cacheKey)!;
     }
 
-    let apiKey = provider.apiKey;
-    if (provider.id === 'cloud') {
-      apiKey = await authService.getAccessToken();
-    }
+    const apiKey = provider.id === 'cloud' ? '' : provider.apiKey;
 
     try {
       const client = new OpenAI({
         apiKey: apiKey,
+        ...(provider.id === 'cloud' ? { defaultHeaders: { Authorization: null } } : {}),
         baseURL: provider.baseURL,
         dangerouslyAllowBrowser: true,
       });

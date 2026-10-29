@@ -10,6 +10,7 @@ import {
   BookOpen,
   Bot,
   Crown,
+  Heart,
   Highlighter,
   PanelLeftClose,
   PanelLeftOpen,
@@ -18,10 +19,9 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { isCloudEnabled } from '../../core/config/cloud-services';
+import { isCloudAccountEnabled } from '../../core/config/cloud-services';
 import { isDictionaryEnabled } from '../../core/config/feature-gates';
-import { isPaidUiEnabled } from '../../core/config/monetization';
-import { SupportLink } from '../shared/SupportLink';
+import { getSupportUrl, isPaidUiEnabled } from '../../core/config/monetization';
 import type { SidebarKey } from './constants';
 import { openExternal } from './constants';
 
@@ -139,155 +139,169 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside
-      className={
-        'border-r border-slate-200 bg-white transition-[width] flex h-full flex-col sticky top-0' +
-        (collapsed ? ' w-14' : ' w-60')
-      }
-    >
-      {/* Sidebar Top: Brand + Collapse */}
-      <div className="border-b border-slate-200 p-2">
-        {collapsed ? (
-          <div className="flex justify-center">
-            <button
-              className="grid h-8 w-8 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-blue-100 transition-colors"
-              onClick={onToggleCollapse}
-              aria-label={t.options?.toggleSidebar || 'Toggle sidebar'}
-            >
-              <PanelLeftOpen className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="relative flex items-center gap-2">
-            <div className="h-8 w-8 overflow-hidden rounded-md border border-blue-500 bg-blue-50 shrink-0">
-              <img src={IconImage} alt="Selectly" className="h-full w-full object-contain" />
-            </div>
-            <div className="leading-tight select-none">
-              <div className="text-sm font-semibold text-slate-900">Selectly</div>
-            </div>
-            <button
-              className="absolute right-0 top-0 grid h-8 w-8 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-blue-100 transition-colors"
-              onClick={onToggleCollapse}
-              aria-label={t.options?.toggleSidebar || 'Toggle sidebar'}
-            >
-              <PanelLeftClose className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Sidebar Nav */}
-      <nav className="flex-1 overflow-auto flex flex-col p-2 gap-1">
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<Blocks className="h-4 w-4" />}
-            label={i18nConfig.popup.functions.title}
-            collapsed={collapsed}
-            active={active === 'functions'}
-            onClick={() => onNavigate('functions')}
-          />
-        </div>
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<Bot className="h-4 w-4" />}
-            label={i18nConfig.popup.tabs.llm}
-            collapsed={collapsed}
-            active={active === 'llm'}
-            onClick={() => onNavigate('llm')}
-          />
-        </div>
-        <div className="border-t border-slate-200" />
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<Highlighter className="h-4 w-4" />}
-            label={t.options?.sidebar.highlights || 'Highlights'}
-            collapsed={collapsed}
-            active={active === 'highlights'}
-            onClick={() => onNavigate('highlights')}
-          />
-        </div>
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<Bookmark className="h-4 w-4" />}
-            label={t.options?.sidebar.collections || 'Collection'}
-            collapsed={collapsed}
-            active={active === 'collected'}
-            onClick={() => onNavigate('collected')}
-          />
-        </div>
-        {isDictionaryEnabled() && (
-          <div className="flex justify-center">
-            <SidebarItem
-              icon={<BookOpen className="h-4 w-4" />}
-              label={(t as any).options?.sidebar?.dictionary || 'Dictionary'}
-              collapsed={collapsed}
-              active={active === 'dictionary'}
-              onClick={() => onNavigate('dictionary')}
-            />
-          </div>
-        )}
-        <div className="border-t border-slate-200" />
-        <div className="flex justify-center">
-          <SidebarItem
-            icon={<SettingsIcon className="h-4 w-4" />}
-            label={i18nConfig.popup.general.title}
-            collapsed={collapsed}
-            active={active === 'general'}
-            onClick={() => onNavigate('general')}
-          />
-        </div>
-        {isCloudEnabled() && (
-          <div className="flex justify-center">
-            <SidebarItem
-              icon={
-                isPaidUiEnabled() ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />
-              }
-              label={
-                isPaidUiEnabled()
-                  ? i18nConfig.popup.tabs.subscription
-                  : i18nConfig.common.cloudAccount
-              }
-              collapsed={collapsed}
-              active={active === 'subscription'}
-              onClick={() => onNavigate('subscription')}
-            />
-          </div>
-        )}
-      </nav>
-
-      {collapsed && (
-        <div className="flex justify-center p-2">
-          <SupportLink label={i18nConfig.common.supportProject} compact />
-        </div>
-      )}
-
-      {/* Sidebar Footer (pinned to bottom, hidden when collapsed) */}
+    <div className="relative w-14 md:w-auto h-full">
       {!collapsed && (
-        <div className="p-2 border-t border-slate-200 bg-white">
-          <div className="flex items-center justify-center gap-1 px-1">
-            <SupportLink label={i18nConfig.common.supportProject} compact />
-            {socialActions.map((a) => (
-              <button
-                key={a.label}
-                onClick={a.onClick}
-                title={a.label}
-                aria-label={a.label}
-                className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
-                style={{ padding: 0 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    a.onClick();
-                  }
-                }}
-              >
-                {a.icon}
-              </button>
-            ))}
-          </div>
-        </div>
+        <button
+          type="button"
+          className="fixed inset-0 z-20 bg-slate-900/30 md:hidden"
+          aria-label={i18nConfig.common.close}
+          onClick={onToggleCollapse}
+        />
       )}
-    </aside>
+      <aside
+        className={
+          'border-r border-slate-200 bg-white transition-[width] flex h-full flex-col absolute md:relative top-0 left-0 z-30' +
+          (collapsed ? ' w-14' : ' w-60')
+        }
+      >
+        {/* Sidebar Top: Brand + Collapse */}
+        <div className="border-b border-slate-200 p-2">
+          {collapsed ? (
+            <div className="flex justify-center">
+              <button
+                className="grid h-11 w-11 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-blue-100 transition-colors"
+                onClick={onToggleCollapse}
+                aria-label={t.options?.toggleSidebar || 'Toggle sidebar'}
+              >
+                <PanelLeftOpen className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 overflow-hidden rounded-md border border-blue-500 bg-blue-50 shrink-0">
+                <img src={IconImage} alt="Selectly" className="h-full w-full object-contain" />
+              </div>
+              <div className="leading-tight select-none">
+                <div className="text-sm font-semibold text-slate-900">Selectly</div>
+              </div>
+              <button
+                className="ml-auto grid h-11 w-11 shrink-0 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-blue-100 transition-colors"
+                onClick={onToggleCollapse}
+                aria-label={t.options?.toggleSidebar || 'Toggle sidebar'}
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar Nav */}
+        <nav className="flex-1 overflow-auto flex flex-col p-2 gap-1">
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={<Blocks className="h-4 w-4" />}
+              label={i18nConfig.popup.functions.title}
+              collapsed={collapsed}
+              active={active === 'functions'}
+              onClick={() => onNavigate('functions')}
+            />
+          </div>
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={<Bot className="h-4 w-4" />}
+              label={i18nConfig.popup.tabs.llm}
+              collapsed={collapsed}
+              active={active === 'llm'}
+              onClick={() => onNavigate('llm')}
+            />
+          </div>
+          <div className="border-t border-slate-200" />
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={<Highlighter className="h-4 w-4" />}
+              label={t.options?.sidebar.highlights || 'Highlights'}
+              collapsed={collapsed}
+              active={active === 'highlights'}
+              onClick={() => onNavigate('highlights')}
+            />
+          </div>
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={<Bookmark className="h-4 w-4" />}
+              label={t.options?.sidebar.collections || 'Collection'}
+              collapsed={collapsed}
+              active={active === 'collected'}
+              onClick={() => onNavigate('collected')}
+            />
+          </div>
+          {isDictionaryEnabled() && (
+            <div className="flex justify-center">
+              <SidebarItem
+                icon={<BookOpen className="h-4 w-4" />}
+                label={(t as any).options?.sidebar?.dictionary || 'Dictionary'}
+                collapsed={collapsed}
+                active={active === 'dictionary'}
+                onClick={() => onNavigate('dictionary')}
+              />
+            </div>
+          )}
+          <div className="border-t border-slate-200" />
+          <div className="flex justify-center">
+            <SidebarItem
+              icon={<SettingsIcon className="h-4 w-4" />}
+              label={i18nConfig.popup.general.title}
+              collapsed={collapsed}
+              active={active === 'general'}
+              onClick={() => onNavigate('general')}
+            />
+          </div>
+          {isCloudAccountEnabled() && (
+            <div className="flex justify-center">
+              <SidebarItem
+                icon={
+                  isPaidUiEnabled() ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />
+                }
+                label={
+                  isPaidUiEnabled()
+                    ? i18nConfig.popup.tabs.subscription
+                    : i18nConfig.common.cloudAccount
+                }
+                collapsed={collapsed}
+                active={active === 'subscription'}
+                onClick={() => onNavigate('subscription')}
+              />
+            </div>
+          )}
+          {getSupportUrl() && (
+            <div className="flex justify-center">
+              <SidebarItem
+                icon={<Heart className="h-4 w-4" />}
+                label={i18nConfig.common.supportProject}
+                collapsed={collapsed}
+                active={active === 'support'}
+                onClick={() => onNavigate('support')}
+              />
+            </div>
+          )}
+        </nav>
+
+        {/* Sidebar Footer (pinned to bottom, hidden when collapsed) */}
+        {!collapsed && (
+          <div className="p-2 border-t border-slate-200 bg-white">
+            <div className="flex items-center justify-center gap-1 px-1">
+              {socialActions.map((a) => (
+                <button
+                  key={a.label}
+                  onClick={a.onClick}
+                  title={a.label}
+                  aria-label={a.label}
+                  className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                  style={{ padding: 0 }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      a.onClick();
+                    }
+                  }}
+                >
+                  {a.icon}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </aside>
+    </div>
   );
 };
 
@@ -310,9 +324,11 @@ function SidebarItem({
     <button
       onClick={onClick}
       disabled={disabled}
+      title={label}
+      aria-label={label}
       className={
-        'mb-1 flex place-items-center items-center gap-3 rounded-md border border-transparent px-2 py-2 text-sm transition-colors disabled:opacity-60 ' +
-        (collapsed ? 'w-8 h-8 ' : 'w-full ') +
+        'mb-1 flex place-items-center items-center gap-3 rounded-md border border-transparent text-sm transition-colors disabled:opacity-60 ' +
+        (collapsed ? 'w-11 h-11 justify-center ' : 'w-full px-2 py-2 ') +
         (active ? 'bg-blue-50 text-blue-700 hover:bg-blue-100' : 'text-slate-700 hover:bg-slate-50')
       }
     >

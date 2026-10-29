@@ -5,7 +5,9 @@ export const fr: I18nConfig = {
     cloudAccount: 'Compte cloud',
     cloudAccountDescription:
       'Connectez-vous pour utiliser les services cloud et synchroniser vos données.',
-    supportProject: 'Soutenir ce projet',
+    supportProject: 'Soutenir',
+    supportThanks: 'Merci de soutenir Selectly.',
+    supportQrCode: 'Scannez pour soutenir',
     save: 'Enregistrer',
     cancel: 'Annuler',
     confirm: 'Confirmer',
@@ -20,6 +22,7 @@ export const fr: I18nConfig = {
     enabled: 'Activé',
     disabled: 'Désactivé',
     copy: 'Copier',
+    paste: 'Coller',
   },
 
   extension: {
@@ -166,6 +169,7 @@ export const fr: I18nConfig = {
         autoCloseResult: 'Fermer Automatiquement le Résultat',
         autoCloseResultHelp:
           "Fermer la fenêtre de résultat automatiquement en cliquant à l'extérieur",
+        moreActions: 'Autres actions',
         collapsed: 'Replié',
         collapsedHelp: "Masquer cette fonction sous le menu ⋯ dans la barre d'outils",
         showInToolbar: "Afficher dans la barre d'actions",

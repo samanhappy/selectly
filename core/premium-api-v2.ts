@@ -4,7 +4,7 @@
 
 import { createLogger } from '../utils/logger';
 import { authService } from './auth/auth-service';
-import { assertCloudEnabled, isCloudEnabled } from './config/cloud-services';
+import { assertCloudAccountEnabled, isCloudAccountEnabled } from './config/cloud-services';
 import { secureStorage } from './storage/secure-storage';
 
 const logger = createLogger('PremiumAPI');
@@ -15,7 +15,7 @@ const logger = createLogger('PremiumAPI');
 type RequestInitWithRetry = RequestInit & { __selectlyRetried?: boolean };
 
 export const callAPI = async (endpoint: string, options: RequestInitWithRetry = {}) => {
-  assertCloudEnabled();
+  assertCloudAccountEnabled();
   // Ensure user is authenticated and get valid access token
   const token = await authService.getAccessToken();
 
@@ -100,7 +100,7 @@ export interface RedeemCodeResponse {
 }
 
 export const redeemSubscriptionCode = async (code: string): Promise<RedeemCodeResponse> => {
-  assertCloudEnabled();
+  assertCloudAccountEnabled();
   if (!code || !code.trim()) {
     throw new Error('Redeem code is required');
   }
@@ -142,7 +142,7 @@ export interface SubscriptionStatus {
  * 现在使用新的认证系统
  */
 export const checkSubscription = async (): Promise<SubscriptionStatus> => {
-  if (!isCloudEnabled()) return { active: false, interval: 'none' };
+  if (!isCloudAccountEnabled()) return { active: false, interval: 'none' };
   // Ensure auth service is initialized
   await authService.initialize();
 

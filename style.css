@@ -206,12 +206,12 @@
 	position: fixed; inset:0; background: rgba(15,23,42,0.28); backdrop-filter: blur(6px); animation: sl-fadeIn .25s ease; z-index: 9998;
 }
 .selectly-popup .sl-drawer {
-	position: fixed; top:0; right:0; width:45%; height:100vh; background: var(--sl-surface);
+	position: fixed; top:0; right:0; width:45%; min-width:min(480px, 100vw); max-width:100vw; height:100dvh; background: var(--sl-surface);
 	box-shadow: -4px 0 18px rgba(0,0,0,.1); animation: sl-slideInRight .28s cubic-bezier(.4,.0,.2,1);
-	display:flex; flex-direction:column; z-index: 9999; max-height: 100vh; overscroll-behavior: contain;
+	display:flex; flex-direction:column; z-index: 9999; max-height: 100dvh; overscroll-behavior: contain;
 }
 .selectly-popup .sl-drawer-header { position:sticky; top:0; background:var(--sl-surface); border-bottom:1px solid var(--sl-border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; }
-.selectly-popup .sl-close-btn { width:32px; height:32px; border:none; background:var(--sl-surface-alt); border-radius:var(--sl-radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s ease; }
+.selectly-popup .sl-close-btn { width:32px; height:32px; flex-shrink:0; border:none; background:var(--sl-surface-alt); border-radius:var(--sl-radius-md); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s ease; }
 .selectly-popup .sl-close-btn:hover { background: var(--sl-surface-muted); }
 .selectly-popup .sl-drawer-body { padding:24px; }
 
@@ -349,3 +349,16 @@
 @keyframes sl-fadeIn { from { opacity:0 } to { opacity:1 } }
 @keyframes sl-slideInRight { from { transform: translateX(100%) } to { transform: translateX(0) } }
 @keyframes sl-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
+/* Compact screens keep forms full width and navigation above the content. */
+@media (max-width: 767px) {
+  .selectly-popup .sl-drawer { width:100vw; }
+  .selectly-popup .sl-drawer-header { padding:12px 16px; gap:12px; }
+  .selectly-popup .sl-card { padding:16px; }
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  .selectly-popup .sl-close-btn { width:44px; height:44px; }
+  .selectly-popup .sl-input { min-height:44px; font-size:16px; }
+  .selectly-popup .sl-btn { min-height:44px; }
+}

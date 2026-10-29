@@ -5,7 +5,9 @@ export const es: I18nConfig = {
     cloudAccount: 'Cuenta en la nube',
     cloudAccountDescription:
       'Inicia sesión para usar los servicios en la nube y sincronizar tus datos.',
-    supportProject: 'Apoyar este proyecto',
+    supportProject: 'Apoyar',
+    supportThanks: 'Gracias por apoyar a Selectly.',
+    supportQrCode: 'Escanea para apoyar',
     save: 'Guardar',
     cancel: 'Cancelar',
     confirm: 'Confirmar',
@@ -20,6 +22,7 @@ export const es: I18nConfig = {
     enabled: 'Habilitado',
     disabled: 'Deshabilitado',
     copy: 'Copiar',
+    paste: 'Pegar',
   },
 
   extension: {
@@ -164,6 +167,7 @@ export const es: I18nConfig = {
         autoCloseButtonsHelp: 'Cerrar botones de acción automáticamente después de la ejecución',
         autoCloseResult: 'Cerrar Resultado Automáticamente',
         autoCloseResultHelp: 'Cerrar la ventana de resultados automáticamente al hacer clic fuera',
+        moreActions: 'Más acciones',
         collapsed: 'Colapsar',
         collapsedHelp: 'Ocultar esta función bajo el menú ⋯ en la barra de herramientas',
         showInToolbar: 'Mostrar en la barra',

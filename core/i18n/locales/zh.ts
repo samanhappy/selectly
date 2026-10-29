@@ -4,7 +4,9 @@ export const zh: I18nConfig = {
   common: {
     cloudAccount: '云端账户',
     cloudAccountDescription: '登录以使用云端服务和同步数据。',
-    supportProject: '赞赏支持',
+    supportProject: '赞赏',
+    supportThanks: '感谢你对 Selectly 的支持。',
+    supportQrCode: '微信赞赏',
     save: '保存',
     cancel: '取消',
     confirm: '确认',
@@ -19,6 +21,7 @@ export const zh: I18nConfig = {
     enabled: '已启用',
     disabled: '已禁用',
     copy: '复制',
+    paste: '粘贴',
   },
 
   extension: {
@@ -156,6 +159,7 @@ export const zh: I18nConfig = {
         autoCloseButtonsHelp: '执行后自动关闭操作按钮',
         autoCloseResult: '自动关闭结果',
         autoCloseResultHelp: '点击外部时自动关闭结果窗口',
+        moreActions: '更多操作',
         collapsed: '折叠',
         collapsedHelp: '隐藏在工具栏的 ⋯ 菜单中',
         showInToolbar: '显示在动作栏',

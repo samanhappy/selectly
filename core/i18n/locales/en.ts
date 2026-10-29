@@ -4,7 +4,9 @@ export const en: I18nConfig = {
   common: {
     cloudAccount: 'Cloud account',
     cloudAccountDescription: 'Sign in to use cloud services and sync your data.',
-    supportProject: 'Support this project',
+    supportProject: 'Sponsor',
+    supportThanks: 'Thank you for supporting Selectly.',
+    supportQrCode: 'Scan to support',
     save: 'Save',
     cancel: 'Cancel',
     confirm: 'Confirm',
@@ -19,6 +21,7 @@ export const en: I18nConfig = {
     enabled: 'Enabled',
     disabled: 'Disabled',
     copy: 'Copy',
+    paste: 'Paste',
   },
 
   extension: {
@@ -160,6 +163,7 @@ export const en: I18nConfig = {
         autoCloseButtonsHelp: 'Close action buttons automatically after execution',
         autoCloseResult: 'Auto Close Result',
         autoCloseResultHelp: 'Close the result window automatically after clicking outside',
+        moreActions: 'More actions',
         collapsed: 'Collapse',
         collapsedHelp: 'Hide this function under the ⋯ menu in the toolbar',
         showInToolbar: 'Show in Toolbar',

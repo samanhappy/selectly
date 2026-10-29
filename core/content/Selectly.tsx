@@ -801,7 +801,6 @@ export class Selectly {
     await this.restoreHighlights();
 
     document.addEventListener('mouseup', this.handleTextSelection.bind(this));
-    document.addEventListener('touchend', this.handleTextSelection.bind(this));
     document.addEventListener('scroll', this.handleFloatingScroll, true);
     observeKeyboardSelection(document, this.handleKeyboardSelection);
     observeTouchSelection(document, this.handleTextSelection.bind(this));
@@ -1569,7 +1568,7 @@ export class Selectly {
       };
     }
 
-    setTimeout(async () => {
+    const processSelection = async () => {
       // Get selection from the appropriate document context
       const target = event.target as HTMLElement;
       const doc = target?.ownerDocument || document;
@@ -1610,7 +1609,10 @@ export class Selectly {
           }
         }
       }
-    }, 100);
+    };
+    // Touch events already pass through the shared observer's debounce.
+    if (event.type.startsWith('touch')) void processSelection();
+    else setTimeout(processSelection, 100);
   }
 
   private handleKeyboardSelection = ({ target, selectedText }: KeyboardSelection) => {
@@ -2403,7 +2405,6 @@ export class Selectly {
 
         const boundHandler = this.handleTextSelection.bind(this);
         iframeDoc.addEventListener('mouseup', boundHandler);
-        iframeDoc.addEventListener('touchend', boundHandler);
         iframeDoc.addEventListener('scroll', this.handleFloatingScroll, true);
         observeKeyboardSelection(iframeDoc, this.handleKeyboardSelection);
         observeTouchSelection(iframeDoc, boundHandler);

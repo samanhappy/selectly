@@ -34,7 +34,8 @@ export type SidebarKey =
   | 'functions'
   | 'general'
   | 'llm'
-  | 'subscription';
+  | 'subscription'
+  | 'support';
 
 /**
  * Helper to open external links safely inside extension context

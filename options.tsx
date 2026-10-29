@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
-import { isCloudEnabled } from './core/config/cloud-services';
+import { useMediaQuery } from './components/shared/useMediaQuery';
+import { isCloudAccountEnabled } from './core/config/cloud-services';
 
 import './style.css';
 
@@ -22,6 +23,7 @@ import { LLMPage } from './components/options/LLMPage';
 import { OptionsHeader } from './components/options/OptionsHeader';
 import { Sidebar } from './components/options/Sidebar';
 import { SubscriptionPage } from './components/options/SubscriptionPage';
+import { SupportPage } from './components/options/SupportPage';
 import { getAuthStateFromBackground } from './core/auth/auth-background-bridge';
 import { isDictionaryEnabled } from './core/config/feature-gates';
 import {
@@ -46,6 +48,8 @@ const logger = createLogger('Options');
 
 const OptionsPage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isNarrowScreen = useMediaQuery('(max-width: 767px)');
+  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [active, setActive] = useState<SidebarKey>('functions');
 
   // Settings state (migrated from popup)
@@ -86,7 +90,7 @@ const OptionsPage: React.FC = () => {
   const subscriptionService = SubscriptionServiceV2.getInstance();
 
   const triggerSyncAll = () => {
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     setTimeout(() => {
       collectService.sync().catch(() => {});
       highlightService.sync().catch(() => {});
@@ -97,7 +101,7 @@ const OptionsPage: React.FC = () => {
   };
 
   const triggerSyncForKey = (key: SidebarKey) => {
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     setTimeout(() => {
       if (key === 'collected') {
         collectService.sync().catch(() => {});
@@ -121,7 +125,7 @@ const OptionsPage: React.FC = () => {
     };
     init();
 
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     triggerSyncAll();
 
     subscriptionService.initialize();
@@ -350,8 +354,9 @@ const OptionsPage: React.FC = () => {
 
   const handleNavigate = (key: SidebarKey) => {
     setActive(key);
+    setMobileNavigationOpen(false);
     triggerSyncForKey(key);
-    if (key === 'subscription' && isCloudEnabled()) {
+    if (key === 'subscription' && isCloudAccountEnabled()) {
       subscriptionService.refresh({ force: true, reason: 'tab' });
       getAuthStateFromBackground()
         .then((auth) => setIsAuthenticated(!!auth.isAuthenticated))
@@ -453,20 +458,23 @@ const OptionsPage: React.FC = () => {
 
   return (
     <UserInfoProvider>
-      <div className="selectly-popup h-screen overflow-hidden bg-slate-50">
+      <div className="selectly-popup h-dvh overflow-hidden bg-slate-50">
         <div className="grid grid-cols-[auto,1fr] gap-0 h-full">
           {/* Sidebar */}
           <Sidebar
-            collapsed={sidebarCollapsed}
+            collapsed={isNarrowScreen ? !mobileNavigationOpen : sidebarCollapsed}
             active={active}
             i18nConfig={i18nConfig}
             t={t}
-            onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+            onToggleCollapse={() => {
+              if (isNarrowScreen) setMobileNavigationOpen((previous) => !previous);
+              else setSidebarCollapsed((previous) => !previous);
+            }}
             onNavigate={handleNavigate}
           />
 
           {/* Main */}
-          <main className="h-full overflow-y-auto flex flex-col">
+          <main className="h-full min-w-0 overflow-y-auto flex flex-col">
             {/* Header */}
             <OptionsHeader
               active={active}
@@ -517,7 +525,8 @@ const OptionsPage: React.FC = () => {
                   onOpenDrawer={handleProviderDrawer}
                 />
               )}
-              {active === 'subscription' && isCloudEnabled() && <SubscriptionPage />}
+              {active === 'support' && <SupportPage labels={i18nConfig.common} />}
+              {active === 'subscription' && isCloudAccountEnabled() && <SubscriptionPage />}
             </div>
           </main>
         </div>
@@ -525,6 +534,7 @@ const OptionsPage: React.FC = () => {
         <Drawer
           open={drawerOpen}
           onClose={closeDrawer}
+          closeLabel={i18nConfig.common.close}
           title={
             drawerType === 'add' ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

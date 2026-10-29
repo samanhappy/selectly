@@ -5,7 +5,7 @@
  */
 
 import { createLogger } from '../../utils/logger';
-import { assertCloudEnabled, isCloudEnabled } from '../config/cloud-services';
+import { assertCloudAccountEnabled, isCloudAccountEnabled } from '../config/cloud-services';
 import { secureStorage } from '../storage/secure-storage';
 
 interface TokenData {
@@ -48,7 +48,7 @@ export class AuthService {
 
   private constructor() {
     this.apiBaseUrl = process.env.PLASMO_PUBLIC_API_URI || 'http://localhost:8472';
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     // Try to load cached state synchronously on construction
     this.loadCachedState();
     // Ensure cross-context synchronization of token data
@@ -96,7 +96,7 @@ export class AuthService {
    * Initialize the auth service
    */
   async initialize(): Promise<void> {
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     if (this.initialized) return;
     if (this.initializing) return this.initializing;
 
@@ -171,7 +171,7 @@ export class AuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    if (!isCloudEnabled()) return false;
+    if (!isCloudAccountEnabled()) return false;
     return this.state.isAuthenticated && this.tokenData !== null;
   }
 
@@ -187,7 +187,7 @@ export class AuthService {
    * Always uses in-memory tokenData, which is kept in sync with storage to avoid stale tokens across contexts.
    */
   async getAccessToken(): Promise<string> {
-    if (!isCloudEnabled()) return '';
+    if (!isCloudAccountEnabled()) return '';
     if (!this.tokenData) {
       return Promise.resolve('');
     }
@@ -216,7 +216,7 @@ export class AuthService {
    * Start OAuth2 authentication flow
    */
   async signIn(): Promise<void> {
-    assertCloudEnabled();
+    assertCloudAccountEnabled();
     this.state.loading = true;
     this.state.error = null;
     this.emit();
@@ -494,7 +494,7 @@ export class AuthService {
    * Revoke token on server
    */
   private async revokeToken(token: string): Promise<void> {
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     try {
       await fetch(`${this.apiBaseUrl}/api/auth/google/revoke`, {
         method: 'POST',

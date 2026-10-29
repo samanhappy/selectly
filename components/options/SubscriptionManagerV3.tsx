@@ -18,7 +18,7 @@ import {
 import React, { useEffect, useState } from 'react';
 
 import { authService } from '../../core/auth/auth-service';
-import { isCloudEnabled } from '../../core/config/cloud-services';
+import { isCloudAccountEnabled } from '../../core/config/cloud-services';
 import { isPaidUiEnabled } from '../../core/config/monetization';
 import { useI18n } from '../../core/i18n/hooks/useI18n';
 import { redeemSubscriptionCode, type RedeemCodeResponse } from '../../core/premium-api-v2';
@@ -35,7 +35,7 @@ interface Props {
 }
 
 export const SubscriptionManagerV3: React.FC<Props> = (props) =>
-  isCloudEnabled() ? <SubscriptionManagerContent {...props} /> : null;
+  isCloudAccountEnabled() ? <SubscriptionManagerContent {...props} /> : null;
 
 const SubscriptionManagerContent: React.FC<Props> = ({ palette }) => {
   const { t } = useI18n();
@@ -571,6 +571,7 @@ const SubscriptionManagerContent: React.FC<Props> = ({ palette }) => {
       {/* Redeem Drawer */}
       <Drawer
         open={paidUiEnabled && redeemOpen}
+        closeLabel={t ? t('common.close') : 'Close'}
         title={t ? t('popup.subscription.redeemTitle') : 'Redeem Membership Code'}
         onClose={() => setRedeemOpen(false)}
       >

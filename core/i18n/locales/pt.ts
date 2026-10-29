@@ -4,7 +4,9 @@ export const pt: I18nConfig = {
   common: {
     cloudAccount: 'Conta na nuvem',
     cloudAccountDescription: 'Entre para usar os serviços na nuvem e sincronizar seus dados.',
-    supportProject: 'Apoiar este projeto',
+    supportProject: 'Apoiar',
+    supportThanks: 'Obrigado por apoiar o Selectly.',
+    supportQrCode: 'Digitalize para apoiar',
     save: 'Salvar',
     cancel: 'Cancelar',
     confirm: 'Confirmar',
@@ -19,6 +21,7 @@ export const pt: I18nConfig = {
     enabled: 'Habilitado',
     disabled: 'Desabilitado',
     copy: 'Copiar',
+    paste: 'Colar',
   },
 
   extension: {
@@ -163,6 +166,7 @@ export const pt: I18nConfig = {
         autoCloseButtonsHelp: 'Fechar botões de ação automaticamente após a execução',
         autoCloseResult: 'Fechar Resultado Automaticamente',
         autoCloseResultHelp: 'Fechar a janela de resultados automaticamente ao clicar fora',
+        moreActions: 'Mais ações',
         collapsed: 'Recolher',
         collapsedHelp: 'Ocultar esta função no menu ⋯ na barra de ferramentas',
         showInToolbar: 'Mostrar na barra',
