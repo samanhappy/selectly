@@ -1,0 +1,26 @@
+core/content/touch-selection-reproduction.test.ts
+  s_a2f5e9ec14a4a2::t_96c6bbc8741c42 77,83,92-100
+  s_a2f5e9ec14a4a2::t_726a3ee1227d7c 101-102
+core/content/touch-selection.ts
+  s_a2f5e9ec14a4a2::t_eadd5346757c2e 1,24-25,50-55,58,60,62-63,68,70,72
+core/content/touch-selection.test.ts
+  s_a2f5e9ec14a4a2::t_c84577f7f1c730 94-106,109-113,115-116
+  s_a2f5e9ec14a4a2::t_96c6bbc8741c42 37,41,43-44,120-128
+  s_a2f5e9ec14a4a2::t_4f8b235e99b670 129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bff56d4a5076d78422075ce8de523e60526da3ff",
+  "prompts": {},
+  "sessions": {
+    "s_a2f5e9ec14a4a2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a187b6-b883-7173-97ec-0945b20851b4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
