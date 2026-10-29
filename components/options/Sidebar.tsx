@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
           ) : (
-            <div className="relative flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="h-8 w-8 overflow-hidden rounded-md border border-blue-500 bg-blue-50 shrink-0">
                 <img src={IconImage} alt="Selectly" className="h-full w-full object-contain" />
               </div>
@@ -175,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="text-sm font-semibold text-slate-900">Selectly</div>
               </div>
               <button
-                className="absolute right-0 top-0 grid h-11 w-11 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-blue-100 transition-colors"
+                className="ml-auto grid h-11 w-11 shrink-0 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-blue-100 transition-colors"
                 onClick={onToggleCollapse}
                 aria-label={t.options?.toggleSidebar || 'Toggle sidebar'}
               >

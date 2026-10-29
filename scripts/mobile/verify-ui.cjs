@@ -46,6 +46,21 @@ const { createServer } = require('node:http');
     };
     const shot = async (name) => p.screenshot({ path: path.join(artifacts, `${name}.png`) });
     await p.goto(`chrome-extension://${id}/options.html`);
+    await p.setViewportSize({ width: 1280, height: 800 });
+    await p.waitForFunction(
+      () => document.querySelector('aside')?.getBoundingClientRect().width === 240
+    );
+    await check('desktop sidebar toggle stays inside its header', async () => {
+      const toggle = p.getByRole('button', { name: 'Toggle sidebar' });
+      const bounds = await toggle.evaluate((el) => ({
+        button: el.getBoundingClientRect().toJSON(),
+        header: el.closest('aside').firstElementChild.getBoundingClientRect().toJSON(),
+      }));
+      assert.ok(bounds.button.top >= bounds.header.top);
+      assert.ok(bounds.button.bottom <= bounds.header.bottom);
+    });
+    await shot('settings-desktop');
+    await p.setViewportSize({ width: 390, height: 844 });
     await p.waitForTimeout(700);
     await check('phone settings reserve at least 300px for main', async () =>
       assert.ok((await p.locator('main').evaluate((el) => el.clientWidth)) >= 300)
