@@ -1,0 +1,92 @@
+components/content/StreamingResult.tsx
+  s_8be9864084ef6d::t_e1e2d12c0fd041 678,1080,1102
+core/content/streaming-styles.ts
+  s_8be9864084ef6d::t_79187b581c6d4b 20-21,23-27,29-34
+  s_8be9864084ef6d::t_606fb4004d2049 22,28
+scripts/mobile/README.md
+  s_8be9864084ef6d::t_606fb4004d2049 1-12
+core/i18n/locales/fr.ts
+  s_8be9864084ef6d::t_e1e2d12c0fd041 170
+  s_8be9864084ef6d::t_606fb4004d2049 23
+scripts/mobile/verify-ui.cjs
+  s_8be9864084ef6d::t_b861e7652a308e 138-141,152
+  s_8be9864084ef6d::t_606fb4004d2049 1-30,32-53,66,77-103,111-137,142,154-176,183-196,212,215-232
+  s_8be9864084ef6d::t_c78f02350abf23 31
+  s_8be9864084ef6d::t_790a5226304fd6 67-74,76,110,182,197-206,213-214
+  s_8be9864084ef6d::t_5bcff879dd41b7 54-65,75,104-109,143-151,153,177-181,207-211
+components/options/OptionsHeader.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 50-51
+components/options/Sidebar.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 142-167,169-183,185,187-189,192-193,195-196,201-202,204-205,208-265,267-268,271-300,323-324
+  s_8be9864084ef6d::t_c78f02350abf23 326-327
+core/i18n/locales/de.ts
+  s_8be9864084ef6d::t_606fb4004d2049 22
+  s_8be9864084ef6d::t_e1e2d12c0fd041 169
+components/options/Drawer.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 7,11,28-29
+core/i18n/locales/en.ts
+  s_8be9864084ef6d::t_e1e2d12c0fd041 164
+  s_8be9864084ef6d::t_606fb4004d2049 22
+style.css
+  s_8be9864084ef6d::t_c01d98e53ab1dd 209,211,214,352-359,361-364
+  s_8be9864084ef6d::t_ec757f12dd2301 360
+options.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 3,50-51,356,460,464,468-471,476,535
+components/content/ActionOverflowMenu.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 83
+  s_8be9864084ef6d::t_79187b581c6d4b 2-41,46,48-82,84-98
+  s_8be9864084ef6d::t_84c84c3d1de445 1,42-45,47
+components/options/SubscriptionManagerV3.tsx
+  s_8be9864084ef6d::t_e1e2d12c0fd041 574
+core/i18n/locales/pt.ts
+  s_8be9864084ef6d::t_606fb4004d2049 22
+  s_8be9864084ef6d::t_e1e2d12c0fd041 167
+core/i18n/locales/zh.ts
+  s_8be9864084ef6d::t_606fb4004d2049 22
+  s_8be9864084ef6d::t_e1e2d12c0fd041 160
+core/i18n/locales/ja.ts
+  s_8be9864084ef6d::t_e1e2d12c0fd041 165
+  s_8be9864084ef6d::t_606fb4004d2049 22
+core/i18n/types.ts
+  s_8be9864084ef6d::t_606fb4004d2049 23
+  s_8be9864084ef6d::t_e1e2d12c0fd041 163
+core/content/content-styles.ts
+  s_8be9864084ef6d::t_b861e7652a308e 530
+  s_8be9864084ef6d::t_79187b581c6d4b 106-107,537-540
+components/content/ActionButtons.tsx
+  s_8be9864084ef6d::t_79187b581c6d4b 17,345-347,374,422
+  s_8be9864084ef6d::t_c01d98e53ab1dd 388-421
+  s_8be9864084ef6d::t_e1e2d12c0fd041 387
+components/options/forms/IconSelector.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 20,45-46
+popup.tsx
+  s_8be9864084ef6d::t_c01d98e53ab1dd 22
+core/i18n/locales/es.ts
+  s_8be9864084ef6d::t_e1e2d12c0fd041 168
+  s_8be9864084ef6d::t_606fb4004d2049 23
+components/shared/useMediaQuery.ts
+  s_8be9864084ef6d::t_c01d98e53ab1dd 1-18
+package.json
+  s_8be9864084ef6d::t_606fb4004d2049 15-16
+  s_8be9864084ef6d::t_46ffc087a702a1 45
+scripts/mobile/fixture.html
+  s_8be9864084ef6d::t_606fb4004d2049 1-50
+pnpm-lock.yaml
+  s_8be9864084ef6d::t_be743896017cfd 84-86,2534-2538,3430-3439,6676-6678,7546-7553
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d2d9a74c9fc8d65f556aa2182ffeb04810cf57be",
+  "prompts": {},
+  "sessions": {
+    "s_8be9864084ef6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18508-5a23-7820-8cf7-87c915134182",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
