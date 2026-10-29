@@ -1,0 +1,215 @@
+core/content/touch-selection.test.ts
+  s_414383406f2e81::t_2e0b43e8ae69a1 1-32,34-39,42-69
+  s_414383406f2e81::t_0228b2aae958d1 33,40-41
+core/i18n/locales/fr.ts
+  s_414383406f2e81::t_8efd24eefc71ce 308-309
+  s_414383406f2e81::t_5e8fd535ac2459 5-8
+  s_414383406f2e81::t_291009b419aac8 452
+core/content/touch-selection-reproduction.test.ts
+  s_414383406f2e81::t_831ea2a23b7c58 10-13
+  s_414383406f2e81::t_7e78258a56b323 14
+  s_414383406f2e81::t_e4bc605224c58a 6-9
+  s_414383406f2e81::t_5e9b22e11c5835 4,20-21,25-31,44-48,56,59
+  s_414383406f2e81::t_a43e21466d1951 1-3,5,15-19,22-24,32-43,49-55,57-58,60-61
+core/i18n/locales/es.ts
+  s_414383406f2e81::t_8efd24eefc71ce 306-307
+  s_414383406f2e81::t_5e8fd535ac2459 5-8
+  s_414383406f2e81::t_85313339ec5995 449-450
+core/services/action-service.test.ts
+  s_414383406f2e81::t_1f449bc8936f74 39,57-62
+core/i18n/locales/ja.ts
+  s_414383406f2e81::t_8efd24eefc71ce 300-301
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+  s_414383406f2e81::t_291009b419aac8 443
+core/i18n/locales/pt.ts
+  s_414383406f2e81::t_8efd24eefc71ce 303-304
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+  s_414383406f2e81::t_291009b419aac8 445
+core/services/inline-dialogue.ts
+  s_414383406f2e81::t_27a137fc7f75f1 1-13,16,18,22-24,27-29,31-33
+  s_414383406f2e81::t_411f3405b73026 14-15,17,19-21,25-26,30
+core/content/content-styles.ts
+  s_414383406f2e81::t_d39c7a124c8272 541
+core/i18n/locales/zh.ts
+  s_414383406f2e81::t_8efd24eefc71ce 287-288
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+  s_414383406f2e81::t_291009b419aac8 427
+core/content/Selectly.tsx
+  s_414383406f2e81::t_5e9b22e11c5835 36,807,2409
+  s_414383406f2e81::t_041b367cf3f5ac 21,2218,2225,2234-2251,2262
+core/services/inline-dialogue.test.ts
+  s_414383406f2e81::t_27a137fc7f75f1 1-44
+components/content/ChatDisplayToggle.tsx
+  s_414383406f2e81::t_d39c7a124c8272 1-28
+components/content/ChatDisplayToggle.test.tsx
+  s_414383406f2e81::t_c08b99a4506bcc 1-23
+core/i18n/types.ts
+  s_414383406f2e81::t_d39c7a124c8272 292-293
+  s_414383406f2e81::t_5e8fd535ac2459 6-8
+  s_414383406f2e81::t_291009b419aac8 435
+components/content/StreamingResult.test.ts
+  s_414383406f2e81::t_69b65d24bc69f5 3,6-11,49
+  s_414383406f2e81::t_9a24bf511a1770 1-2,18,41-48
+  s_414383406f2e81::t_67cd0f4cffe9d5 5,19-40
+core/content/touch-selection.ts
+  s_414383406f2e81::t_5e9b22e11c5835 1-44
+core/i18n/locales/en.ts
+  s_414383406f2e81::t_8efd24eefc71ce 299-300
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+  s_414383406f2e81::t_85313339ec5995 441-442
+core/i18n/locales/de.ts
+  s_414383406f2e81::t_8efd24eefc71ce 307-308
+  s_414383406f2e81::t_5e8fd535ac2459 5-7
+  s_414383406f2e81::t_85313339ec5995 449-450
+core/services/action-service.ts
+  s_414383406f2e81::t_0bbbba8fb6ae42 225,227,229-230
+core/content/streaming-styles.ts
+  s_414383406f2e81::t_d39c7a124c8272 6-19
+components/content/StreamingResult.tsx
+  s_414383406f2e81::t_1ca3c671c72aa9 13,35,218,238,398-399,532-533,535,537,539,544,546-561,563-567,571,868,951-952
+  s_414383406f2e81::t_67cd0f4cffe9d5 16,226-228,291,293,305,318-319,324,328,330,585,602-605,610-620,628,634,646-648,674,697,748-757,796-797,932,1007
+  s_414383406f2e81::t_9a24bf511a1770 3
+  s_414383406f2e81::t_4ae3de59259df6 594-597,763-764
+  s_414383406f2e81::t_680052227d2949 975
+  s_414383406f2e81::t_c4f245f5b0e369 562,758
+  s_8be9864084ef6d::t_3f1d1358e01e89 17,385-394,586-588,591,641
+core/config/monetization.test.ts
+  s_414383406f2e81::t_82db75fe472ba2 2-4,6-40
+  s_414383406f2e81::t_b12b8c98bd042f 1,5
+core/config/monetization.ts
+  s_414383406f2e81::t_82db75fe472ba2 3,6-17
+  s_414383406f2e81::t_85313339ec5995 4-5
+  s_414383406f2e81::t_7782cd1ca636e2 1-2
+components/shared/SupportLink.tsx
+  s_414383406f2e81::t_82db75fe472ba2 1-16,23-28
+components/shared/SupportLink.test.tsx
+  s_414383406f2e81::t_fdb0fdb912c30f 1-2,4-7,9-32
+  s_414383406f2e81::t_b12b8c98bd042f 3,8
+components/options/SubscriptionManagerV3.test.tsx
+  s_414383406f2e81::t_fdb0fdb912c30f 1-2,4-19,21-23,29-33,35-45,47-49
+  s_414383406f2e81::t_ac3b39e733465e 34,46
+  s_414383406f2e81::t_b12b8c98bd042f 3,20
+  s_414383406f2e81::t_31221ebee6cfde 24-28
+README.md
+  s_414383406f2e81::t_a0e06c69e69cbd 114,116,132-133,135-139
+  s_414383406f2e81::t_a283040e493822 115,130-131,141-142
+README_CN.md
+  s_414383406f2e81::t_471a9beea5510a 114,116,128-129,131-135
+  s_414383406f2e81::t_e15519c4b8eba5 115,121,126-127,136-138
+components/options/OptionsHeader.tsx
+  s_414383406f2e81::t_ae5679a8aa81c0 9,41-43
+components/options/Sidebar.tsx
+  s_414383406f2e81::t_0f9642ba262cf0 17,23-24,263
+  s_414383406f2e81::t_291009b419aac8 239,255
+  s_414383406f2e81::t_85313339ec5995 21,240-254
+components/options/SubscriptionManagerV3.tsx
+  s_414383406f2e81::t_f4dac3d3521108 22,42,163,202,297-301,380-383,449-471,478,573
+  s_414383406f2e81::t_85313339ec5995 21
+  s_414383406f2e81::t_291009b419aac8 37-40
+components/shared/PremiumCrown.tsx
+  s_414383406f2e81::t_99a329afc3b056 4-5,33
+options.tsx
+  s_414383406f2e81::t_85313339ec5995 3
+  s_414383406f2e81::t_291009b419aac8 89,100,124,354,520
+  s_414383406f2e81::t_4954ce7938a6ed 4
+core/services/model-service.ts
+  s_414383406f2e81::t_85313339ec5995 4
+  s_414383406f2e81::t_7782cd1ca636e2 5,38
+core/services/sync-core.ts
+  s_414383406f2e81::t_7782cd1ca636e2 2-3,66,83,103,134,173
+core/premium-api-v2.ts
+  s_414383406f2e81::t_7782cd1ca636e2 18,103,145
+  s_414383406f2e81::t_85313339ec5995 5,7
+core/config/llm-config.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 18
+core/services/model-options.ts
+  s_414383406f2e81::t_7782cd1ca636e2 1,53
+  s_414383406f2e81::t_85313339ec5995 20,32-34,45-48
+background.ts
+  s_414383406f2e81::t_85313339ec5995 2
+  s_414383406f2e81::t_291009b419aac8 105-106,140-141,199
+  s_414383406f2e81::t_dddf68ff6b90fb 200
+components/options/SubscriptionPage.tsx
+  s_414383406f2e81::t_291009b419aac8 14
+  s_414383406f2e81::t_85313339ec5995 8
+core/services/local-mode.test.ts
+  s_414383406f2e81::t_be9f82b5fcd521 1-5,7,9,11-16,18,22-26,31-83,97,101-123
+  s_414383406f2e81::t_85313339ec5995 19-21,28-30,84-96,98-100
+core/storage/secure-storage.ts
+  s_414383406f2e81::t_85313339ec5995 1,8,361-363,460
+  s_414383406f2e81::t_b12b8c98bd042f 213,228,289,312,315,318,425,447,487
+core/services/llm-service.ts
+  s_414383406f2e81::t_7782cd1ca636e2 5,43,55-56,74,274
+  s_414383406f2e81::t_85313339ec5995 4
+core/config/llm-config.ts
+  s_414383406f2e81::t_7782cd1ca636e2 6,840-841,845
+  s_414383406f2e81::t_85313339ec5995 842-844
+core/storage/storage-area.ts
+  s_414383406f2e81::t_195008156e2cec 31-37
+  s_414383406f2e81::t_843d355a382d7b 1-30
+core/services/llm-config-state.ts
+  s_414383406f2e81::t_7782cd1ca636e2 1,13
+core/services/llm-service.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 7-8
+core/storage/storage-area.test.ts
+  s_414383406f2e81::t_85313339ec5995 7-12,20-23
+  s_414383406f2e81::t_cf4347ede9cafb 48-62
+  s_414383406f2e81::t_be9f82b5fcd521 1-6,13-19,24-47,63-64
+core/services/subscription-service-v2.ts
+  s_414383406f2e81::t_7782cd1ca636e2 8,59,162,303,318,349
+  s_414383406f2e81::t_85313339ec5995 6
+core/tab-context/session-model.test.ts
+  s_414383406f2e81::t_85313339ec5995 8
+  s_414383406f2e81::t_b12b8c98bd042f 25-26
+core/storage/migration.ts
+  s_414383406f2e81::t_85313339ec5995 1,9,139
+  s_414383406f2e81::t_b12b8c98bd042f 42,96,115,124
+core/tab-context/session-model.ts
+  s_414383406f2e81::t_7782cd1ca636e2 1,7
+core/config/cloud-services.ts
+  s_414383406f2e81::t_843d355a382d7b 2,5
+  s_414383406f2e81::t_e041cbedeaa1e2 1,3,6-9
+core/services/model-options.test.ts
+  s_414383406f2e81::t_b12b8c98bd042f 7,10
+core/config/feature-gates.ts
+  s_414383406f2e81::t_843d355a382d7b 3
+core/auth/auth-service.ts
+  s_414383406f2e81::t_85313339ec5995 8
+  s_414383406f2e81::t_7782cd1ca636e2 51,99,174,190,219,497
+components/options/forms/EnhancedModelSelector.tsx
+  s_414383406f2e81::t_99786db3756fed 4,118-120
+core/content/floating-drag.test.ts
+  s_8be9864084ef6d::t_7960c706a465cc 1-8,14-15,36-46,67-91
+  s_8be9864084ef6d::t_3f1d1358e01e89 9-13,16-35,47-66
+core/content/floating-drag.ts
+  s_8be9864084ef6d::t_7960c706a465cc 1-6,8-15,17-31,38-64
+  s_8be9864084ef6d::t_3f1d1358e01e89 32-37
+  s_8be9864084ef6d::t_56f04deed3d88e 7,16
+components/content/useFloatingDrag.ts
+  s_8be9864084ef6d::t_3f1d1358e01e89 1-3,6-8,10-13
+  s_8be9864084ef6d::t_cfd53c4ac3d6a0 4-5,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1cf020bfe8170164869a97550e413a0f1aa894d0",
+  "prompts": {},
+  "sessions": {
+    "s_414383406f2e81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a163db-ca3a-76f3-9a4a-84804e905de4",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    },
+    "s_8be9864084ef6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18508-5a23-7820-8cf7-87c915134182",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
