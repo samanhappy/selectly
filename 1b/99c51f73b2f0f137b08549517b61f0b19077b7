@@ -1,0 +1,64 @@
+README_CN.md
+  s_4114c5ab5d2aed::t_1dd24b4ec2f26d 117-121,123-125,136
+README.md
+  s_4114c5ab5d2aed::t_1dd24b4ec2f26d 117-127,137-139
+core/services/llm-service.ts
+  s_4114c5ab5d2aed::t_1dd24b4ec2f26d 274-275
+  s_4114c5ab5d2aed::t_89947e8406928c 59-60
+core/services/anonymous-cloud.test.ts
+  s_4114c5ab5d2aed::t_4e4cfb57c136c0 1-48
+components/shared/SupportLink.test.tsx
+  s_4114c5ab5d2aed::t_1dd24b4ec2f26d 26,30
+scripts/mobile/verify-ui.cjs
+  s_4114c5ab5d2aed::t_1dd24b4ec2f26d 62-65
+core/services/local-mode.test.ts
+  s_4114c5ab5d2aed::t_1dd24b4ec2f26d 103-122,132-147,150,160-170
+background.ts
+  s_4114c5ab5d2aed::t_dfa8190857a24f 2,108,143,202
+components/options/Sidebar.tsx
+  s_4114c5ab5d2aed::t_6ec79fd08e19aa 21,248
+components/options/SubscriptionManagerV3.test.tsx
+  s_4114c5ab5d2aed::t_55ad253015261f 29-31
+components/options/SubscriptionManagerV3.tsx
+  s_4114c5ab5d2aed::t_32d80837d74473 21,38
+components/options/SubscriptionPage.tsx
+  s_4114c5ab5d2aed::t_31c90406e92505 8,14
+core/auth/auth-service.ts
+  s_4114c5ab5d2aed::t_955594b5d48907 8,51,99,174,190,219,497
+core/config/cloud-services.ts
+  s_4114c5ab5d2aed::t_b4dc879ab46ee0 10-16
+core/config/monetization.test.ts
+  s_4114c5ab5d2aed::t_79f57b24a4276a 9,13,30
+core/config/monetization.ts
+  s_4114c5ab5d2aed::t_9d8c15205420ad 1,5
+core/premium-api-v2.ts
+  s_4114c5ab5d2aed::t_08cdf48547acfb 7,18,103,145
+core/services/model-service.ts
+  s_4114c5ab5d2aed::t_e2229588a88ffb 53,58
+core/services/subscription-service-v2.ts
+  s_4114c5ab5d2aed::t_abd940f8ce14fc 8,59,162,303,318,349
+core/services/sync-core.ts
+  s_4114c5ab5d2aed::t_270e1e51de86c1 2,66,83,103,134,173
+core/storage/storage-area.test.ts
+  s_4114c5ab5d2aed::t_fb3ce51f087112 113,118-121
+core/storage/storage-area.ts
+  s_4114c5ab5d2aed::t_9661f3b8b98f17 2,11,41,58
+options.tsx
+  s_4114c5ab5d2aed::t_0739d6f0ce4e8c 4,92,103,127,358,527
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1b99c51f73b2f0f137b08549517b61f0b19077b7",
+  "prompts": {},
+  "sessions": {
+    "s_4114c5ab5d2aed": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1855c-92ee-7312-b769-8fa00b502bed",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
