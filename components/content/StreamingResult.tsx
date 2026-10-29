@@ -14,6 +14,7 @@ import type { DialogueChunkHandler } from '../../core/services/inline-dialogue';
 import { getActionIcon } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
 import { ChatDisplayToggle } from './ChatDisplayToggle';
+import { useFloatingDrag } from './useFloatingDrag';
 
 const logger = createLogger('StreamingResult');
 
@@ -239,7 +240,6 @@ export const StreamingResult = ({
   // Dragging state
   const [position, setPosition] = useState<FloatingPosition | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasBeenDragged, setHasBeenDragged] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -382,59 +382,16 @@ export const StreamingResult = ({
     }
   }, [isDialogue, isComplete, autoFocusInput]);
 
-  // Dragging event handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (isSidebar || e.button !== 0) return; // Docked conversations do not drag.
-    const target = e.target as HTMLElement;
-    // Treat any obvious interactive element as non-draggable
-    const isInteractive = target.closest('input, textarea, button, .glass-button, .send-btn');
-    // Exclude only actual message/content blocks (not the padding area) in dialogue mode so user can select text
-    const isMessageBubble = isDialogue && target.closest('.sl-message-bubble');
-    if (isInteractive || isMessageBubble) return;
-    // Start dragging for any other area (expanded draggable region)
-    if (!position) return;
-    setIsDragging(true);
-    setHasBeenDragged(true);
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    });
-    e.preventDefault();
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-
-      const element = containerRef.current;
-      if (!element) return;
-
-      setPosition(
-        clampFloatingPosition({ x: newX, y: newY }, element.getBoundingClientRect(), {
-          width: window.innerWidth,
-          height: window.innerHeight,
-        })
-      );
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Add global mouse event listeners for dragging
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragStart]);
+  const dragHandlers = useFloatingDrag({
+    enabled: !isSidebar,
+    isDialogue,
+    position,
+    onMove: clampPosition,
+    onDraggingChange: (dragging) => {
+      setIsDragging(dragging);
+      if (dragging) setHasBeenDragged(true);
+    },
+  });
 
   // Expose methods for external calls
   useEffect(() => {
@@ -626,10 +583,12 @@ export const StreamingResult = ({
       ref={containerRef}
       className="selectly-streaming-result"
       data-display-mode={isSidebar ? 'sidebar' : 'floating'}
-      onMouseDown={(e) => {
-        handleMouseDown(e);
+      {...dragHandlers}
+      onPointerDown={(e) => {
+        dragHandlers.onPointerDown(e);
         e.stopPropagation();
       }}
+      onMouseDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => {
         e.stopPropagation();
         if (isDialogue && e.key === 'Escape' && !e.nativeEvent.isComposing) {
@@ -679,6 +638,7 @@ export const StreamingResult = ({
       <div
         className="header-draggable"
         style={{
+          touchAction: isSidebar ? undefined : 'none',
           display: 'flex',
           alignItems: 'center',
           padding: '1px 12px',
