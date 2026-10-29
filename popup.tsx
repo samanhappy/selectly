@@ -19,7 +19,7 @@ function IndexPopup() {
 
   // Minimal popup with link to Options
   return (
-    <div className="selectly-popup" style={{ width: 360 }}>
+    <div className="selectly-popup" style={{ width: 'min(360px, 100vw)' }}>
       <div className="p-3 border-b border-slate-200 flex items-center gap-2">
         <Zap size={18} className="text-blue-600" />
         <div className="text-sm font-semibold">Selectly</div>

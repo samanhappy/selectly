@@ -20,6 +20,7 @@ export const es: I18nConfig = {
     enabled: 'Habilitado',
     disabled: 'Deshabilitado',
     copy: 'Copiar',
+    paste: 'Pegar',
   },
 
   extension: {
@@ -164,6 +165,7 @@ export const es: I18nConfig = {
         autoCloseButtonsHelp: 'Cerrar botones de acción automáticamente después de la ejecución',
         autoCloseResult: 'Cerrar Resultado Automáticamente',
         autoCloseResultHelp: 'Cerrar la ventana de resultados automáticamente al hacer clic fuera',
+        moreActions: 'Más acciones',
         collapsed: 'Colapsar',
         collapsedHelp: 'Ocultar esta función bajo el menú ⋯ en la barra de herramientas',
         showInToolbar: 'Mostrar en la barra',

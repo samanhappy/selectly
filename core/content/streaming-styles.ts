@@ -17,6 +17,21 @@ export const streamingStyles = `
     flex-shrink: 0;
   }
 
+  @media (pointer: coarse) {
+    .selectly-streaming-result .glass-button {
+      box-sizing: border-box;
+      min-width: 44px;
+      min-height: 44px;
+      flex-shrink: 0;
+    }
+    .selectly-streaming-result input {
+      box-sizing: border-box;
+      min-height: 44px;
+      font-size: 16px !important;
+      min-width: 0;
+    }
+  }
+
   .selectly-streaming-result pre {
     margin: 12px 0;
     padding: 12px;

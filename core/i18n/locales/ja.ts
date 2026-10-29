@@ -19,6 +19,7 @@ export const ja: I18nConfig = {
     enabled: '有効',
     disabled: '無効',
     copy: 'コピー',
+    paste: '貼り付け',
   },
 
   extension: {
@@ -161,6 +162,7 @@ export const ja: I18nConfig = {
         autoCloseButtonsHelp: '実行後にアクションボタンを自動的に閉じます',
         autoCloseResult: '結果を自動的に閉じる',
         autoCloseResultHelp: '外側をクリックすると結果ウィンドウを自動的に閉じます',
+        moreActions: 'その他の操作',
         collapsed: '折りたたみ',
         collapsedHelp: 'この機能をツールバーの ⋯ メニューの下に隠します',
         showInToolbar: 'ツールバーに表示',

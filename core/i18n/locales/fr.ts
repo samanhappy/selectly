@@ -20,6 +20,7 @@ export const fr: I18nConfig = {
     enabled: 'Activé',
     disabled: 'Désactivé',
     copy: 'Copier',
+    paste: 'Coller',
   },
 
   extension: {
@@ -166,6 +167,7 @@ export const fr: I18nConfig = {
         autoCloseResult: 'Fermer Automatiquement le Résultat',
         autoCloseResultHelp:
           "Fermer la fenêtre de résultat automatiquement en cliquant à l'extérieur",
+        moreActions: 'Autres actions',
         collapsed: 'Replié',
         collapsedHelp: "Masquer cette fonction sous le menu ⋯ dans la barre d'outils",
         showInToolbar: "Afficher dans la barre d'actions",

@@ -19,6 +19,7 @@ export const en: I18nConfig = {
     enabled: 'Enabled',
     disabled: 'Disabled',
     copy: 'Copy',
+    paste: 'Paste',
   },
 
   extension: {
@@ -160,6 +161,7 @@ export const en: I18nConfig = {
         autoCloseButtonsHelp: 'Close action buttons automatically after execution',
         autoCloseResult: 'Auto Close Result',
         autoCloseResultHelp: 'Close the result window automatically after clicking outside',
+        moreActions: 'More actions',
         collapsed: 'Collapse',
         collapsedHelp: 'Hide this function under the ⋯ menu in the toolbar',
         showInToolbar: 'Show in Toolbar',

@@ -17,7 +17,7 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ label, value, onChan
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(44px, 1fr))',
           gap: 8,
           background: '#fff',
           padding: 8,
@@ -42,7 +42,8 @@ export const IconSelector: React.FC<IconSelectorProps> = ({ label, value, onChan
               style={{
                 display: 'grid',
                 placeItems: 'center',
-                height: 36,
+                height: 44,
+                minWidth: 0,
                 borderRadius: 8,
                 border: selected ? '2px solid #2563eb' : '1px solid #e5e7eb',
                 background: selected ? '#eff6ff' : '#ffffff',

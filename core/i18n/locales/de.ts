@@ -19,6 +19,7 @@ export const de: I18nConfig = {
     enabled: 'Aktiviert',
     disabled: 'Deaktiviert',
     copy: 'Kopieren',
+    paste: 'Einfügen',
   },
 
   extension: {
@@ -165,6 +166,7 @@ export const de: I18nConfig = {
         autoCloseButtonsHelp: 'Aktionsschaltflächen nach Ausführung automatisch schließen',
         autoCloseResult: 'Ergebnis automatisch schließen',
         autoCloseResultHelp: 'Ergebnisfenster automatisch schließen beim Klicken außerhalb',
+        moreActions: 'Weitere Aktionen',
         collapsed: 'Eingeklappt',
         collapsedHelp: 'Diese Funktion unter dem ⋯-Menü in der Symbolleiste verstecken',
         showInToolbar: 'In Symbolleiste anzeigen',

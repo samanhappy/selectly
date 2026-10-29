@@ -675,6 +675,7 @@ export const StreamingResult = ({
           <button
             onClick={() => setPinned((p) => !p)}
             className="pin-btn glass-button"
+            aria-label={pinned ? i18nConfig.content.unpin : i18nConfig.content.pin}
             title={pinned ? i18nConfig.content?.unpin || 'Unpin' : i18nConfig.content?.pin || 'Pin'}
             style={{
               background: 'none',
@@ -1076,6 +1077,7 @@ export const StreamingResult = ({
             <button
               onClick={handleCopy}
               className="copy-btn glass-button"
+              aria-label={i18nConfig.common.copy}
               style={{
                 background: 'none',
                 backdropFilter: 'blur(8px)',
@@ -1097,6 +1099,7 @@ export const StreamingResult = ({
               <button
                 onClick={handlePaste}
                 className="paste-btn glass-button"
+                aria-label={i18nConfig.common.paste}
                 style={{
                   background: 'none',
                   backdropFilter: 'blur(8px)',

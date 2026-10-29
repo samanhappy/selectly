@@ -14,6 +14,7 @@ import SubscriptionServiceV2 from '../../core/services/subscription-service-v2';
 import { getActionIcon, isValidIconKey } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
 import { isValidUrl } from '../../utils/url-utils';
+import { ActionOverflowMenu } from './ActionOverflowMenu';
 
 const logger = createLogger('ActionButtons');
 
@@ -321,27 +322,6 @@ export const ActionButtons = ({
       visibleButtons.push(btn);
     }
   });
-  const [showCollapsed, setShowCollapsed] = useState(false);
-  // Small delay when leaving the collapsed area to prevent flicker when moving cursor
-  const hideTimeoutRef = useRef<number | null>(null);
-
-  const handleCollapsedEnter = () => {
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-    setShowCollapsed(true);
-  };
-
-  const handleCollapsedLeave = () => {
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-    }
-    hideTimeoutRef.current = window.setTimeout(() => {
-      setShowCollapsed(false);
-      hideTimeoutRef.current = null;
-    }, 150);
-  };
 
   return (
     <div
@@ -362,6 +342,9 @@ export const ActionButtons = ({
         visibility: position ? 'visible' : 'hidden',
         zIndex: 10000,
         display: 'flex',
+        flexWrap: 'wrap',
+        maxWidth: 'calc(100vw - 20px)',
+        boxSizing: 'border-box',
         gap: '3px',
         animation: 'sl-selectlySlideIn 0.1s cubic-bezier(0.34, 1.56, 0.64, 1)',
       }}
@@ -388,6 +371,7 @@ export const ActionButtons = ({
             onDoubleClick={(event) => handleDoubleClick(button.key, event)}
             className={className}
             title={button.title}
+            aria-label={button.title}
             style={
               {
                 animation: 'sl-selectlySlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -400,78 +384,42 @@ export const ActionButtons = ({
         );
       })}
       {collapsedButtons.length > 0 && (
-        <div
-          style={{ position: 'relative' }}
-          onMouseEnter={handleCollapsedEnter}
-          onMouseLeave={handleCollapsedLeave}
-        >
-          <button
-            className="action-btn"
-            title={i18nConfig?.popup?.functions?.labels?.collapsed || 'More'}
-            // Keep click handler minimal to avoid toggling; hover controls visibility
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            style={
-              {
-                animation: 'sl-selectlySlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                '--delay': `${visibleButtons.length * 0.03}s`,
-              } as React.CSSProperties
-            }
-          >
-            ⋯
-          </button>
-          {showCollapsed && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                marginTop: 2,
-                display: 'flex',
-                gap: 3,
-                paddingTop: 3,
-              }}
-            >
-              {collapsedButtons.map((btn) => {
-                let className = calcClass(
-                  btn,
-                  copyStatus,
-                  collectStatus,
-                  shareStatus,
-                  isSelectionHighlighted
-                );
-                return (
-                  <button
-                    key={btn.key}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      // Note: We don't call restoreFocusSelection here to avoid interfering
-                      // with current text selection. It will be called after the action completes.
-                    }}
-                    onClick={(event) => {
-                      setShowCollapsed(false);
-                      handleSingleClick(btn.key, event);
-                    }}
-                    onDoubleClick={(event) => {
-                      setShowCollapsed(false);
-                      handleDoubleClick(btn.key, event);
-                    }}
-                    className={className}
-                    title={btn.title}
-                    style={{
-                      animation: 'sl-selectlySlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                    }}
-                  >
-                    {btn.icon}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <ActionOverflowMenu label={i18nConfig.popup.functions.labels.moreActions}>
+          {collapsedButtons.map((btn) => {
+            let className = calcClass(
+              btn,
+              copyStatus,
+              collectStatus,
+              shareStatus,
+              isSelectionHighlighted
+            );
+            return (
+              <button
+                key={btn.key}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Note: We don't call restoreFocusSelection here to avoid interfering
+                  // with current text selection. It will be called after the action completes.
+                }}
+                onClick={(event) => {
+                  handleSingleClick(btn.key, event);
+                }}
+                onDoubleClick={(event) => {
+                  handleDoubleClick(btn.key, event);
+                }}
+                className={className}
+                title={btn.title}
+                aria-label={btn.title}
+                style={{
+                  animation: 'sl-selectlySlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+              >
+                {btn.icon}
+              </button>
+            );
+          })}
+        </ActionOverflowMenu>
       )}
     </div>
   );

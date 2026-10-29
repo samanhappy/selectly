@@ -571,6 +571,7 @@ const SubscriptionManagerContent: React.FC<Props> = ({ palette }) => {
       {/* Redeem Drawer */}
       <Drawer
         open={paidUiEnabled && redeemOpen}
+        closeLabel={t ? t('common.close') : 'Close'}
         title={t ? t('popup.subscription.redeemTitle') : 'Redeem Membership Code'}
         onClose={() => setRedeemOpen(false)}
       >

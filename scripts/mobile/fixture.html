@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mobile compatibility fixture</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+      }
+      h1 {
+        font-size: 24px;
+        line-height: 1.25;
+      }
+      textarea {
+        width: 100%;
+        height: 120px;
+        font-size: 16px;
+      }
+      article {
+        margin-top: 30px;
+      }
+      p {
+        margin: 1em 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mobile reading test</h1>
+    <p id="page-text">
+      Select this sentence to translate, explain, or start a conversation. The extension should keep
+      every action inside the phone screen.
+    </p>
+    <label for="editor">Editable text</label
+    ><textarea id="editor">Select this editable sentence to translate and replace it.</textarea>
+    <article>
+      <h2>Long article</h2>
+      <p>Touch scrolling and text selection should remain independent from floating controls.</p>
+      <p style="height: 1000px">Additional reading space.</p>
+      <p id="bottom-text">Select text near the bottom of the page to check popup placement.</p>
+    </article>
+  </body>
+</html>

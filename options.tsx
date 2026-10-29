@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import { useMediaQuery } from './components/shared/useMediaQuery';
 import { isCloudEnabled } from './core/config/cloud-services';
 
 import './style.css';
@@ -46,6 +47,8 @@ const logger = createLogger('Options');
 
 const OptionsPage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const isNarrowScreen = useMediaQuery('(max-width: 767px)');
+  const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
   const [active, setActive] = useState<SidebarKey>('functions');
 
   // Settings state (migrated from popup)
@@ -350,6 +353,7 @@ const OptionsPage: React.FC = () => {
 
   const handleNavigate = (key: SidebarKey) => {
     setActive(key);
+    setMobileNavigationOpen(false);
     triggerSyncForKey(key);
     if (key === 'subscription' && isCloudEnabled()) {
       subscriptionService.refresh({ force: true, reason: 'tab' });
@@ -453,20 +457,23 @@ const OptionsPage: React.FC = () => {
 
   return (
     <UserInfoProvider>
-      <div className="selectly-popup h-screen overflow-hidden bg-slate-50">
+      <div className="selectly-popup h-dvh overflow-hidden bg-slate-50">
         <div className="grid grid-cols-[auto,1fr] gap-0 h-full">
           {/* Sidebar */}
           <Sidebar
-            collapsed={sidebarCollapsed}
+            collapsed={isNarrowScreen ? !mobileNavigationOpen : sidebarCollapsed}
             active={active}
             i18nConfig={i18nConfig}
             t={t}
-            onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+            onToggleCollapse={() => {
+              if (isNarrowScreen) setMobileNavigationOpen((previous) => !previous);
+              else setSidebarCollapsed((previous) => !previous);
+            }}
             onNavigate={handleNavigate}
           />
 
           {/* Main */}
-          <main className="h-full overflow-y-auto flex flex-col">
+          <main className="h-full min-w-0 overflow-y-auto flex flex-col">
             {/* Header */}
             <OptionsHeader
               active={active}
@@ -525,6 +532,7 @@ const OptionsPage: React.FC = () => {
         <Drawer
           open={drawerOpen}
           onClose={closeDrawer}
+          closeLabel={i18nConfig.common.close}
           title={
             drawerType === 'add' ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

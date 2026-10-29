@@ -20,6 +20,7 @@ export interface I18nConfig {
     enabled: string;
     disabled: string;
     copy: string;
+    paste: string;
   };
 
   // Extension name and description
@@ -159,6 +160,7 @@ export interface I18nConfig {
         autoCloseButtonsHelp: string;
         autoCloseResult: string;
         autoCloseResultHelp: string;
+        moreActions: string;
         collapsed: string;
         collapsedHelp: string;
         showInToolbar: string;

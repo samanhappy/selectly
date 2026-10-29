@@ -47,8 +47,8 @@ export const OptionsHeader: React.FC<OptionsHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-      <h1 className="text-lg font-semibold text-slate-900">{getTitle()}</h1>
+    <header className="sticky top-0 z-10 bg-white border-b border-slate-200 px-3 py-3 flex flex-wrap gap-2 items-center justify-between">
+      <h1 className="text-lg font-semibold text-slate-900 min-w-0">{getTitle()}</h1>
       <div className="flex items-center gap-3">
         {/* Language Selector */}
         <div className="flex items-center gap-2">

@@ -103,7 +103,8 @@ export const contentStyles = `
     position: fixed;
     right: 16px;
     bottom: 16px;
-    z-index: 1000000;
+    /* Global entry points stay behind action and conversation overlays. */
+    z-index: 9999;
     pointer-events: auto;
     display: flex;
     flex-direction: column;
@@ -526,24 +527,19 @@ export const contentStyles = `
   }
 
   /* Responsive design */
-  @media (max-width: 480px) {
+  @media (max-width: 480px), (pointer: coarse) {
     .selectly-buttons {
       padding: 8px !important;
       gap: 4px !important;
     }
 
-
     .selectly-buttons .action-btn {
-      width: 40px !important;
-      height: 40px !important;
+      width: 44px !important;
+      height: 44px !important;
+      box-sizing: border-box;
+      flex-shrink: 0;
     }
 
-    .selectly-streaming-result:not([data-display-mode='sidebar']) {
-      min-width: 280px !important;
-      max-width: calc(100vw - 40px) !important;
-      left: 20px !important;
-      right: 20px !important;
-    }
   }
 
   /* Dark mode adjustments for better contrast */
