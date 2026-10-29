@@ -7,7 +7,8 @@ export const isPaidUiEnabled = () =>
 export const getSupportUrl = (): string | null => {
   if (process.env.PLASMO_PUBLIC_SUPPORT_ENABLED === 'false') return null;
   const configured = process.env.PLASMO_PUBLIC_SUPPORT_URL;
-  const value = configured === undefined ? 'https://ko-fi.com/samanhappy' : configured.trim();
+  const value =
+    configured === undefined ? 'https://github.com/sponsors/samanhappy' : configured.trim();
   try {
     const url = new URL(value);
     return url.protocol === 'https:' ? url.href : null;

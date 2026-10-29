@@ -37,6 +37,8 @@ export const OptionsHeader: React.FC<OptionsHeaderProps> = ({
         return i18nConfig.popup.general.title;
       case 'llm':
         return i18nConfig.popup.tabs.llm;
+      case 'support':
+        return i18nConfig.common.supportProject;
       case 'subscription':
         return isPaidUiEnabled()
           ? i18nConfig.popup.tabs.subscription

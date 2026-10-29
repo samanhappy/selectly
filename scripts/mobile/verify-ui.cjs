@@ -64,6 +64,40 @@ const { createServer } = require('node:http');
       assert.equal(await p.locator('aside').getByText('Subscription', { exact: true }).count(), 0);
     });
     await shot('settings-desktop');
+    await p.getByRole('button', { name: 'Sponsor', exact: true }).click();
+    await check('support page shows GitHub Sponsors and the bundled donation image', async () => {
+      const link = p.getByRole('link', { name: 'GitHub Sponsors', exact: true });
+      assert.equal(await link.getAttribute('href'), 'https://github.com/sponsors/samanhappy');
+      assert.equal(await link.getAttribute('rel'), 'noopener noreferrer');
+      assert.equal(
+        await p.getByRole('link', { name: 'Ko-fi', exact: true }).getAttribute('href'),
+        'https://ko-fi.com/samanhappy'
+      );
+      const qr = p.getByRole('img', { name: 'Scan to support', exact: true });
+      await qr.evaluate((el) => el.decode());
+      assert.ok(await qr.evaluate((el) => el.naturalWidth > 0));
+      assert.equal(await p.locator('aside a').count(), 0);
+    });
+    await p.waitForTimeout(250);
+    await shot('support-desktop');
+    for (const width of [320, 390]) {
+      await p.setViewportSize({ width, height: 844 });
+      await p.waitForTimeout(350);
+      await check(`support page fits ${width}px`, async () => {
+        const main = await p
+          .locator('main')
+          .evaluate((el) => ({ width: el.clientWidth, scroll: el.scrollWidth }));
+        assert.ok(main.scroll <= main.width);
+        const link = await p
+          .getByRole('link', { name: 'GitHub Sponsors', exact: true })
+          .boundingBox();
+        assert.ok(link.height >= 44);
+        const qr = await p.getByRole('img', { name: 'Scan to support', exact: true }).boundingBox();
+        assert.ok(qr.width > 100 && qr.x + qr.width <= width);
+      });
+      await shot(`support-${width}`);
+    }
+    await p.getByRole('button', { name: 'Functions', exact: true }).click();
     await p.setViewportSize({ width: 390, height: 844 });
     await p.waitForTimeout(700);
     await check('phone settings reserve at least 300px for main', async () =>

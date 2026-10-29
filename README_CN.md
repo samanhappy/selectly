@@ -129,7 +129,7 @@ MIT — [LICENSE](LICENSE)
 ```dotenv
 PLASMO_PUBLIC_CLOUD_ENABLED=true
 PLASMO_PUBLIC_SUPPORT_ENABLED=true
-PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
+PLASMO_PUBLIC_SUPPORT_URL=https://github.com/sponsors/samanhappy
 ```
 
 赞赏开关和 HTTPS 链接可独立配置。修改后需重启开发服务或重新构建。

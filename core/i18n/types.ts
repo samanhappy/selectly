@@ -6,6 +6,8 @@ export interface I18nConfig {
     cloudAccount: string;
     cloudAccountDescription: string;
     supportProject: string;
+    supportThanks: string;
+    supportQrCode: string;
     save: string;
     cancel: string;
     confirm: string;

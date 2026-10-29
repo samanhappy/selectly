@@ -4,7 +4,9 @@ export const de: I18nConfig = {
   common: {
     cloudAccount: 'Cloud-Konto',
     cloudAccountDescription: 'Anmelden, um Cloud-Dienste und Datensynchronisierung zu nutzen.',
-    supportProject: 'Projekt unterstützen',
+    supportProject: 'Unterstützen',
+    supportThanks: 'Vielen Dank für deine Unterstützung von Selectly.',
+    supportQrCode: 'Zum Unterstützen scannen',
     save: 'Speichern',
     cancel: 'Abbrechen',
     confirm: 'Bestätigen',

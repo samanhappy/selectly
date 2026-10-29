@@ -5,7 +5,9 @@ export const es: I18nConfig = {
     cloudAccount: 'Cuenta en la nube',
     cloudAccountDescription:
       'Inicia sesión para usar los servicios en la nube y sincronizar tus datos.',
-    supportProject: 'Apoyar este proyecto',
+    supportProject: 'Apoyar',
+    supportThanks: 'Gracias por apoyar a Selectly.',
+    supportQrCode: 'Escanea para apoyar',
     save: 'Guardar',
     cancel: 'Cancelar',
     confirm: 'Confirmar',

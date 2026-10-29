@@ -4,7 +4,9 @@ export const en: I18nConfig = {
   common: {
     cloudAccount: 'Cloud account',
     cloudAccountDescription: 'Sign in to use cloud services and sync your data.',
-    supportProject: 'Support this project',
+    supportProject: 'Sponsor',
+    supportThanks: 'Thank you for supporting Selectly.',
+    supportQrCode: 'Scan to support',
     save: 'Save',
     cancel: 'Cancel',
     confirm: 'Confirm',

@@ -131,7 +131,7 @@ Public build switches can be set in `.env.development.local` or `.env.production
 ```dotenv
 PLASMO_PUBLIC_CLOUD_ENABLED=true
 PLASMO_PUBLIC_SUPPORT_ENABLED=true
-PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
+PLASMO_PUBLIC_SUPPORT_URL=https://github.com/sponsors/samanhappy
 ```
 
 Donation visibility and its HTTPS URL are independent. Restart development or rebuild

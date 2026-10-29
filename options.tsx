@@ -23,6 +23,7 @@ import { LLMPage } from './components/options/LLMPage';
 import { OptionsHeader } from './components/options/OptionsHeader';
 import { Sidebar } from './components/options/Sidebar';
 import { SubscriptionPage } from './components/options/SubscriptionPage';
+import { SupportPage } from './components/options/SupportPage';
 import { getAuthStateFromBackground } from './core/auth/auth-background-bridge';
 import { isDictionaryEnabled } from './core/config/feature-gates';
 import {
@@ -524,6 +525,7 @@ const OptionsPage: React.FC = () => {
                   onOpenDrawer={handleProviderDrawer}
                 />
               )}
+              {active === 'support' && <SupportPage labels={i18nConfig.common} />}
               {active === 'subscription' && isCloudAccountEnabled() && <SubscriptionPage />}
             </div>
           </main>

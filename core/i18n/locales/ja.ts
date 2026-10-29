@@ -4,7 +4,9 @@ export const ja: I18nConfig = {
   common: {
     cloudAccount: 'クラウドアカウント',
     cloudAccountDescription: 'ログインしてクラウドサービスとデータ同期を利用します。',
-    supportProject: 'プロジェクトを支援',
+    supportProject: '支援',
+    supportThanks: 'Selectly のご支援ありがとうございます。',
+    supportQrCode: 'スキャンして支援',
     save: '保存',
     cancel: 'キャンセル',
     confirm: '確認',

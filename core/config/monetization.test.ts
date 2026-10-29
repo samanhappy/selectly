@@ -18,7 +18,7 @@ describe('monetization UI switches', () => {
   it('uses the project funding account by default and accepts a custom HTTPS link', () => {
     vi.stubEnv('PLASMO_PUBLIC_SUPPORT_ENABLED', undefined);
     vi.stubEnv('PLASMO_PUBLIC_SUPPORT_URL', undefined);
-    expect(getSupportUrl()).toBe('https://ko-fi.com/samanhappy');
+    expect(getSupportUrl()).toBe('https://github.com/sponsors/samanhappy');
     vi.stubEnv('PLASMO_PUBLIC_SUPPORT_URL', 'https://example.com/support');
     expect(getSupportUrl()).toBe('https://example.com/support');
   });

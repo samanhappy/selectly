@@ -13,7 +13,7 @@ describe('support and paid UI', () => {
     vi.stubEnv('PLASMO_PUBLIC_SUPPORT_URL', undefined);
     vi.stubEnv('PLASMO_PUBLIC_SUPPORT_ENABLED', undefined);
     const html = renderToStaticMarkup(<SupportLink label="Support this project" />);
-    expect(html).toContain('href="https://ko-fi.com/samanhappy"');
+    expect(html).toContain('href="https://github.com/sponsors/samanhappy"');
     expect(html).toContain('aria-label="Support this project"');
     expect(html).toContain('rel="noopener noreferrer"');
   });
