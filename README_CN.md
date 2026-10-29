@@ -114,25 +114,23 @@ MIT — [LICENSE](LICENSE)
 
 ### 本地模式、付费入口与赞赏开关
 
-开发和生产构建默认保留 Selectly 官方云端模型、登录、订阅检查及云同步能力。
-云端模型调用仍需登录，并受服务端权益与额度校验约束。付费入口默认隐藏，
-云端账户入口保留用于登录。配置使用 Chrome 同步存储；收藏、高亮及聊天记录
-继续存放于本地 IndexedDB。
+开发和生产构建仅保留免登录的官方云端模型（服务端 `available_to=all`）。
+模型列表和调用不发送账户凭证，仍受服务端模型权限与日限额约束。
+账户登录、付费入口、订阅检查及云端数据同步已停用。
+配置使用 `chrome.storage.local`，首次复制原有 Chrome 同步设置，不覆盖已有本地值，
+也不删除旧副本。收藏、高亮及聊天记录继续存放于本地 IndexedDB。
 
-如需仅本地运行，设置 `PLASMO_PUBLIC_CLOUD_ENABLED=false`，关闭官方云端服务，
-并自行配置模型接口。此时配置写入 `chrome.storage.local`，首次复制原有 Chrome
-同步设置，不覆盖已有本地值，也不删除旧副本。本机的 OpenAI 兼容接口可用于
-离线推理；第三方远程接口仍会接收请求。赞赏链接仅在主动点击时打开。
+设置 `PLASMO_PUBLIC_CLOUD_ENABLED=false` 可进一步关闭官方模型接口，改用自定义模型。
+本机的 OpenAI 兼容接口可用于离线推理；第三方远程接口仍会接收请求。
+赞赏链接仅在主动点击时打开。
 
 在 `.env.development.local` 或 `.env.production.local` 设置构建开关：
 
 ```dotenv
 PLASMO_PUBLIC_CLOUD_ENABLED=true
-PLASMO_PUBLIC_PAID_UI_ENABLED=false
 PLASMO_PUBLIC_SUPPORT_ENABLED=true
 PLASMO_PUBLIC_SUPPORT_URL=https://ko-fi.com/samanhappy
 ```
 
-付费入口还需单独设为 `PLASMO_PUBLIC_PAID_UI_ENABLED=true`。
 赞赏开关和 HTTPS 链接可独立配置。修改后需重启开发服务或重新构建。
-这些开关不授予会员权益，也不绕过服务端额度限制。
+旧的 `PLASMO_PUBLIC_PAID_UI_ENABLED` 开关不再启用账户或付费功能。

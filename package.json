@@ -58,8 +58,6 @@
     "permissions": [
       "storage",
       "notifications",
-      "identity",
-      "identity.email",
       "sidePanel"
     ],
     "content_security_policy": {

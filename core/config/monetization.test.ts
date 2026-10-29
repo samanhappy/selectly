@@ -6,11 +6,11 @@ beforeEach(() => vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true'));
 afterEach(() => vi.unstubAllEnvs());
 
 describe('monetization UI switches', () => {
-  it('hides paid UI by default and enables it only explicitly', () => {
+  it('keeps paid UI disabled even when the old switch is enabled', () => {
     vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', undefined);
     expect(isPaidUiEnabled()).toBe(false);
     vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'true');
-    expect(isPaidUiEnabled()).toBe(true);
+    expect(isPaidUiEnabled()).toBe(false);
     vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'false');
     expect(isPaidUiEnabled()).toBe(false);
   });
@@ -27,7 +27,7 @@ describe('monetization UI switches', () => {
     vi.stubEnv('PLASMO_PUBLIC_SUPPORT_ENABLED', 'false');
     vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'true');
     expect(getSupportUrl()).toBeNull();
-    expect(isPaidUiEnabled()).toBe(true);
+    expect(isPaidUiEnabled()).toBe(false);
   });
 
   it.each(['', 'javascript:alert(1)', 'http://example.com', 'invalid'])(

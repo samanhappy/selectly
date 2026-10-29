@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { useMediaQuery } from './components/shared/useMediaQuery';
-import { isCloudEnabled } from './core/config/cloud-services';
+import { isCloudAccountEnabled } from './core/config/cloud-services';
 
 import './style.css';
 
@@ -89,7 +89,7 @@ const OptionsPage: React.FC = () => {
   const subscriptionService = SubscriptionServiceV2.getInstance();
 
   const triggerSyncAll = () => {
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     setTimeout(() => {
       collectService.sync().catch(() => {});
       highlightService.sync().catch(() => {});
@@ -100,7 +100,7 @@ const OptionsPage: React.FC = () => {
   };
 
   const triggerSyncForKey = (key: SidebarKey) => {
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     setTimeout(() => {
       if (key === 'collected') {
         collectService.sync().catch(() => {});
@@ -124,7 +124,7 @@ const OptionsPage: React.FC = () => {
     };
     init();
 
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
     triggerSyncAll();
 
     subscriptionService.initialize();
@@ -355,7 +355,7 @@ const OptionsPage: React.FC = () => {
     setActive(key);
     setMobileNavigationOpen(false);
     triggerSyncForKey(key);
-    if (key === 'subscription' && isCloudEnabled()) {
+    if (key === 'subscription' && isCloudAccountEnabled()) {
       subscriptionService.refresh({ force: true, reason: 'tab' });
       getAuthStateFromBackground()
         .then((auth) => setIsAuthenticated(!!auth.isAuthenticated))
@@ -524,7 +524,7 @@ const OptionsPage: React.FC = () => {
                   onOpenDrawer={handleProviderDrawer}
                 />
               )}
-              {active === 'subscription' && isCloudEnabled() && <SubscriptionPage />}
+              {active === 'subscription' && isCloudAccountEnabled() && <SubscriptionPage />}
             </div>
           </main>
         </div>

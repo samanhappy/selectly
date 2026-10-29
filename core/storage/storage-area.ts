@@ -1,5 +1,5 @@
 import { createLogger } from '../../utils/logger';
-import { isCloudEnabled } from '../config/feature-gates';
+import { isCloudAccountEnabled } from '../config/cloud-services';
 
 const LOCAL_MIGRATION_KEY = '__selectly_local_storage_v1';
 const MIGRATION_ACTION = 'storage:ensureLocalMigration';
@@ -8,7 +8,7 @@ const logger = createLogger('StorageArea');
 let migration: Promise<void> | undefined;
 let isCoordinator = false;
 
-export const getStorageNamespace = () => (isCloudEnabled() ? 'sync' : 'local');
+export const getStorageNamespace = () => (isCloudAccountEnabled() ? 'sync' : 'local');
 
 /** Create the background router handler before services access storage. */
 export function createStorageMigrationCoordinator() {
@@ -38,7 +38,7 @@ async function requestMigration(): Promise<void> {
 
 /** Preserve encrypted settings; never write to sync while migrating to local storage. */
 export async function getStorageArea(): Promise<chrome.storage.StorageArea> {
-  if (isCloudEnabled()) return chrome.storage.sync;
+  if (isCloudAccountEnabled()) return chrome.storage.sync;
 
   if (!migration) {
     migration = (isCoordinator ? migrateLocalStorage() : requestMigration()).catch((error) => {
@@ -55,5 +55,5 @@ export async function clearStorageArea(): Promise<void> {
   const area = await getStorageArea();
   await area.clear();
   // A deliberate local reset must not re-import the old synced copy on the next launch.
-  if (!isCloudEnabled()) await area.set({ [LOCAL_MIGRATION_KEY]: true });
+  if (!isCloudAccountEnabled()) await area.set({ [LOCAL_MIGRATION_KEY]: true });
 }

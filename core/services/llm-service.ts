@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 
 import { createLogger } from '../../utils/logger';
-import { authService } from '../auth/auth-service';
 import { assertCloudEnabled, isCloudEnabled } from '../config/cloud-services';
 import type { LLMConfig, LLMProvider, ThinkingMode } from '../config/llm-config';
 import { CLOUD_PROVIDER, ConfigManager } from '../config/llm-config';
@@ -54,13 +53,11 @@ export class LLMService {
 
     if (!isCloudEnabled()) return;
 
-    // await authService.initialize();
-    const token = await authService.getAccessToken();
-    logger.info('Configuring LLMService with token:', token ? '***' : 'no token');
     this.clients.set(
       'cloud',
       new OpenAI({
-        apiKey: token || '',
+        apiKey: '',
+        defaultHeaders: { Authorization: null },
         baseURL: CLOUD_PROVIDER.baseURL,
         dangerouslyAllowBrowser: true,
       })
@@ -274,7 +271,8 @@ export class LLMService {
     if (provider.id === 'cloud' && !isCloudEnabled()) return false;
     try {
       const client = new OpenAI({
-        apiKey: provider.apiKey,
+        apiKey: provider.id === 'cloud' ? '' : provider.apiKey,
+        ...(provider.id === 'cloud' ? { defaultHeaders: { Authorization: null } } : {}),
         baseURL: provider.baseURL,
         dangerouslyAllowBrowser: true,
       });

@@ -1,8 +1,8 @@
-import { isCloudEnabled } from './cloud-services';
+import { isCloudAccountEnabled } from './cloud-services';
 
 /** Build-time UI switches. Cloud access and entitlement checks are independent. */
 export const isPaidUiEnabled = () =>
-  isCloudEnabled() && process.env.PLASMO_PUBLIC_PAID_UI_ENABLED === 'true';
+  isCloudAccountEnabled() && process.env.PLASMO_PUBLIC_PAID_UI_ENABLED === 'true';
 
 export const getSupportUrl = (): string | null => {
   if (process.env.PLASMO_PUBLIC_SUPPORT_ENABLED === 'false') return null;

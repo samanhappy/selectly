@@ -26,24 +26,13 @@ describe('cloud account payment UI', () => {
     vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'true');
     expect(renderToStaticMarkup(<SubscriptionManagerV3 palette={PALETTE} />)).toBe('');
   });
-  it('preserves sign-in and cloud provider while hiding purchase and redemption by default', () => {
-    vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', undefined);
-    const html = renderToStaticMarkup(<SubscriptionManagerV3 palette={PALETTE} />);
-    expect(html).toContain('Sign In');
-    expect(html).toContain('Cloud account');
-    expect(html).not.toContain('>Subscribe<');
-    expect(html).not.toContain('Redeem Code');
+  it('hides account and payment controls while preserving anonymous cloud models', () => {
+    vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'true');
+    expect(renderToStaticMarkup(<SubscriptionManagerV3 palette={PALETTE} />)).toBe('');
     expect(
       ConfigManager.getInstance()
         .getEnabledProviders()
         .some((p) => p.id === 'cloud')
     ).toBe(true);
-  });
-
-  it('restores purchase and redemption controls when explicitly enabled', () => {
-    vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'true');
-    const html = renderToStaticMarkup(<SubscriptionManagerV3 palette={PALETTE} />);
-    expect(html).toContain('>Subscribe<');
-    expect(html).toContain('Redeem Code');
   });
 });

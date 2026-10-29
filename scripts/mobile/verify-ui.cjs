@@ -59,6 +59,10 @@ const { createServer } = require('node:http');
       assert.ok(bounds.button.top >= bounds.header.top);
       assert.ok(bounds.button.bottom <= bounds.header.bottom);
     });
+    await check('account entry is absent on desktop', async () => {
+      assert.equal(await p.locator('aside').getByText('Cloud account', { exact: true }).count(), 0);
+      assert.equal(await p.locator('aside').getByText('Subscription', { exact: true }).count(), 0);
+    });
     await shot('settings-desktop');
     await p.setViewportSize({ width: 390, height: 844 });
     await p.waitForTimeout(700);

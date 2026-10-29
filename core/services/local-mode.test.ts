@@ -100,19 +100,26 @@ describe('official cloud disabled', () => {
     );
   });
 
-  it('does not start synchronization or queue new local changes for upload', async () => {
-    const adapter = { isSyncEnabled: vi.fn(), enqueue: vi.fn() };
-    const core = new SyncCore(adapter as unknown as SyncAdapter<unknown, SyncQueueItemBase>, 1000);
-    const interval = vi.spyOn(globalThis, 'setInterval');
-    await core.initialize();
-    core.startPeriodicSync();
-    await core.sync();
-    await core.fullSync();
-    await core.queueForSync('local-item', 'create');
-    expect(interval).not.toHaveBeenCalled();
-    expect(adapter.isSyncEnabled).not.toHaveBeenCalled();
-    expect(adapter.enqueue).not.toHaveBeenCalled();
-  });
+  it.each([undefined, 'true'])(
+    'does not upload local changes with cloud enabled=%s',
+    async (enabled) => {
+      vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', enabled);
+      const adapter = { isSyncEnabled: vi.fn(), enqueue: vi.fn() };
+      const core = new SyncCore(
+        adapter as unknown as SyncAdapter<unknown, SyncQueueItemBase>,
+        1000
+      );
+      const interval = vi.spyOn(globalThis, 'setInterval');
+      await core.initialize();
+      core.startPeriodicSync();
+      await core.sync();
+      await core.fullSync();
+      await core.queueForSync('local-item', 'create');
+      expect(interval).not.toHaveBeenCalled();
+      expect(adapter.isSyncEnabled).not.toHaveBeenCalled();
+      expect(adapter.enqueue).not.toHaveBeenCalled();
+    }
+  );
 
   it('requires explicit opt-in before exposing official cloud providers again', () => {
     expect(isCloudEnabled()).toBe(false);
@@ -122,11 +129,25 @@ describe('official cloud disabled', () => {
   });
 });
 
-describe('official cloud enabled with paid UI hidden', () => {
-  it('keeps cloud models selectable and calls the cloud client with the access token', async () => {
+describe('anonymous official cloud', () => {
+  it('disables account initialization, subscription polling and sync with cloud models enabled', async () => {
+    vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true');
+    await authService.initialize();
+    expect(await authService.getAccessToken()).toBe('');
+    await expect(authService.signIn()).rejects.toThrow('disabled');
+    const service = SubscriptionService.getInstance();
+    await service.initialize();
+    service.enableAutoRefresh();
+    await service.refresh({ force: true });
+    expect(await checkSubscription()).toEqual({ active: false, interval: 'none' });
+    await expect(callAPI('/api/check-subscription')).rejects.toThrow('disabled');
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mocks.getStorage).not.toHaveBeenCalled();
+  });
+  it('keeps cloud models selectable without sending cached credentials', async () => {
     vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true');
     vi.stubEnv('PLASMO_PUBLIC_PAID_UI_ENABLED', 'false');
-    vi.spyOn(authService, 'getAccessToken').mockResolvedValue('cloud-token');
+    const getToken = vi.spyOn(authService, 'getAccessToken').mockResolvedValue('cloud-token');
     expect(isPaidUiEnabled()).toBe(false);
     expect(ConfigManager.getInstance().getEnabledProviders()).toContainEqual(CLOUD_PROVIDER);
     expect(isLLMConfigUsable(DEFAULT_CONFIG)).toBe(true);
@@ -136,7 +157,17 @@ describe('official cloud enabled with paid UI hidden', () => {
     const llm = new LLMService();
     await llm.configure(DEFAULT_CONFIG.llm);
     expect(mocks.createClient).toHaveBeenCalledWith(
-      expect.objectContaining({ apiKey: 'cloud-token', baseURL: CLOUD_PROVIDER.baseURL })
+      expect.objectContaining({
+        apiKey: '',
+        defaultHeaders: { Authorization: null },
+        baseURL: CLOUD_PROVIDER.baseURL,
+      })
+    );
+    expect(getToken).not.toHaveBeenCalled();
+    await modelService.loadModels(CLOUD_PROVIDER);
+    expect(getToken).not.toHaveBeenCalled();
+    expect(mocks.createClient).toHaveBeenLastCalledWith(
+      expect.objectContaining({ apiKey: '', defaultHeaders: { Authorization: null } })
     );
     await expect(llm.chat('Hello', 'cloud/default')).resolves.toBe('Cloud reply');
     expect(mocks.completion).toHaveBeenCalledWith(

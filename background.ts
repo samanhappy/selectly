@@ -1,5 +1,5 @@
 import { authService } from './core/auth/auth-service';
-import { isCloudEnabled } from './core/config/cloud-services';
+import { isCloudAccountEnabled } from './core/config/cloud-services';
 import {
   createDictionaryDisabledResponse,
   createReadingProgressDisabledResponse,
@@ -105,7 +105,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       userConfig: defaultConfig,
     });
 
-    if (!isCloudEnabled()) return;
+    if (!isCloudAccountEnabled()) return;
 
     // On install, also initialize subscription cache and perform one check
     const subscriptionService = SubscriptionServiceV2.getInstance();
@@ -140,7 +140,7 @@ chrome.runtime.onStartup.addListener(async () => {
     logger.warn('Database migration failed:', error);
   }
 
-  if (!isCloudEnabled()) return;
+  if (!isCloudAccountEnabled()) return;
 
   const subscriptionService = SubscriptionServiceV2.getInstance();
   await subscriptionService.initialize();
@@ -199,7 +199,7 @@ sidePanelEvents?.onClosed?.addListener((info) => {
   logger.info('Extension loaded');
   await StorageMigration.migrateIfNeeded();
 
-  if (!isCloudEnabled()) return;
+  if (!isCloudAccountEnabled()) return;
 
   // Initialize auth service once at startup to avoid repeated init calls from polling UIs
   try {

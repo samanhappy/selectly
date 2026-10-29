@@ -110,15 +110,15 @@ describe('local settings storage', () => {
     expect(local.values).toHaveProperty('setting', 'synced');
   });
 
-  it('uses sync directly in cloud mode without requesting migration', async () => {
+  it('keeps settings local even with anonymous cloud models enabled', async () => {
     vi.stubEnv('PLASMO_PUBLIC_CLOUD_ENABLED', 'true');
     const local = area({});
     const sync = area({ setting: 'synced' });
     vi.stubGlobal('chrome', { storage: { local, sync }, runtime });
-    const { getStorageArea } = await import('./storage-area');
-    expect(await getStorageArea()).toBe(sync);
-    expect(runtime.sendMessage).not.toHaveBeenCalled();
-    expect(local.get).not.toHaveBeenCalled();
+    const { getStorageArea } = await loadCoordinator();
+    expect(await getStorageArea()).toBe(local);
+    expect(local.values).toHaveProperty('setting', 'synced');
+    expect(sync.set).not.toHaveBeenCalled();
   });
 
   it('does not resurrect deleted settings from sync in a subsequent extension context', async () => {

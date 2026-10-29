@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { isCloudEnabled } from '../../core/config/cloud-services';
+import { isCloudAccountEnabled } from '../../core/config/cloud-services';
 import { isDictionaryEnabled } from '../../core/config/feature-gates';
 import { isPaidUiEnabled } from '../../core/config/monetization';
 import { SupportLink } from '../shared/SupportLink';
@@ -245,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onNavigate('general')}
             />
           </div>
-          {isCloudEnabled() && (
+          {isCloudAccountEnabled() && (
             <div className="flex justify-center">
               <SidebarItem
                 icon={
