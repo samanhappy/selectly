@@ -20,6 +20,7 @@ import { collectDB } from './core/storage/collect-db';
 import { dictionaryDB } from './core/storage/dictionary-db';
 import { StorageMigration } from './core/storage/migration';
 import { secureStorage } from './core/storage/secure-storage';
+import { createStorageMigrationCoordinator } from './core/storage/storage-area';
 import {
   createTabSelectionContext,
   isSelectionContextFresh,
@@ -31,6 +32,8 @@ import {
   type TabAssistantSidePanelApi,
 } from './core/tab-context/side-panel-toggle';
 import { createLogger } from './utils/logger';
+
+const handleStorageMigration = createStorageMigrationCoordinator();
 
 const logger = createLogger('Background');
 const TAB_ASSISTANT_SIDE_PANEL_PATH = 'tabs/tab-assistant.html';
@@ -243,6 +246,7 @@ sidePanelEvents?.onClosed?.addListener((info) => {
 
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (handleStorageMigration(request, sendResponse)) return true;
   const resolvedAction =
     typeof request === 'string'
       ? request
