@@ -1,0 +1,38 @@
+core/content/touch-selection.ts
+  s_8be9864084ef6d::t_611b55711869b3 35-41
+  s_8be9864084ef6d::t_7d8747d36bb797 1,7-8,18-19,22,24,26-27,31-34,42-45,48-52,55-56,64-65
+core/content/touch-selection-reproduction.test.ts
+  s_8be9864084ef6d::t_611b55711869b3 20-56,58-62,65-75,77-87,89
+core/storage/storage-area.test.ts
+  s_8be9864084ef6d::t_5004f37390f5fe 6-7,15-17,20-22,37-38,51-52,62-66,73-84,127-128,137-138,141
+  s_8be9864084ef6d::t_611b55711869b3 3-5,8-14,67-72,85-122
+  s_8be9864084ef6d::t_f35a4531e8e044 18-19,123
+core/content/touch-selection.test.ts
+  s_8be9864084ef6d::t_5004f37390f5fe 18,26,37,39-45,48-55,64,66,68,72,74-75,77,79,86,88-89
+  s_8be9864084ef6d::t_7d8747d36bb797 46-47,113
+  s_8be9864084ef6d::t_611b55711869b3 10-16
+  s_8be9864084ef6d::t_80d5eaaffb6de2 67,69-71,73,76,78,80-85,87
+core/content/Selectly.tsx
+  s_8be9864084ef6d::t_611b55711869b3 1571,1612-1615
+core/storage/storage-area.ts
+  s_8be9864084ef6d::t_7d8747d36bb797 5,7,9,15,18-22,24-39,44,47
+  s_8be9864084ef6d::t_6704d6900e50bf 13-14,16-17,23
+background.ts
+  s_8be9864084ef6d::t_621fbc4f399fe5 23,36-37,249
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cfc01097dc87785881dcfc0ce5b7cf387e5be61b",
+  "prompts": {},
+  "sessions": {
+    "s_8be9864084ef6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18508-5a23-7820-8cf7-87c915134182",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
