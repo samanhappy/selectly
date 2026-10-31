@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { FunctionConfig } from '../config/llm-config';
-import { ActionService } from './action-service';
+import { ActionService, getTranslationTargetLanguage } from './action-service';
 
 const llmMocks = vi.hoisted(() => ({
   chatStream: vi.fn(),
@@ -110,5 +110,11 @@ describe('ActionService', () => {
     expect(onStreamingStart).not.toHaveBeenCalled();
     expect(updateStreamingResult).toHaveBeenCalledWith('provider failed', '', true, true);
     expect(result.closeButtonsAfterExecution).toBe(false);
+  });
+});
+
+describe('getTranslationTargetLanguage', () => {
+  it('returns Vietnamese for "vi"', () => {
+    expect(getTranslationTargetLanguage('vi')).toBe('Vietnamese');
   });
 });
