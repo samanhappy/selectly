@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildTabChatMessages, getTabChatPromptSnapshot } from './prompt';
+import { buildTabChatMessages, getTabChatPromptSnapshot, languageName } from './prompt';
 import type { TabContextSnapshot, TabMessage } from './types';
 
 const snapshot: TabContextSnapshot = {
@@ -65,5 +65,11 @@ describe('getTabChatPromptSnapshot', () => {
     const context = { ...snapshot, source: 'empty' as const, text: '', selectedText: 'selection' };
 
     expect(getTabChatPromptSnapshot(context)).toBe(context);
+  });
+});
+
+describe('languageName', () => {
+  it('returns Vietnamese for "vi"', () => {
+    expect(languageName('vi')).toBe('Vietnamese');
   });
 });

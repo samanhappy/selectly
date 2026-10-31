@@ -22,6 +22,7 @@ const languageName = (language: string): string => {
     ja: 'Japanese',
     de: 'German',
     fr: 'French',
+    vi: 'Vietnamese',
   };
   return map[language] || 'English';
 };
