@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildTabChatMessages, getTabChatPromptSnapshot, languageName } from './prompt';
-import { buildTabChatMessages, getTabChatPromptSnapshot } from './prompt';
 import type { TabContextSnapshot, TabMessage } from './types';
 
 const snapshot: TabContextSnapshot = {
