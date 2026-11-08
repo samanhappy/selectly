@@ -1,0 +1,28 @@
+core/services/action-service.ts
+  s_3d1fa7f793bcaa::t_f800f121cb77f5 144
+  s_3d1fa7f793bcaa::t_645d1e0ad7d48c 13-19,132-133,136-143,145,166,178,181
+scripts/regenerate/verify-ui.cjs
+  s_3d1fa7f793bcaa::t_f800f121cb77f5 105-108,119-124,145
+components/content/StreamingResult.tsx
+  s_3d1fa7f793bcaa::t_5439aca6293d13 23,41,252,414,462-464,1098-1099,1101-1108
+core/content/Selectly.tsx
+  s_3d1fa7f793bcaa::t_1e6c9fcd2a00a8 2188-2192
+core/services/action-service.test.ts
+  s_3d1fa7f793bcaa::t_9ef497324e7af7 102-108,114-122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0959ce7200b89337aaa593c0b4b0e54183c20b76",
+  "prompts": {},
+  "sessions": {
+    "s_3d1fa7f793bcaa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bb53-6d22-7d00-aad3-846581c34c01",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
