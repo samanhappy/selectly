@@ -86,7 +86,9 @@ const { createServer } = require('node:http');
     });
     await page.waitForEvent('load');
     await page.goto(origin);
-    await page.locator('plasmo-csui').waitFor({ state: 'attached' });
+    await page.locator('#selectly-global-actions-host').waitFor({ state: 'attached' });
+    // Content initialization still restores highlights before installing selection listeners.
+    await page.waitForTimeout(500);
     await page.locator('#source').evaluate((element) => {
       const range = document.createRange();
       range.selectNodeContents(element);
@@ -104,6 +106,9 @@ const { createServer } = require('node:http');
     await page.evaluate(() => getSelection().removeAllRanges());
     await regenerate.click();
     await panel.getByText('Generation 2:', { exact: false }).waitFor();
+    await panel.evaluate((element) =>
+      Promise.all(element.getAnimations().map((animation) => animation.finished))
+    );
     assert.equal(await regenerate.count(), 0, 'Regenerate must be unavailable while streaming');
     await page.screenshot({ path: path.join(artifacts, '02-regenerating-desktop.png') });
     await regenerate.waitFor();
