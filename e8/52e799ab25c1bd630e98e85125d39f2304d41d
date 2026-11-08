@@ -1,0 +1,27 @@
+core/services/inline-dialogue.ts
+  s_3d1fa7f793bcaa::t_dc21f675790fb0 24-37
+components/content/StreamingResult.tsx
+  s_3d1fa7f793bcaa::t_dc21f675790fb0 48,226,551-557,561-564,572,587-588,1003,1103-1106,1110-1113,1124
+core/content/Selectly.tsx
+  s_3d1fa7f793bcaa::t_dc21f675790fb0 2270
+core/services/inline-dialogue.test.ts
+  s_3d1fa7f793bcaa::t_dc21f675790fb0 44-82
+scripts/regenerate/verify-ui.cjs
+  s_3d1fa7f793bcaa::t_1058b9514a976b 137-177,189-190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e852e799ab25c1bd630e98e85125d39f2304d41d",
+  "prompts": {},
+  "sessions": {
+    "s_3d1fa7f793bcaa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bb53-6d22-7d00-aad3-846581c34c01",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
