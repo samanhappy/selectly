@@ -45,6 +45,7 @@ interface StreamingResultProps {
   selectedText?: string;
   selectedSentence?: string;
   onSendMessage?: (message: string, onChunk: DialogueChunkHandler) => Promise<string>;
+  onRegenerateMessage?: (onChunk: DialogueChunkHandler) => Promise<string>;
   autoFocusInput?: boolean;
   /** Optional callback when pin state changes */
   onPinChange?: (pinned: boolean) => void;
@@ -222,6 +223,7 @@ export const StreamingResult = ({
   selectedText = '',
   selectedSentence,
   onSendMessage,
+  onRegenerateMessage,
   autoFocusInput = true,
   onPinChange,
   modelName: modelNameProp,
@@ -546,14 +548,20 @@ export const StreamingResult = ({
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || !onSendMessage || sendingRef.current) return;
+  const handleSendMessage = async (regenerate = false) => {
+    if (sendingRef.current) return;
+    const userMessage = inputValue.trim();
+    const send = regenerate ? onRegenerateMessage : onSendMessage?.bind(null, userMessage);
+    if (!send || (!regenerate && !userMessage)) return;
+    if (regenerate && conversationHistory[conversationHistory.length - 1]?.role !== 'assistant')
+      return;
 
     sendingRef.current = true;
-    const userMessage = inputValue.trim();
     const started = Date.now();
-    setInputValue('');
-    setConversationHistory((previous) => [...previous, { role: 'user', content: userMessage }]);
+    if (!regenerate) setInputValue('');
+    setConversationHistory((previous) =>
+      regenerate ? previous.slice(0, -1) : [...previous, { role: 'user', content: userMessage }]
+    );
     setContent('');
     setIsComplete(false);
     setIsError(false);
@@ -561,7 +569,7 @@ export const StreamingResult = ({
     setStartedAt(started);
 
     try {
-      const response = await onSendMessage(userMessage, (chunk, model) => {
+      const response = await send((chunk, model) => {
         setContent((previous) => previous + chunk);
         if (model)
           setModelName(
@@ -576,7 +584,8 @@ export const StreamingResult = ({
     } catch (error) {
       setContent(error instanceof Error ? error.message : i18n.t('errors.unknownError'));
       setIsError(true);
-      setInputValue((draft) => draft || userMessage);
+      if (regenerate) setConversationHistory(conversationHistory);
+      else setInputValue((draft) => draft || userMessage);
     } finally {
       sendingRef.current = false;
       setIsComplete(true);
@@ -991,7 +1000,7 @@ export const StreamingResult = ({
             />
             <button
               aria-label={i18nConfig.tabAssistant.send}
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               disabled={!inputValue.trim() || !isComplete}
               className="send-btn glass-button"
               style={{
@@ -1091,10 +1100,17 @@ export const StreamingResult = ({
                 <BookmarkPlus size={12} />
               </button>
             )}
-            {!isDialogue && onRegenerate && (
+            {(isDialogue
+              ? onRegenerateMessage &&
+                conversationHistory[conversationHistory.length - 1]?.role === 'assistant'
+              : onRegenerate) && (
               <button
                 type="button"
                 onClick={() => {
+                  if (isDialogue) {
+                    void handleSendMessage(true);
+                    return;
+                  }
                   setContent('');
                   setIsError(false);
                   setIsComplete(false);
@@ -1105,7 +1121,7 @@ export const StreamingResult = ({
                   setCopyStatus('idle');
                   setPasteStatus('idle');
                   setDicStatus('idle');
-                  onRegenerate((...args) => updateResultRef.current?.(...args));
+                  onRegenerate?.((...args) => updateResultRef.current?.(...args));
                 }}
                 className="regenerate-btn glass-button"
                 aria-label={i18nConfig.content.regenerate}

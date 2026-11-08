@@ -2267,6 +2267,7 @@ export class Selectly {
         selectedText={selectedText}
         autoFocusInput={shouldAutoFocus}
         onSendMessage={(message, onChunk) => dialogue.send(message, onChunk)}
+        onRegenerateMessage={(onChunk) => dialogue.regenerate(onChunk)}
         onPaste={
           canPaste
             ? (content: string) => {

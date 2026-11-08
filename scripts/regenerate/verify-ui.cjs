@@ -134,6 +134,47 @@ const { createServer } = require('node:http');
     const bounds = await regenerate.boundingBox();
     assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 390);
     await page.screenshot({ path: path.join(artifacts, '04-regenerated-mobile.png') });
+    await panel.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.locator('#source').evaluate((element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+      element.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    });
+    await page.getByRole('button', { name: 'Chat', exact: true }).click();
+    const input = panel.locator('input');
+    assert.equal(await regenerate.count(), 0, 'An empty conversation cannot regenerate');
+    await input.fill('Explain this greeting');
+    await panel.getByRole('button', { name: 'Send', exact: true }).click();
+    await regenerate.waitFor();
+    await input.fill('Keep this draft');
+    await panel.getByRole('button', { name: 'Pin', exact: true }).click();
+    await regenerate.click();
+    await panel.getByText('Generation 5:', { exact: false }).waitFor();
+    assert.equal(await regenerate.count(), 0);
+    await regenerate.waitFor();
+    assert.equal(await panel.count(), 1);
+    await panel.getByRole('button', { name: 'Unpin', exact: true }).waitFor();
+    assert.equal(await input.inputValue(), 'Keep this draft');
+    assert.match(await panel.innerText(), /Generation 5: 你好，世界。/);
+    assert.doesNotMatch(await panel.innerText(), /Generation 4:/);
+    assert.deepEqual(requests[4], requests[3], 'Chat regeneration must not duplicate the question');
+    await page.screenshot({ path: path.join(artifacts, '05-chat-regenerated.png') });
+    await panel.getByRole('button', { name: 'Switch to page sidebar', exact: true }).click();
+    await regenerate.click();
+    await regenerate.waitFor();
+    assert.deepEqual(requests[5], requests[3]);
+    await input.fill('Follow up');
+    await panel.getByRole('button', { name: 'Send', exact: true }).click();
+    await regenerate.waitFor();
+    assert.deepEqual(requests[6].messages.slice(-2), [
+      { role: 'assistant', content: 'Generation 6: 你好，世界。' },
+      { role: 'user', content: 'Follow up' },
+    ]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: path.join(artifacts, '06-chat-sidebar-mobile.png') });
     fs.writeFileSync(
       path.join(artifacts, 'results.json'),
       JSON.stringify(
@@ -145,6 +186,8 @@ const { createServer } = require('node:http');
             'pinned regeneration keeps the originating panel, pin state, and position',
             'original text and model reused after selection cleared',
             'repeated regeneration works at 390px',
+            'Chat regeneration replaces the last answer, preserves drafts and pin state',
+            'Chat sidebar regeneration preserves context for follow-up messages',
           ],
           requests: requests.length,
         },
