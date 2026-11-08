@@ -313,6 +313,7 @@ export const es: I18nConfig = {
     chatWelcome: 'Pregúntame cualquier cosa sobre el texto seleccionado...',
     pin: 'Anclar',
     unpin: 'Desanclar',
+    regenerate: 'Volver a generar',
     addToDictionary: 'Añadir al Diccionario',
     saveProgress: 'Guardar progreso',
     progressSaved: 'Progreso guardado',

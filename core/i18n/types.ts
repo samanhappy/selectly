@@ -299,6 +299,7 @@ export interface I18nConfig {
     chatWelcome: string;
     pin: string;
     unpin: string;
+    regenerate: string;
     addToDictionary: string;
     saveProgress: string;
     progressSaved: string;

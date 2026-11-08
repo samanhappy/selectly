@@ -2185,7 +2185,11 @@ export class Selectly {
     };
   }
 
-  showStreamingResult(title: string, actionKey?: string) {
+  showStreamingResult(
+    title: string,
+    actionKey?: string,
+    onRegenerate?: React.ComponentProps<typeof StreamingResult>['onRegenerate']
+  ) {
     this.hideStreamingResult();
     const { selectedText: ctxSelectedText, sentence: ctxSentence } = this.getSelectionContext();
 
@@ -2200,6 +2204,7 @@ export class Selectly {
         floatingGap={this.getSelectionFloatingGap()}
         actionKey={actionKey}
         selectedText={ctxSelectedText}
+        onRegenerate={onRegenerate}
         selectedSentence={ctxSentence}
         canPaste={canPaste}
         autoFocusInput={shouldAutoFocus}
@@ -2262,6 +2267,7 @@ export class Selectly {
         selectedText={selectedText}
         autoFocusInput={shouldAutoFocus}
         onSendMessage={(message, onChunk) => dialogue.send(message, onChunk)}
+        onRegenerateMessage={(onChunk) => dialogue.regenerate(onChunk)}
         onPaste={
           canPaste
             ? (content: string) => {

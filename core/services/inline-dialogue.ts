@@ -21,8 +21,21 @@ export class InlineDialogue {
   }
 
   async send(message: string, onChunk: DialogueChunkHandler): Promise<string> {
+    return this.complete([...this.history, { role: 'user', content: message }], onChunk);
+  }
+
+  async regenerate(onChunk: DialogueChunkHandler): Promise<string> {
+    if (this.history[this.history.length - 1]?.role !== 'assistant') {
+      throw new Error('No completed answer to regenerate');
+    }
+    return this.complete(this.history.slice(0, -1), onChunk);
+  }
+
+  private async complete(
+    messages: DialogueMessage[],
+    onChunk: DialogueChunkHandler
+  ): Promise<string> {
     let response = '';
-    const messages: DialogueMessage[] = [...this.history, { role: 'user', content: message }];
     await this.stream(messages, (chunk, model) => {
       response += chunk;
       onChunk(chunk, model);

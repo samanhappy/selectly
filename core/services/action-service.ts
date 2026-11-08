@@ -10,6 +10,13 @@ const logger = createLogger('Action');
 // IndexedDB writes must happen in extension context to ensure options page can read them.
 // We'll send a message to background to persist collected items.
 
+export type ActionResultUpdate = (
+  chunk: string,
+  model: string,
+  complete?: boolean,
+  error?: boolean
+) => void;
+
 export interface ActionExecutionOptions {
   onStreamingStart?: () => void;
 }
@@ -122,8 +129,20 @@ export class ActionService {
 
     // Show streaming result window (use localized title for built-in functions)
     const { title } = getFunctionDisplayFields(actionKey, config, i18n.getConfig());
-    selectlyInstance.showStreamingResult(title, actionKey);
+    selectlyInstance.showStreamingResult(title, actionKey, (updateResult: ActionResultUpdate) =>
+      this.streamAction(actionKey, selectedText, config, {}, updateResult)
+    );
 
+    return this.streamAction(actionKey, selectedText, config, options);
+  }
+
+  private async streamAction(
+    actionKey: string,
+    selectedText: string,
+    config: FunctionConfig,
+    options: ActionExecutionOptions,
+    updateResult: ActionResultUpdate = (...args) => (window as any).updateStreamingResult?.(...args)
+  ): Promise<ActionExecutionResult> {
     try {
       let streamingStarted = false;
       // Prepare translation variables for smart language detection
@@ -144,10 +163,7 @@ export class ActionService {
           { role: 'user', content: prompt },
         ],
         (chunk: string, model: string) => {
-          const updateFn = (window as any).updateStreamingResult;
-          if (updateFn) {
-            updateFn(chunk, model, false);
-          }
+          updateResult(chunk, model, false);
           if (!streamingStarted) {
             streamingStarted = true;
             options.onStreamingStart?.();
@@ -159,16 +175,10 @@ export class ActionService {
       );
 
       // Mark as complete
-      const updateFn = (window as any).updateStreamingResult;
-      if (updateFn) {
-        updateFn('', '', true);
-      }
+      updateResult('', '', true);
     } catch (error: any) {
       // When error occurs, use unified result window to display error
-      const updateFn = (window as any).updateStreamingResult;
-      if (updateFn) {
-        updateFn(error.message || i18n.t('errors.unknownError'), '', true, true);
-      }
+      updateResult(error.message || i18n.t('errors.unknownError'), '', true, true);
     }
 
     return STREAMING_RESULT_ACTION;

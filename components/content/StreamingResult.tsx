@@ -1,4 +1,14 @@
-import { BookmarkPlus, ClipboardPaste, Copy, GripVertical, Info, Pin, Send, X } from 'lucide-react';
+import {
+  BookmarkPlus,
+  ClipboardPaste,
+  Copy,
+  GripVertical,
+  Info,
+  Pin,
+  RotateCcw,
+  Send,
+  X,
+} from 'lucide-react';
 import Markdown from 'markdown-to-jsx';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
@@ -10,6 +20,7 @@ import {
   type FloatingPosition,
 } from '../../core/content/floating-position';
 import { i18n } from '../../core/i18n';
+import type { ActionResultUpdate } from '../../core/services/action-service';
 import type { DialogueChunkHandler } from '../../core/services/inline-dialogue';
 import { getActionIcon } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
@@ -27,12 +38,14 @@ interface StreamingResultProps {
   title: string;
   actionKey?: string;
   onClose: () => void;
+  onRegenerate?: (updateResult: ActionResultUpdate) => void;
   canPaste?: boolean;
   onPaste?: (content: string) => void;
   isDialogue?: boolean;
   selectedText?: string;
   selectedSentence?: string;
   onSendMessage?: (message: string, onChunk: DialogueChunkHandler) => Promise<string>;
+  onRegenerateMessage?: (onChunk: DialogueChunkHandler) => Promise<string>;
   autoFocusInput?: boolean;
   /** Optional callback when pin state changes */
   onPinChange?: (pinned: boolean) => void;
@@ -203,12 +216,14 @@ export const StreamingResult = ({
   title,
   actionKey,
   onClose,
+  onRegenerate,
   canPaste = false,
   onPaste,
   isDialogue = false,
   selectedText = '',
   selectedSentence,
   onSendMessage,
+  onRegenerateMessage,
   autoFocusInput = true,
   onPinChange,
   modelName: modelNameProp,
@@ -236,6 +251,7 @@ export const StreamingResult = ({
   const [elapsedMs, setElapsedMs] = useState<number>(0);
   const timerRef = useRef<number | null>(null);
   const sendingRef = useRef(false);
+  const updateResultRef = useRef<ActionResultUpdate>();
 
   // Dragging state
   const [position, setPosition] = useState<FloatingPosition | null>(null);
@@ -397,7 +413,7 @@ export const StreamingResult = ({
   useEffect(() => {
     if (isDialogue) return;
 
-    (window as any).updateStreamingResult = (
+    const updateResult = (
       chunk: string,
       model: string,
       complete: boolean = false,
@@ -444,6 +460,9 @@ export const StreamingResult = ({
         }
       }
     };
+
+    updateResultRef.current = updateResult;
+    (window as any).updateStreamingResult = updateResult;
 
     // Allow external code to update footer meta
     (window as any).updateStreamingMeta = (meta: {
@@ -529,14 +548,20 @@ export const StreamingResult = ({
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || !onSendMessage || sendingRef.current) return;
+  const handleSendMessage = async (regenerate = false) => {
+    if (sendingRef.current) return;
+    const userMessage = inputValue.trim();
+    const send = regenerate ? onRegenerateMessage : onSendMessage?.bind(null, userMessage);
+    if (!send || (!regenerate && !userMessage)) return;
+    if (regenerate && conversationHistory[conversationHistory.length - 1]?.role !== 'assistant')
+      return;
 
     sendingRef.current = true;
-    const userMessage = inputValue.trim();
     const started = Date.now();
-    setInputValue('');
-    setConversationHistory((previous) => [...previous, { role: 'user', content: userMessage }]);
+    if (!regenerate) setInputValue('');
+    setConversationHistory((previous) =>
+      regenerate ? previous.slice(0, -1) : [...previous, { role: 'user', content: userMessage }]
+    );
     setContent('');
     setIsComplete(false);
     setIsError(false);
@@ -544,7 +569,7 @@ export const StreamingResult = ({
     setStartedAt(started);
 
     try {
-      const response = await onSendMessage(userMessage, (chunk, model) => {
+      const response = await send((chunk, model) => {
         setContent((previous) => previous + chunk);
         if (model)
           setModelName(
@@ -559,7 +584,8 @@ export const StreamingResult = ({
     } catch (error) {
       setContent(error instanceof Error ? error.message : i18n.t('errors.unknownError'));
       setIsError(true);
-      setInputValue((draft) => draft || userMessage);
+      if (regenerate) setConversationHistory(conversationHistory);
+      else setInputValue((draft) => draft || userMessage);
     } finally {
       sendingRef.current = false;
       setIsComplete(true);
@@ -974,7 +1000,7 @@ export const StreamingResult = ({
             />
             <button
               aria-label={i18nConfig.tabAssistant.send}
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               disabled={!inputValue.trim() || !isComplete}
               className="send-btn glass-button"
               style={{
@@ -1072,6 +1098,48 @@ export const StreamingResult = ({
                 }}
               >
                 <BookmarkPlus size={12} />
+              </button>
+            )}
+            {(isDialogue
+              ? onRegenerateMessage &&
+                conversationHistory[conversationHistory.length - 1]?.role === 'assistant'
+              : onRegenerate) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (isDialogue) {
+                    void handleSendMessage(true);
+                    return;
+                  }
+                  setContent('');
+                  setIsError(false);
+                  setIsComplete(false);
+                  setModelName(undefined);
+                  setCostUsd(undefined);
+                  setStartedAt(null);
+                  setElapsedMs(0);
+                  setCopyStatus('idle');
+                  setPasteStatus('idle');
+                  setDicStatus('idle');
+                  onRegenerate?.((...args) => updateResultRef.current?.(...args));
+                }}
+                className="regenerate-btn glass-button"
+                aria-label={i18nConfig.content.regenerate}
+                title={i18nConfig.content.regenerate}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  borderRadius: '8px',
+                  width: '25px',
+                  height: '25px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                }}
+              >
+                <RotateCcw size={12} />
               </button>
             )}
             <button
