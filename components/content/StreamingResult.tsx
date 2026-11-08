@@ -20,6 +20,7 @@ import {
   type FloatingPosition,
 } from '../../core/content/floating-position';
 import { i18n } from '../../core/i18n';
+import type { ActionResultUpdate } from '../../core/services/action-service';
 import type { DialogueChunkHandler } from '../../core/services/inline-dialogue';
 import { getActionIcon } from '../../utils/icon-utils';
 import { createLogger } from '../../utils/logger';
@@ -37,7 +38,7 @@ interface StreamingResultProps {
   title: string;
   actionKey?: string;
   onClose: () => void;
-  onRegenerate?: () => void;
+  onRegenerate?: (updateResult: ActionResultUpdate) => void;
   canPaste?: boolean;
   onPaste?: (content: string) => void;
   isDialogue?: boolean;
@@ -248,6 +249,7 @@ export const StreamingResult = ({
   const [elapsedMs, setElapsedMs] = useState<number>(0);
   const timerRef = useRef<number | null>(null);
   const sendingRef = useRef(false);
+  const updateResultRef = useRef<ActionResultUpdate>();
 
   // Dragging state
   const [position, setPosition] = useState<FloatingPosition | null>(null);
@@ -409,7 +411,7 @@ export const StreamingResult = ({
   useEffect(() => {
     if (isDialogue) return;
 
-    (window as any).updateStreamingResult = (
+    const updateResult = (
       chunk: string,
       model: string,
       complete: boolean = false,
@@ -456,6 +458,9 @@ export const StreamingResult = ({
         }
       }
     };
+
+    updateResultRef.current = updateResult;
+    (window as any).updateStreamingResult = updateResult;
 
     // Allow external code to update footer meta
     (window as any).updateStreamingMeta = (meta: {
@@ -1090,8 +1095,17 @@ export const StreamingResult = ({
               <button
                 type="button"
                 onClick={() => {
+                  setContent('');
+                  setIsError(false);
                   setIsComplete(false);
-                  onRegenerate();
+                  setModelName(undefined);
+                  setCostUsd(undefined);
+                  setStartedAt(null);
+                  setElapsedMs(0);
+                  setCopyStatus('idle');
+                  setPasteStatus('idle');
+                  setDicStatus('idle');
+                  onRegenerate((...args) => updateResultRef.current?.(...args));
                 }}
                 className="regenerate-btn glass-button"
                 aria-label={i18nConfig.content.regenerate}

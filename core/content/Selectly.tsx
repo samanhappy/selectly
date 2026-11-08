@@ -2185,7 +2185,11 @@ export class Selectly {
     };
   }
 
-  showStreamingResult(title: string, actionKey?: string, onRegenerate?: () => void) {
+  showStreamingResult(
+    title: string,
+    actionKey?: string,
+    onRegenerate?: React.ComponentProps<typeof StreamingResult>['onRegenerate']
+  ) {
     this.hideStreamingResult();
     const { selectedText: ctxSelectedText, sentence: ctxSentence } = this.getSelectionContext();
 

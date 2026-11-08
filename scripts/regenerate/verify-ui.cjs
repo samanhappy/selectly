@@ -102,6 +102,10 @@ const { createServer } = require('node:http');
     await regenerate.waitFor();
     assert.match(await panel.innerText(), /Generation 1: 你好，世界。/);
     await page.screenshot({ path: path.join(artifacts, '01-completed-desktop.png') });
+    const originalPanel = await panel.elementHandle();
+    await panel.getByRole('button', { name: 'Pin', exact: true }).click();
+    await panel.getByRole('button', { name: 'Unpin', exact: true }).waitFor();
+    const originalPosition = await panel.boundingBox();
     // The second request must keep the original input even after selection changes.
     await page.evaluate(() => getSelection().removeAllRanges());
     await regenerate.click();
@@ -112,6 +116,12 @@ const { createServer } = require('node:http');
     assert.equal(await regenerate.count(), 0, 'Regenerate must be unavailable while streaming');
     await page.screenshot({ path: path.join(artifacts, '02-regenerating-desktop.png') });
     await regenerate.waitFor();
+    assert.equal(await panel.count(), 1, 'Pinned regeneration must not create another panel');
+    assert.ok(await originalPanel.evaluate((element) => element.isConnected));
+    await panel.getByRole('button', { name: 'Unpin', exact: true }).waitFor();
+    const regeneratedPosition = await panel.boundingBox();
+    assert.equal(regeneratedPosition.x, originalPosition.x);
+    assert.equal(regeneratedPosition.y, originalPosition.y);
     assert.match(await panel.innerText(), /Generation 2: 你好，世界。/);
     assert.doesNotMatch(await panel.innerText(), /Generation 1:/);
     assert.deepEqual(requests[1], requests[0], 'Regeneration must reuse the original request');
@@ -132,6 +142,7 @@ const { createServer } = require('node:http');
             'completed result exposes Regenerate',
             'streaming hides Regenerate',
             'regeneration replaces prior output',
+            'pinned regeneration keeps the originating panel, pin state, and position',
             'original text and model reused after selection cleared',
             'repeated regeneration works at 390px',
           ],
