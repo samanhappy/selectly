@@ -1,0 +1,20 @@
+scripts/regenerate/verify-ui.cjs
+  s_3d1fa7f793bcaa::t_36f0be006a4c6e 109-111
+  s_3d1fa7f793bcaa::t_6e5be3c07d3615 89-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27b7bd365148c539e9b3e878c806e5eb94952877",
+  "prompts": {},
+  "sessions": {
+    "s_3d1fa7f793bcaa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bb53-6d22-7d00-aad3-846581c34c01",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
