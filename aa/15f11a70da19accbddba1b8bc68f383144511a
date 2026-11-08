@@ -1,0 +1,19 @@
+package.json
+  s_3d1fa7f793bcaa::t_0cc4d876271cc8 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aa15f11a70da19accbddba1b8bc68f383144511a",
+  "prompts": {},
+  "sessions": {
+    "s_3d1fa7f793bcaa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bb53-6d22-7d00-aad3-846581c34c01",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "samanhappy <samanhappy@gmail.com>"
+    }
+  }
+}
