@@ -307,6 +307,7 @@ export const ja: I18nConfig = {
     chatWelcome: '選択されたテキストについて何でもお尋ねください...',
     pin: 'ピン留め',
     unpin: 'ピン留めを外す',
+    regenerate: '再生成',
     addToDictionary: '辞書に追加',
     saveProgress: '進捗を保存',
     progressSaved: '進捗を保存しました',

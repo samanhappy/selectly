@@ -294,6 +294,7 @@ export const zh: I18nConfig = {
     chatWelcome: '对选中的文本进行提问...',
     pin: '固定',
     unpin: '取消固定',
+    regenerate: '重新生成',
     addToDictionary: '添加到词典',
     saveProgress: '保存进度',
     progressSaved: '已保存进度',

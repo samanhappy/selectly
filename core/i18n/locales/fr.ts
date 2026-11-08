@@ -315,6 +315,7 @@ export const fr: I18nConfig = {
     chatWelcome: "Demandez-moi n'importe quoi sur le texte sélectionné...",
     pin: 'Épingler',
     unpin: 'Désépingler',
+    regenerate: 'Régénérer',
     addToDictionary: 'Ajouter au Dictionnaire',
     saveProgress: 'Enregistrer la progression',
     progressSaved: 'Progression enregistrée',

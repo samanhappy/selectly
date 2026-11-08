@@ -122,7 +122,9 @@ export class ActionService {
 
     // Show streaming result window (use localized title for built-in functions)
     const { title } = getFunctionDisplayFields(actionKey, config, i18n.getConfig());
-    selectlyInstance.showStreamingResult(title, actionKey);
+    selectlyInstance.showStreamingResult(title, actionKey, () =>
+      this.executeAction(actionKey, selectedText, config)
+    );
 
     try {
       let streamingStarted = false;

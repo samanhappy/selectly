@@ -2185,7 +2185,7 @@ export class Selectly {
     };
   }
 
-  showStreamingResult(title: string, actionKey?: string) {
+  showStreamingResult(title: string, actionKey?: string, onRegenerate?: () => void) {
     this.hideStreamingResult();
     const { selectedText: ctxSelectedText, sentence: ctxSentence } = this.getSelectionContext();
 
@@ -2200,6 +2200,7 @@ export class Selectly {
         floatingGap={this.getSelectionFloatingGap()}
         actionKey={actionKey}
         selectedText={ctxSelectedText}
+        onRegenerate={onRegenerate}
         selectedSentence={ctxSentence}
         canPaste={canPaste}
         autoFocusInput={shouldAutoFocus}

@@ -314,6 +314,7 @@ export const de: I18nConfig = {
     chatWelcome: 'Fragen Sie mich alles über den ausgewählten Text...',
     pin: 'Anheften',
     unpin: 'Loslösen',
+    regenerate: 'Erneut generieren',
     addToDictionary: 'Zum Wörterbuch hinzufügen',
     saveProgress: 'Fortschritt speichern',
     progressSaved: 'Fortschritt gespeichert',

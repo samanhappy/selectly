@@ -89,6 +89,25 @@ describe('ActionService', () => {
     expect(result.closeButtonsAfterExecution).toBe(false);
   });
 
+  it('regenerates using the original text and function config', async () => {
+    const showStreamingResult = vi.fn();
+    vi.stubGlobal('window', {
+      selectlyInstance: { showStreamingResult },
+      updateStreamingResult: vi.fn(),
+    });
+    const config = createLLMFunctionConfig();
+    await ActionService.getInstance().executeAction('translate', 'original text', config);
+    const firstCall = llmMocks.chatStream.mock.calls[0];
+
+    await showStreamingResult.mock.calls[0][2]();
+
+    expect(llmMocks.chatStream).toHaveBeenCalledTimes(2);
+    const secondCall = llmMocks.chatStream.mock.calls[1];
+    expect(secondCall[0]).toEqual(firstCall[0]);
+    expect(secondCall.slice(2)).toEqual(firstCall.slice(2));
+    expect(showStreamingResult).toHaveBeenCalledTimes(2);
+  });
+
   it('does not notify streaming start when the LLM stream errors first', async () => {
     const updateStreamingResult = vi.fn();
     const onStreamingStart = vi.fn();

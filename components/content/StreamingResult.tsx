@@ -1,4 +1,14 @@
-import { BookmarkPlus, ClipboardPaste, Copy, GripVertical, Info, Pin, Send, X } from 'lucide-react';
+import {
+  BookmarkPlus,
+  ClipboardPaste,
+  Copy,
+  GripVertical,
+  Info,
+  Pin,
+  RotateCcw,
+  Send,
+  X,
+} from 'lucide-react';
 import Markdown from 'markdown-to-jsx';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
@@ -27,6 +37,7 @@ interface StreamingResultProps {
   title: string;
   actionKey?: string;
   onClose: () => void;
+  onRegenerate?: () => void;
   canPaste?: boolean;
   onPaste?: (content: string) => void;
   isDialogue?: boolean;
@@ -203,6 +214,7 @@ export const StreamingResult = ({
   title,
   actionKey,
   onClose,
+  onRegenerate,
   canPaste = false,
   onPaste,
   isDialogue = false,
@@ -1072,6 +1084,32 @@ export const StreamingResult = ({
                 }}
               >
                 <BookmarkPlus size={12} />
+              </button>
+            )}
+            {!isDialogue && onRegenerate && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsComplete(false);
+                  onRegenerate();
+                }}
+                className="regenerate-btn glass-button"
+                aria-label={i18nConfig.content.regenerate}
+                title={i18nConfig.content.regenerate}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  borderRadius: '8px',
+                  width: '25px',
+                  height: '25px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                }}
+              >
+                <RotateCcw size={12} />
               </button>
             )}
             <button

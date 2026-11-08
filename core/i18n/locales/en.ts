@@ -306,6 +306,7 @@ export const en: I18nConfig = {
     chatWelcome: 'Ask me anything about the selected text...',
     pin: 'Pin',
     unpin: 'Unpin',
+    regenerate: 'Regenerate',
     addToDictionary: 'Add to Dictionary',
     saveProgress: 'Save progress',
     progressSaved: 'Progress saved',
