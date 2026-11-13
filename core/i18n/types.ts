@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'en' | 'zh' | 'es' | 'pt' | 'ja' | 'de' | 'fr';
+export type SupportedLanguage = 'en' | 'zh' | 'es' | 'pt' | 'ja' | 'de' | 'fr'| 'vi';
 
 export interface I18nConfig {
   // Common UI text

@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Selectly: Công cụ văn bản AI mã nguồn mở, tùy biến linh hoạt",
+    "description": "The name of the extension"
+  },
+  "extensionDescription": {
+    "message": "Bôi đen văn bản để dịch, trau chuốt, giải thích, trò chuyện hoặc chạy quy trình tùy chỉnh. Công cụ AI tất cả trong một, dễ tùy biến.",
+    "tip": "Không cần sao chép, dán. Không phải chuyển qua lại giữa các cửa sổ.",
+    "description": "The description of the extension"
+  }
+}
