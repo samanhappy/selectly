@@ -61,6 +61,7 @@ export class ActionService {
     const languageNames = {
       zh: '中文',
       en: 'English',
+      vi: 'Vietnamese',
     };
 
     return languageNames[userLanguage] || 'English';

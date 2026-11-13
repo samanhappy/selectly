@@ -5,6 +5,7 @@ import { es } from './locales/es';
 import { fr } from './locales/fr';
 import { ja } from './locales/ja';
 import { pt } from './locales/pt';
+import { vi } from './locales/vi';
 import { zh } from './locales/zh';
 import type { I18nConfig, SupportedLanguage } from './types';
 import { createLogger } from '../../utils/logger';
@@ -19,6 +20,7 @@ const locales: Record<SupportedLanguage, I18nConfig> = {
   ja,
   de,
   fr,
+  vi,
 };
 
 export class I18nManager {
@@ -68,6 +70,7 @@ export class I18nManager {
     if (browserLang === 'ja' || browserLang === 'ja-JP') return 'ja';
     if (browserLang === 'de' || browserLang === 'de-DE') return 'de';
     if (browserLang === 'fr' || browserLang === 'fr-FR') return 'fr';
+    if (browserLang === 'vi' || browserLang === 'vi-VN') return 'vi';
 
     // Check for language prefixes
     if (browserLang.startsWith('zh')) return 'zh';
@@ -76,13 +79,14 @@ export class I18nManager {
     if (browserLang.startsWith('ja')) return 'ja';
     if (browserLang.startsWith('de')) return 'de';
     if (browserLang.startsWith('fr')) return 'fr';
+    if (browserLang.startsWith('vi')) return 'vi';
 
     // Default to English
     return 'en';
   }
 
   private isValidLanguage(lang: string): lang is SupportedLanguage {
-    return ['en', 'zh', 'es', 'pt', 'ja', 'de', 'fr'].includes(lang);
+    return ['en', 'zh', 'es', 'pt', 'ja', 'de', 'fr', 'vi'].includes(lang);
   }
 
   async setLanguage(language: SupportedLanguage): Promise<void> {
@@ -131,6 +135,7 @@ export class I18nManager {
       { code: 'ja', name: '日本語' },
       { code: 'de', name: 'Deutsch' },
       { code: 'fr', name: 'Français' },
+      { code: 'vi', name: 'Tiếng Việt' },
     ];
   }
 }
